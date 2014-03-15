@@ -89,6 +89,94 @@
 
 
 
+# create_dendextend_options <- function() { 
+#    # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
+#    
+#    
+# }
+# # create_dendextend_options()
+# # dendextend_options
+# # dendextend_options()
+
+
+
+#' @title Access to dendextend_options
+#' @export
+#' @description
+#' This is a function inside its own environment. This enables a bunch of
+#' functions to be manipulated outside the package, even when they are called
+#' from function within the dendextend package.
+#' @author Kurt Hornik
+#' @param option a character scalar of the value of the options we would
+#' like to access or update.
+#' @param value any value that we would like to update into the "option"
+#' element in dendextend_options
+#' @return a list with functions
+#' @examples
+#' 
+#' dendextend_options("a")
+#' dendextend_options("a", 1)
+#' dendextend_options("a")
+#' dendextend_options("a", NULL)
+#' dendextend_options("a")
+#' dendextend_options()
+#' 
+dendextend_options <- local({
+   options <- list()
+   function(option, value) {
+      #          ellipsis <- list(...)         
+      if(missing(option)) return(options)
+      
+      if(missing(value))
+         options[[option]]
+      else options[[option]] <<- value
+   }
+})
+# a=2
+# dendextend_options()
+# dendextend_options(a=3)  # sadly, this will fail, and ellipsis does not help
+# dendextend_options(a<-3)
+# dendextend_options("a",3)
+# dendextend_options("a")
+# dendextend_options()
+
+
+
+
+#' @title Populates dendextend functions into dendextend_options
+#' @export
+#' @return NULL
+assign_dendextend_options <- function() { 
+   # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
+
+   
+   dendextend_options("get_branches_heights" , dendextend::dendextend_get_branches_heights)
+   dendextend_options("heights_per_k.dendrogram" , dendextend::dendextend_heights_per_k.dendrogram)
+   dendextend_options("cut_lower_fun" , dendextend::dendextend_cut_lower_fun)
+   
+}
+
+# dendextend_options("cut_lower_fun")
+#
+
+
+
+
+
+
+
+
+
+
+remove_dendextend_options <- function() { 
+   # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
+#    options(dendextend_get_branches_heights = NULL)
+#    options(dendextend_heights_per_k.dendrogram = NULL)
+#    options(dendextend_cut_lower_fun = NULL)
+#    rm(dendextend_options)
+}
+
+
 
 
 
@@ -97,8 +185,7 @@
    
    # adding and removing menus from the Rgui when loading and detaching the library
    # setHook(packageEvent("installr", "attach"), {function(pkgname, libpath) {add.installr.GUI()}  } )
-   # setHook(packageEvent("installr", "detach"), {function(pkgname, libpath) {remove.installr.GUI()}  } )
-   
+   setHook(packageEvent("dendextend", "detach"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
 }
 
 # menus are added and removed as needed: !!
@@ -129,6 +216,10 @@
       #       require("dendextend", warn.conflicts = TRUE)                 
       #       require("dendextend", warn.conflicts = FALSE)                 
    # but it makes sure that "dendextend" does not "Depends" on ape"...
+   
+   # move some functions to the "options" so that they would later be overridden.
+#    create_dendextend_options()
+   assign_dendextend_options()
    
    packageStartupMessage(dendextendWelcomeMessage())  
    
@@ -227,5 +318,5 @@ dendextendWelcomeMessage <- function(){
 # check("D:/Dropbox/aaaa good R code/AA - My packages/dendextend", args="--as-cran")
 #                 Thanks to: http://stackoverflow.com/questions/10017702/r-cmd-check-options-for-more-rigorous-testing-2-15-0
 # file.copy("NEWS", "NEWS.md")
-# build_win()
+# build_win(version="R-devel")
 # release()
