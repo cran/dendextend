@@ -360,19 +360,20 @@ cutree_1h.dendrogram <- function(tree, h,
 #'        #97.90023 57.41808 16.93594 
 #'        # we do NOT have a height for k=2 because of the tree's structure.
 #'        
-#'        
-#'        
-#' # speed gains:
-#' dat1 <- iris[1:150,-5]
-#' # dat1 <- rbind(dat1,dat1,dat1,dat1,dat1,dat1,dat1)
-#' dend_big = as.dendrogram(hclust(dist(dat1)))
+#'    
 #' require(microbenchmark)
-#' require(dendextendRcpp)
-#' microbenchmark(dendextend_heights_per_k.dendrogram(dend_big),
-#'                heights_per_k.dendrogram(dend_big),
-#'                dendextendRcpp::heights_per_k.dendrogram(dend_big),
-#'                times = 10)
-#' # ~126 times faster!
+#' dend = as.dendrogram(hclust(dist(iris[1:150,-5])))
+#' dend = as.dendrogram(hclust(dist(iris[1:30,-5])))
+#' dend = as.dendrogram(hclust(dist(iris[1:3,-5])))
+#' microbenchmark(
+#'    #    dendextendRcpp::heights_per_k.dendrogram(dend),
+#'    dendextendRcpp::dendextendRcpp_heights_per_k.dendrogram(dend),
+#'    dendextendRcpp::old_heights_per_k.dendrogram(dend)
+#' )
+#' # improvment is 10 times faster (in Rcpp) for a tree of size 3
+#' # 76 times faster for a tree of size 30
+#' # And:
+#' # 134 times faster for a tree of size 150!!
 #' }
 heights_per_k.dendrogram <- function(tree, ...) {
    fo <- dendextend_options("heights_per_k.dendrogram")   
@@ -593,7 +594,7 @@ cutree_1k.dendrogram <- function(tree, k,
 #' to TRUE.
 #' This is passed to \code{cutree_1h.dendrogram}.
 #' @param sort_cluster_numbers logical (TRUE). Should the resulting cluster id numbers
-#' be sorted? (default is FALSE in order to make the function compatible with
+#' be sorted? (default is TRUE in order to make the function compatible with
 #' \code{ \link[stats]{cutree}  } ) from {stats}, but it allows for sensible
 #' color order when using \link{color_branches}.
 #' @param warn logical. Should the function send a warning in case the desried 
@@ -768,14 +769,14 @@ cutree.hclust <- function(tree, k = NULL, h = NULL,
 
 
 
+# ' @S3method cutree phylo
 #' @export
-#' @S3method cutree phylo
 cutree.phylo <- function(tree,k=NULL, h=NULL ,...) {cutree(as.dendrogram(tree),k=k,h=h,...)}
    
 
 
+# ' @S3method cutree dendrogram
 #' @export
-#' @S3method cutree dendrogram
 cutree.dendrogram <- function(tree, k = NULL, h = NULL,
                               dend_heights_per_k = NULL,
                               use_labels_not_values = TRUE, 

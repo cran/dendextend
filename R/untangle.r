@@ -19,6 +19,111 @@
 
 
 
+
+
+#' @title untangle dendrograms
+#' @export
+#' @aliases 
+#' untangle.default
+#' untangle.dendrogram
+#' untangle.dendlist
+#' @description 
+#' One untangle function to rule them all.
+#' 
+#' This function untangles dendrogram lists (dendlist),
+#' Using various heuristics.
+#' 
+#' @author Tal Galili
+#' 
+#' @usage
+#' untangle(dend1, ...)
+#' 
+#' \method{untangle}{dendrogram}(dend1, dend2 ,
+#'    method = c("random", "step1side", "step2side", "DendSer"),
+#'    ...)
+#' 
+#' \method{untangle}{dendlist}(dend1, method, which = c(1L,2L), ...)
+#' 
+#' @param dend1 a dednrogram or a dendlist object
+#' @param dend2 A second dednrogram (to untangle against)
+#' @param which an integer vector of length 2, indicating
+#' which of the trees in the dendlist object should be plotted
+#' @param method a character indicating the type of untangle
+#' heuristic to use.
+#' @param ... passed to the releavnt untangle function
+#' @details 
+#' This function wraps all of the untagnle functions,
+#' in order to make it easier to find our about (and use) them.
+#' @return A \link{dendlist}, with two trees after 
+#' they have been untangled.
+#' 
+#' @seealso 
+#' \link{tanglegram}, \link{untangle_random_search}, 
+#' \link{untangle_step_rotate_1side}, \link{untangle_step_rotate_2side},
+#' \link{entanglement}
+#' @examples
+#' \dontrun{
+#' set.seed(23235)
+#' ss <- sample(1:150, 10 )
+#' dend1 <- iris[ss,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+#' dend2 <- iris[ss,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
+#' dend12 <- dendlist(dend1, dend2)
+#' 
+#' dend12 %>% tanglegram
+#' 
+#' untangle(dend1, dend2, method="random", R = 5) %>% tanglegram
+#' 
+#' # it works, and we get something different:
+#' set.seed(1234)
+#' dend12 %>% untangle(method="random", R = 5) %>% tanglegram
+#' 
+#' set.seed(1234)
+#' # fixes it completely:
+#' dend12 %>% untangle(method="random", R = 5) %>% untangle(method="step1") %>% tanglegram
+#' # not good enough
+#' dend12 %>% untangle(method="step1") %>% tanglegram
+#' # not good enough
+#' dend12 %>% untangle(method="step2") %>% tanglegram
+#' # How we might wish to use it:
+#' set.seed(12777)
+#' dend12 %>% 
+#'    untangle(method="random", R = 1) %>%
+#'    untangle(method="step2") %>% 
+#'    tanglegram
+#' 
+#' }
+untangle <- function (dend1, ...) {UseMethod("untangle")}
+
+untangle.default <- function (dend1, ...) {stop("No default function for tanglegram - must use a dendrogram/hclust/phylo object")}
+
+# ' @S3method untangle dendrogram
+#' @export
+untangle.dendrogram <- function (dend1, dend2, 
+                                 method = c("random", "step1side", "step2side", "DendSer"), ...) {
+   method <- match.arg(method)
+   
+   switch(method,
+          random = untangle_random_search(dend1, dend2, ...),
+          step1side = untangle_step_rotate_1side(dend1, dend2, ...),
+          step2side = untangle_step_rotate_2side(dend1, dend2, ...),
+          DendSer = untangle_DendSer(dendlist(dend1, dend2), ...)
+   )
+}
+
+# ' @S3method untangle dendlist
+#' @export
+untangle.dendlist <- function(dend1, method, which = c(1L,2L), ...) {
+   untangle(dend1[[which[1]]], dend1[[which[2]]], method = method, ...)
+}
+
+
+# center <- function(type = c("mean", "median", "trimmed")) {
+#    print(match.arg(type))
+# }
+# center(type="tri")
+
+
+
 # get("sort")
 #' 'shuffle' is a function that randomilly rotates ("shuffles") a tree.
 #' a dendrogram leaves order (by means of rotation)
@@ -28,12 +133,15 @@
 #' @aliases 
 #' shuffle.default
 #' shuffle.dendrogram
+#' shuffle.dendlist
 #' shuffle.hclust
 #' shuffle.phylo
 #' @usage
 #' shuffle(object, ...)
 #' 
 #' \method{shuffle}{dendrogram}(object, ...)
+#' 
+#' \method{shuffle}{dendlist}(object, which, ...)
 #' 
 #' \method{shuffle}{hclust}(object, ...)
 #' 
@@ -48,13 +156,17 @@
 #' This function is useful in combination with \link{tanglegram} and \link{entanglement}.
 #' 
 #' @param object a tree object (\link{dendrogram}/\link{hclust}/\link[ape]{phylo})
+#' @param which an integer vector for indicating
+#' which of the trees in the dendlist object should be plotted
+#' default is missing, in which case all the dends in dendlist
+#' will be shuffled
 #' @param ... Ignored.
 #'  
 #' @return A randomlly rotated tree object
 #' @seealso \code{\link{tanglegram}},  \code{\link{entanglement}}, 
 #' \code{\link[dendextend]{rotate}}
 #' @examples
-#' dend <- as.dendrogram(hclust(dist(USArrests)))
+#' dend <- USArrests %>% dist %>% hclust %>% as.dendrogram
 #' set.seed(234238)
 #' dend2 <- shuffle(dend)
 #' 
@@ -76,13 +188,35 @@ shuffle.default <- function(object, ...) {
 }
 
 
-#' @S3method shuffle dendrogram
+# ' @S3method shuffle dendrogram
+#' @export
 shuffle.dendrogram <- shuffle.default
 
-#' @S3method shuffle hclust
+
+# ' @S3method shuffle dendlist
+#' @export
+shuffle.dendlist <- function(object, which, ...) {
+   
+#    if(T) 1 else 2
+#    if(F) 1 else 2   
+   #    if(F) 1 else
+   #       2   
+   what_to_shuffle <- if(missing(which)) seq_len(length(object)) else which
+   
+   for(i in what_to_shuffle) {
+      object[[i]] <- shuffle(object[[i]])
+   }
+   
+   object
+}
+
+
+# ' @S3method shuffle hclust
+#' @export
 shuffle.hclust <- shuffle.default
 
-#' @S3method shuffle phylo
+# ' @S3method shuffle phylo
+#' @export
 shuffle.phylo <- shuffle.default
 
 
@@ -128,21 +262,20 @@ shuffle.phylo <- shuffle.default
 #' of options and look for the "best" two trees. This is what this function
 #' offers.
 #' 
-#' @return A list with two trees with the best entanglement that was found.
+#' @return A dendlist with two trees with the best entanglement that was found.
 #' @seealso \link{tanglegram}, \link{match_order_by_labels},
 #' \link{entanglement}.
 #' @examples
 #' 
 #' \dontrun{
-#' hc1 <- hclust(dist(iris[,-5]), "com")
-#' hc2 <- hclust(dist(iris[,-5]), "single")
-#' dend1 <- as.dendrogram(hc1)
-#' dend2 <- as.dendrogram(hc2)
+#' dend1 <- iris[,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+#' dend2 <- iris[,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
 #' tanglegram(dend1,dend2)
 #' 
 #' set.seed(65168)
-#' dend12 <- untangle_random_search(dend1, dend2)
+#' dend12 <- untangle_random_search(dend1, dend2, R = 10)
 #' tanglegram(dend12[[1]],dend12[[2]])
+#' tanglegram(dend12)
 #' 
 #' entanglement(dend1,dend2, L = 2) # 0.8894
 #' entanglement(dend12[[1]],dend12[[2]], L = 2) # 0.0998
@@ -154,8 +287,8 @@ untangle_random_search <- function(tree1, tree2, R = 100L, L = 1, leaves_matchin
    # this is a simple random search algorithm for the optimal tanglegram layout problem.
    # it shufflers the trees, and see if we got a better entanglement or not
    
-   
-   if(leaves_matching_method[1] == "order") {
+   leaves_matching_method <- match.arg(leaves_matching_method)
+   if(leaves_matching_method == "order") {
       old_tree2 <- tree2
       tree2 <- match_order_by_labels(old_tree2, tree1)   
       if(!identical(tree2,old_tree2)) warning("The leaves order in 'tree2' were changed. If you want to avoid that, use leaves_matching_method = 'labels'.")
@@ -173,13 +306,13 @@ untangle_random_search <- function(tree1, tree2, R = 100L, L = 1, leaves_matchin
       
       # if we came across a better ordaring, then update the "Best" treerograms 
       if(current_entanglement < best_ordaring_entanglement) {
-         best_ordaring_entanglement<- current_entanglement
+         best_ordaring_entanglement <- current_entanglement
          optimal_tree1 <- s_tree1
          optimal_tree2 <- s_tree2			
       }
    }
    
-   return(list(tree1 = optimal_tree1, tree2 = optimal_tree2))
+   return(dendlist(tree1 = optimal_tree1, tree2 = optimal_tree2))
 }
 
 
@@ -229,7 +362,7 @@ remove_pipes_and_zzz <- function(x) {strsplit(remove_zzz(x), "||",fixed=T)[[1]]}
 #' @examples
 #' 
 #' \dontrun{
-#' dend1 <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+#' dend1 <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
 #' dend2 <- flip_leaves(dend1, c(3,5), c(1,2))
 #' tanglegram(dend1,dend2)
 #' entanglement(dend1,dend2, L = 2) # 0.4
@@ -291,7 +424,7 @@ flip_leaves <- function(dend, leaves1, leaves2,...) {
 #' @examples
 #' 
 #' \dontrun{
-#' dend1 <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+#' dend1 <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
 #' dend2 <- all_couple_rotations_at_k(dend1, k=2)[[2]]
 #' tanglegram(dend1,dend2)
 #' entanglement(dend1,dend2, L = 2) # 0.5
@@ -415,7 +548,9 @@ all_couple_rotations_at_k <- function(dend, k, dend_heights_per_k,...) {
 #' 
 #' @param ... not used
 #' 
-#' @return dend1 after it was rotated to best fit dend2_fixed.
+#' @return A dendlist with 
+#' 1) dend1 after it was rotated to best fit dend2_fixed.
+#' 2) dend2_fixed.
 #' @seealso \link{tanglegram}, \link{match_order_by_labels},
 #' \link{entanglement}, \link{flip_leaves}, \link{all_couple_rotations_at_k},
 #' \link{untangle_step_rotate_2side}.
@@ -423,13 +558,13 @@ all_couple_rotations_at_k <- function(dend, k, dend_heights_per_k,...) {
 #' @examples
 #' 
 #' \dontrun{
-#' dend1 <- as.dendrogram(hclust(dist(USArrests[1:10,])))
+#' dend1 <- USArrests[1:10,] %>% dist %>% hclust %>% as.dendrogram
 #' set.seed(3525)
 #' dend2 <- shuffle(dend1)
 #' tanglegram(dend1,dend2)
 #' entanglement(dend1,dend2, L = 2) # 0.4727
 #' 
-#' dend2_corrected <- untangle_step_rotate_1side(dend2, dend1)
+#' dend2_corrected <- untangle_step_rotate_1side(dend2, dend1)[[1]]
 #' tanglegram(dend1,dend2_corrected) # FIXED.
 #' entanglement(dend1,dend2_corrected, L = 2) # 0
 #' 
@@ -443,9 +578,10 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
    if(missing(dend_heights_per_k)) dend_heights_per_k <- heights_per_k.dendrogram(best_dend) # since this function takes a looong time, I'm running it here so it will need to run only once!	
    
    
+   direction <- match.arg(direction)
    if(is.null(k_seq)) {
       # choose step direction:
-      if(direction[1] == "backward") {
+      if(direction == "backward") {
          k_seq <- n_leaves:2
       } else { # forward
          k_seq <- 2:n_leaves
@@ -469,7 +605,7 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
       # this combination is only useful if we have a tree for which there are only a few rotations which are useful
    }
    
-   return(best_dend)	
+   return(dendlist(best_dend = best_dend, dend2_fixed = dend2_fixed))
 }
 
 
@@ -504,7 +640,7 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
 #' If k_seq is not NULL, then it overrides "direction".
 #' 
 #' @param max_n_iterations integer. The maximal number of times to switch between optimizing one tree with another.
-#' @param print_times logicla (TRUE), should we print how many times we switched between rotating the two trees?
+#' @param print_times logical (TRUE), should we print how many times we switched between rotating the two trees?
 #' @param k_seq a sequence of k clusters to go through for improving 
 #' dend1. If NULL (default), then we use the "direction" parameter.
 #' @param ... not used
@@ -518,8 +654,8 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
 #' @examples
 #' 
 #' \dontrun{
-#' dend1 <- as.dendrogram(hclust(dist(USArrests[1:20,])))
-#' dend2 <- as.dendrogram(hclust(dist(USArrests[1:20,]), method = "single"))
+#' dend1 <- USArrests[1:20,] %>% dist %>% hclust %>% as.dendrogram
+#' dend2 <- USArrests[1:20,] %>% dist %>% hclust(method = "single") %>% as.dendrogram
 #' set.seed(3525)
 #' dend2 <- shuffle(dend2)
 #' tanglegram(dend1,dend2, margin_inner=6.5)
@@ -546,13 +682,14 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
                                        k_seq = NULL,...) {
    # this function gets two dendgrams, and orders dend1 and 2 until a best entengelment is reached.
    
+   direction <- match.arg(direction)
    
    dend1_heights_per_k <- heights_per_k.dendrogram(dend1)
    dend2_heights_per_k <- heights_per_k.dendrogram(dend2)
    
    # Next, let's try to improve upon this tree using a forwared rotation of our tree:
-   dend1_better <- untangle_step_rotate_1side(dend1, dend2, L = L,dend_heights_per_k=dend1_heights_per_k, direction = direction, k_seq= k_seq) 
-   dend2_better <- untangle_step_rotate_1side(dend2, dend1_better, L = L,dend_heights_per_k=dend2_heights_per_k, direction = direction, k_seq= k_seq) 
+   dend1_better <- untangle_step_rotate_1side(dend1, dend2, L = L,dend_heights_per_k=dend1_heights_per_k, direction = direction, k_seq= k_seq)[[1]]
+   dend2_better <- untangle_step_rotate_1side(dend2, dend1_better, L = L,dend_heights_per_k=dend2_heights_per_k, direction = direction, k_seq= k_seq)[[1]]
    
    entanglement_new <- entanglement(dend1_better, dend2_better, L = L) 
    entanglement_old <- entanglement_new+1
@@ -563,7 +700,7 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
       entanglement_old <- entanglement_new
       
       dend1_better_loop <- untangle_step_rotate_1side(dend1_better, dend2_better, L = L,
-                                                      dend_heights_per_k=dend1_heights_per_k, direction = direction, k_seq= k_seq) 
+                                                      dend_heights_per_k=dend1_heights_per_k, direction = direction, k_seq= k_seq)[[1]]
       # if the new dend1 is just like we just had - then we can stop the function since we found the best solution - else - continue
       if(identical(dend1_better_loop, dend1_better)) {
          break;
@@ -573,7 +710,7 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
       
       # if the new dend2 is just like we just had - then we can stop the function since we found the best solution - else - continue
       dend2_better_loop <- untangle_step_rotate_1side(dend2_better, dend1_better, L = L,
-                                                      dend_heights_per_k=dend2_heights_per_k, direction = direction, k_seq= k_seq) 
+                                                      dend_heights_per_k=dend2_heights_per_k, direction = direction, k_seq= k_seq)[[1]]
       if(identical(dend2_better_loop, dend2_better)) {
          break;
       } else {
@@ -585,9 +722,9 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
    }
    
    # identical(1,1+.00000000000000000000000001) # T
-   if(print_times) cat("We ran untangle ", times, " times\n")
+   if(print_times) cat("\nWe ran untangle ", times, " times\n")
    
-   return(list(dend1 = dend1_better, dend2 = dend2_better))	
+   return(dendlist(dend1 = dend1_better, dend2 = dend2_better))	
 }
 
 
@@ -667,7 +804,7 @@ untangle_intercourse <- function(brother_1_dend1, brother_1_dend2,
    children_1 <- untangle_step_rotate_2side(brother_1_dend1,sister_2_dend2, L = L) 
    children_2 <- untangle_step_rotate_2side(sister_2_dend1,brother_1_dend2, L = L) 
    
-   list(children_1, children_2)
+   dendlist(children_1, children_2)
 }
 
 entanglement_return_best_brother <- function(brother_1_dend1, brother_1_dend2, 
@@ -677,9 +814,9 @@ entanglement_return_best_brother <- function(brother_1_dend1, brother_1_dend2,
    
    if( entanglement(brother_1_dend1, brother_1_dend2, L = L) <
           entanglement(brother_2_dend1, brother_2_dend2, L = L)  ) {
-      return(list(brother_1_dend1, brother_1_dend2))
+      return(dendlist(brother_1_dend1, brother_1_dend2))
    } else {
-      return(list(brother_2_dend1, brother_2_dend2))
+      return(dendlist(brother_2_dend1, brother_2_dend2))
    }
 }
 
@@ -692,7 +829,7 @@ untangle_intercourse_evolution <- function(intercourse, L = 1) {
 }
 
 
-untangle_evolution<- function(brother_1_dend1, brother_1_dend2, 
+untangle_evolution <- function(brother_1_dend1, brother_1_dend2, 
                               sister_2_dend1, 	sister_2_dend2, L = 1) 
 {
    intercourse <- untangle_intercourse(brother_1_dend1, brother_1_dend2, 
@@ -756,7 +893,7 @@ untangle_best_k_to_rotate_by_2side_backNforth <- function(dend1, dend2, times_to
    # identical(1,1+.00000000000000000000000001) # T
    if(print_times) cat("We ran untangle_best_k_to_rotate_by_2side_backNforth ", counter, " times")
    
-   return(list(dend1 = dend1, dend2 = dend2))	
+   return(dendlist(dend1 = dend1, dend2 = dend2))	
 }
 
 
@@ -1052,3 +1189,119 @@ if(F){
 #    c(x[ord1 == ord_of_clusters[1]],x[ord1 == ord_of_clusters[2]],x[ord1 == ord_of_clusters[3]])
 #    order.weights.by.cluster.order(x, ord1, ord_of_clusters)	
 # }
+
+
+
+
+
+
+
+
+
+#' @title Tries to run DendSer on a dendrogram
+#' @export
+#' @description
+#' Implements dendrogram seriation.
+#' The function tries to turn the dend into hclust, on 
+#' which it runs \link[DendSer]{DendSer}.
+#' 
+#' Also, if a distance matrix is missing, it will try
+#' to use the \link{cophenetic} distance.
+#' @param dend An object of class dendrogram
+#' @param ser_weight Used by cost function to evaluate
+#'  ordering. For cost=costLS, this is a vector of
+#'   object weights. Otherwise is a dist or symmetric matrix.
+#' passed to DendSer.
+#' If it is missing, the cophenetic distance is used instead.
+#' @param ... parameters passed to \link[DendSer]{DendSer}
+#' @return Numeric vector giving an optimal dendrogram order
+#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
+#' \link{untangle_DendSer} 
+#' @examples
+#' \dontrun{
+#' require(DendSer) # already used from within the function
+#' hc <- hclust(dist(USArrests[1:4,]), "ave")
+#' dend <- as.dendrogram(hc)
+#' DendSer.dendrogram(dend)
+#' }
+DendSer.dendrogram <- function(dend, ser_weight, ...) {
+   h <- as.hclust(dend)
+   if(missing(ser_weight)) ser_weight <- cophenetic(dend)
+   require(DendSer)
+   DendSer(h = h, ser_weight = ser_weight,...)
+}
+
+
+#' @title Rotates dend based on DendSer
+#' @export
+#' @description
+#' Rotates a dendrogram based on its seriation
+#' 
+#' The function tries to turn the dend into hclust using
+#' \link{DendSer.dendrogram} (based on \link[DendSer]{DendSer})
+#' 
+#' Also, if a distance matrix is missing, it will try
+#' to use the \link{cophenetic} distance.
+#' @param dend An object of class dendrogram
+#' @param ser_weight Used by cost function to evaluate
+#'  ordering. For cost=costLS, this is a vector of
+#'   object weights. Otherwise is a dist or symmetric matrix.
+#' passed to \link{DendSer.dendrogram} and from
+#' there to \link[DendSer]{DendSer}.
+#' 
+#' If it is missing, the cophenetic distance is used instead.
+#' @param ... parameters passed to \link[DendSer]{DendSer}
+#' @return Numeric vector giving an optimal dendrogram order
+#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
+#' \link{untangle_DendSer} 
+#' @examples
+#' \dontrun{
+#' require(DendSer) # already used from within the function
+
+#' dend <- USArrests[1:4,] %>% dist %>% hclust("ave") %>% as.dendrogram
+#' DendSer.dendrogram(dend)
+#' 
+#' tanglegram(dend, rotate_DendSer(dend))
+#' 
+#' }
+rotate_DendSer <- function(dend, ser_weight, ...) {
+   ord <- tryCatch(DendSer.dendrogram(dend, ser_weight = ser_weight), error = function(e) seq_len(nleaves(dend)))
+#    print(ord)
+   rotate(dend, ord)
+}
+
+#' @title Tries to run DendSer on a dendrogram
+#' @export
+#' @description
+#' The function tries to turn the dend into hclust.
+#' It then uses the \link{cophenetic} distance matrix
+#' for optimizing the tree's rotation.
+#' 
+#' This is a good (and fast) starting point for link{untangle_step_rotate_2side}
+#' @param dend An object of class \link{dendlist}
+#' @param ... NOT USED
+#' @return A dendlist object with ordered dends
+#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
+#' \link{untangle_DendSer} 
+#' @examples
+#' \dontrun{
+#' set.seed(232)
+#' ss <- sample(1:150, 20)
+#' dend1 <- iris[ss,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+#' dend2 <- iris[ss,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
+#' dend12 <- dendlist(dend1, dend2)
+#' 
+#' # bad solutions
+#' dend12 %>% tanglegram
+#' dend12 %>% untangle("step2") %>% tanglegram
+#' dend12 %>% untangle_DendSer %>% tanglegram
+#' # but the combination is quite awsome:
+#' dend12 %>% untangle_DendSer %>% untangle("step2") %>% tanglegram
+#' }
+untangle_DendSer <- function(dend, ...) {
+   dendlist(
+      rotate_DendSer(dend[[1]]),
+      rotate_DendSer(dend[[2]])
+      )
+}
+

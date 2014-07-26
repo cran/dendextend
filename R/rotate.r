@@ -130,7 +130,8 @@ rotate <- function(x, order,...) {UseMethod("rotate")}
 
 rotate.default <- function(x, order, ...) {stop("object x must be a dendrogram/hclust/phylo object")}
 
-#' @S3method rotate dendrogram
+# ' @S3method rotate dendrogram
+#' @export
 rotate.dendrogram <- function(x, order, ...)
 {
    if(missing(order)) { # if order is missing - return the same tree.
@@ -162,7 +163,8 @@ rotate.dendrogram <- function(x, order, ...)
 }
 
 
-#' @S3method rotate hclust
+# ' @S3method rotate hclust
+#' @export
 rotate.hclust <- function(x, order,...)
 {   
    x_dend <- as.dendrogram(x)
@@ -173,17 +175,20 @@ rotate.hclust <- function(x, order,...)
 }
 
 
-#' @S3method rotate phylo
+# ' @S3method rotate phylo
+#' @export
 rotate.phylo <- function(x, ...) {
 	# require(ape)
 	ape::rotate(phy=x, ...)
 }
 
 
-#' @S3method sort dendrogram
+# ' @S3method sort dendrogram
+#' @export
 sort.dendrogram <- function(x, decreasing = FALSE,...) {rotate(x, order(labels(x),decreasing =decreasing ,...))}
 
-#' @S3method sort hclust
+# ' @S3method sort hclust
+#' @export
 sort.hclust <- function(x, decreasing = FALSE,...) {rotate(x, order(labels(x),decreasing =decreasing ,...))}
 
 
@@ -241,6 +246,98 @@ rev.hclust <- function(x, ...) {
 # 
 
 #
+
+
+
+
+
+
+
+#' @title Interactively rotate a tree object
+#' @export
+#' @description 
+#' Lets te user click a plot of dendrogram
+#' and rotates the tree based on the location of the click.
+#' @aliases 
+#' click_rotate.default
+#' click_rotate.dendrogram
+#' @usage
+#' click_rotate(x, ...)
+#' 
+#' \method{click_rotate}{dendrogram}(x, plot = TRUE, plot_after = plot, horiz = FALSE, continue = FALSE, ...)
+#' 
+#' @description
+#' Code for mouse selection of (sub-)cluster to be rotated
+#' 
+#' @param x a tree object (either a \code{dendrogram} or \code{hclust})
+#' @param plot (logical) should the dendrogram first be plotted.
+#' @param plot_after (logical) should the dendrogram be plotted after
+#' the rotation?
+#' @param horiz logical. Should the plot be normal or horizontal?
+#' @param continue logical. If TRUE, allows the user to keep
+#' clicking the plot until a click is made on the labels.
+#' @param ... parameters passed to the plot
+#' 
+#' @author Andrej-Nikolai Spiess, Tal Galili
+#' @return A rotated tree object
+#' @seealso \code{\link{rotate.dendrogram}}
+#' @examples
+#' # create the dend:
+#' dend <- USArrests %>% dist %>% hclust("ave") %>%  
+#' as.dendrogram %>% color_labels
+#' 
+#' \dontrun{
+#' # play with the rotation once
+#' dend <- click_rotate(dend)
+#' dend <- click_rotate(dend, horiz = TRUE)
+#' # keep playing with the rotation:
+#' while(TRUE) dend <- click_rotate(dend)
+#' # the same as
+#' dend <- click_rotate(dend, continue = TRUE)
+#' }
+#' 
+click_rotate <- function(x, ...) {UseMethod("click_rotate")}
+
+click_rotate.default <- function(x, ...) {stop("object x must be a dendrogram/hclust/phylo object")}
+
+# ' @S3method click_rotate dendrogram
+#' @export
+click_rotate.dendrogram <- function(x, plot = TRUE, plot_after = plot, horiz = FALSE, continue = FALSE, ...)
+{
+   if(plot) plot(x, horiz = horiz, ...)
+   
+   labels_x <- labels(x) 
+   order_x <- order.dendrogram(x)
+   number_of_leaves <- length(order_x)
+   
+   only_once <- !continue
+   continue <- TRUE
+   
+   while (isTRUE(continue)) {
+      cat("Please click on top branch of cluster to be rotated...\n")
+      if(!only_once) cat("Clicking on the leaf labels will exit...\n\n")
+      LOC <- locator(1)
+      X <- ifelse(horiz, round(LOC$y), round(LOC$x))
+      Y <- ifelse(horiz, LOC$x, LOC$y)       
+      CLUSTERS <- cutree(x, h = Y, order_clusters_as_data = FALSE)
+      order <- 1:length(CLUSTERS)
+      CLUSNUM <- CLUSTERS[X]
+      SEL <- which(CLUSTERS == CLUSNUM)
+      order[SEL] <- rev(order[SEL])
+      
+      x <- rotate(x, order)
+      if(plot_after) plot(x, horiz = horiz, ...)
+      
+      if (Y < 0 | only_once) continue <- FALSE      
+   }
+   
+   cat("Done rotating.\n")
+   
+   return(x)
+}
+
+
+
 
 
 

@@ -1,0 +1,279 @@
+# Copyright (C) Tal Galili
+#
+# This file is part of dendextend.
+#
+# dendextend is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# dendextend is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  A copy of the GNU General Public License is available at
+#  http://www.r-project.org/Licenses/
+#
+
+
+
+#' @title Set (/update) features to a dendrogram
+#' @export
+#' @aliases 
+#' set.dendrogram
+#' set.dendlist
+#'
+#' @usage 
+#' 
+#' set(object, ...)
+#' 
+#' \method{set}{dendrogram}(object,
+#'    what = c("labels",
+#'             "labels_colors",
+#'             "labels_cex",
+#'             "leaves_pch",
+#'             "leaves_cex",
+#'             "leaves_col",
+#'             "hang_leaves",
+#'             "branches_k_color",
+#'             "branches_col",
+#'             "branches_lwd",
+#'             "branches_lty",
+#'             "by_labels_branches_col",
+#'             "by_labels_branches_lwd",
+#'             "by_labels_branches_lty",
+#'             "clear_branches",
+#'             "clear_leaves"
+#'    ),
+#'    value, ...)
+#'    
+#' \method{set}{dendlist}(object, ..., which)
+#'
+#' @description
+#' a master function for updating various attributes and 
+#' features of dendrogram objects.
+#' 
+#' @param object a tree (\link{dendrogram}, or \link{dendlist})
+#' @param what a character indicating what is the property of
+#' the tree that should be set/updated. (see the usage and the example section
+#' for the different options)
+#' @param value an object with the value to set in the tree.
+#' (the type of the value depends on the "what")
+#' @param ... passed to the specific function for more options.
+#' @param which an integer vector indicating, in the case "object" is
+#' a dendlist, on which of the trees should the modification be performed.
+#' If missing - the change will be performed on all of objects in the dendlist.
+#' 
+#' @details
+#' This is a wrapper function for many of the main tasks we 
+#' might wish to perform on a dendrogram before plotting.
+#' 
+#' The options of by_labels_branches_col, by_labels_branches_lwd, by_labels_branches_lty
+#' have extra parameters: type, attr, TF_value. You can read more about them here:
+#' \link{branches_attr_by_labels}
+#' 
+#' 
+#' @seealso
+#' 
+#' \link{labels<-.dendrogram}, \link{labels_colors<-},
+#' \link{hang.dendrogram}, \link{color_branches},
+#' \link{assign_values_to_leaves_nodePar},
+#' \link{assign_values_to_branches_edgePar},
+#' \link{remove_branches_edgePar}, \link{remove_leaves_nodePar},
+#' \link{noded_with_condition}, \link{branches_attr_by_labels},
+#' \link{dendrogram}
+#' 
+#' @return 
+#' An updated dendrogram (or dendlist), with some change to
+#' the parameters of it
+#' 
+#' @examples
+#' 
+#' \dontrun{
+#' 
+#' set.seed(23235)
+#' ss <- sample(1:150, 10 )
+#' 
+#' # Getting the dend object
+#' dend <- iris[ss,-5] %>% dist %>% hclust %>% as.dendrogram
+#' dend %>% plot
+#' 
+#' dend %>% labels
+#' dend %>% set("labels", 1:10) %>% labels
+#' dend %>% set("labels", 1:10) %>% plot 
+#' dend %>% set("labels_color") %>% plot 
+#' dend %>% set("labels_col", c(1,2)) %>% plot # Works also with partial matching :)
+#' dend %>% set("labels_cex", c(1, 1.2)) %>% plot 
+#' dend %>% set("leaves_pch", NA) %>% plot 
+#' dend %>% set("leaves_pch", c(1:5)) %>% plot    
+#' dend %>% set("leaves_pch", c(19,19, NA)) %>% 
+#'    set("leaves_cex", c(1,2)) %>% plot 
+#' dend %>% set("leaves_pch", c(19,19, NA)) %>% 
+#'    set("leaves_cex", c(1,2)) %>%
+#'    set("leaves_col", c(1,1,2,2)) %>% 
+#'    plot 
+#' dend %>% set("hang") %>% plot 
+#' 
+#' dend %>% set("branches_k_col") %>% plot 
+#' dend %>% set("branches_k_col", c(1,2)) %>% plot 
+#' dend %>% set("branches_k_col", c(1,2,3), k=3) %>% plot
+#' dend %>% set("branches_k_col", k=3) %>% plot 
+#' 
+#' dend %>% set("branches_col", c(1,2, 1, 2, NA)) %>% plot
+#' dend %>% set("branches_lwd", c(2,1,2)) %>% plot
+#' dend %>% set("branches_lty", c(1,2,1)) %>% plot
+#' 
+#' #    clears all of the things added to the leaves
+#' dend %>% 
+#'    set("labels_color", c(19,19, NA)) %>% 
+#'    set("leaves_pch", c(19,19, NA))  %>%  # plot  
+#'    set("clear_leaves") %>% # remove all of what was done until this point
+#'    plot
+#' # Different order
+#' dend %>% 
+#'    set("leaves_pch", c(19,19, NA)) %>% 
+#'    set("labels_color", c(19,19, NA)) %>% 
+#'    set("clear_leaves") %>% plot
+#' 
+#' 
+#' # doing this without chaining (%>%) will NOT be fun:
+#' dend %>% 
+#'    set("labels", 1:10) %>%
+#'    set("labels_color") %>%
+#'    set("branches_col", c(1,2, 1, 2, NA)) %>%
+#'    set("branches_lwd", c(2,1,2)) %>%
+#'    set("branches_lty", c(1,2,1)) %>%
+#'    set("hang") %>%
+#'    plot 
+#' 
+#' #----------------------------
+#' # Examples for: by_labels_branches_col, by_labels_branches_lwd, by_labels_branches_lty
+#' 
+#' old_labels <- labels(dend)
+#' dend %>% 
+#'    set("labels", seq_len(nleaves(dend))) %>% 
+#'    set("by_labels_branches_col", c(1:4, 7)) %>% 
+#'    set("by_labels_branches_lwd", c(1:4, 7)) %>% 
+#'    set("by_labels_branches_lty", c(1:4, 7)) %>% 
+#'    set("labels", old_labels) %>% 
+#'    plot
+#' 
+#' dend %>% 
+#'    set("labels", seq_len(nleaves(dend))) %>% 
+#'    set("by_labels_branches_col", c(1:4, 7), type = "any", TF_values = c(4,2)) %>% 
+#'    set("by_labels_branches_lwd", c(1:4, 7), type = "all", TF_values = c(4,1)) %>% 
+#'    set("by_labels_branches_lty", c(1:4, 7), TF_values = c(4,1)) %>% 
+#'    plot
+#' 
+#' 
+#' 
+#' 
+#' 
+#' #----------------------------
+#' # A few dendlist examples:
+#' dendlist(dend,dend) %>% set("hang") %>% plot
+#' dendlist(dend,dend) %>% set("branches_k_col", k=3) %>% plot
+#' dendlist(dend,dend) %>% set("labels_col", c(1,2)) %>% plot
+#' 
+#' dendlist(dend,dend) %>% 
+#'    set("hang") %>%
+#'    set("labels_col", c(1,2), which = 1) %>% 
+#'    set("branches_k_col", k=3, which = 2) %>%
+#'    set("labels_cex", 1.2) %>%
+#'    plot
+#' 
+#' 
+#' #----------------------------
+#' # example of modifying the dendrogram in a heatmap:
+#' 
+#' library(gplots)
+#' data(mtcars)
+#' x  <- as.matrix(mtcars)
+#' rc <- rainbow(nrow(x), start=0, end=.3)
+#' cc <- rainbow(ncol(x), start=0, end=.3)
+#' 
+#' ##
+#' ##' demonstrate the effect of row and column dendrogram options
+#' ##
+#' require(magrittr)
+#' Rowv_dend <- x %>% dist %>% hclust %>% 
+#'    as.dendrogram %>% 
+#'    set("branches_k", k = 3) %>% 
+#'    set("branches_lwd", 2) %>%  rotate_DendSer
+#' Colv_dend <- t(x) %>% dist %>% hclust %>% 
+#'    as.dendrogram %>% 
+#'    set("branches_k", k = 3) %>% 
+#'    set("branches_lwd", 2) %>%  rotate_DendSer
+#' heatmap.2(x, Rowv = Rowv_dend, Colv = Colv_dend)  
+#' 
+#' 
+#' 
+#' 
+#' 
+#' }
+set <- function (object, ...) {
+   UseMethod("set")
+}
+
+
+#' @export
+set.dendrogram <- 
+   function(object,
+            what = c("labels",
+                     "labels_colors",
+                     "labels_cex",
+                     "leaves_pch",
+                     "leaves_cex",
+                     "leaves_col",
+                     "hang_leaves",
+                     "branches_k_color",
+                     "branches_col",
+                     "branches_lwd",
+                     "branches_lty",
+                     "by_labels_branches_col",
+                     "by_labels_branches_lwd",
+                     "by_labels_branches_lty",
+                     "clear_branches",
+                     "clear_leaves"
+            ),
+            value, ...){
+      what <- match.arg(what)
+      object <- switch(what, 
+                       #                     labels = dendextend:::`labels<-.dendrogram`(object, value = value)
+                       labels = `labels<-.dendrogram`(object, value = value, ...),
+                       labels_colors = `labels_colors<-`(object, value = value, ...),
+                       #      labels_colors = assign_values_to_leaves_nodePar(object, value, "lab.col", ...),
+                       labels_cex = assign_values_to_leaves_nodePar(object, value, "lab.cex", ...),
+                       leaves_pch = assign_values_to_leaves_nodePar(object, value, "pch", ...),
+                       leaves_cex =assign_values_to_leaves_nodePar(object, value, "cex", ...),
+                       leaves_col =assign_values_to_leaves_nodePar(object, value, "col", ...),
+                       hang_leaves = hang.dendrogram(dend = object, hang = ifelse(missing(value), .1, value),...),
+                       branches_k_color = color_branches(tree = object, col = value,  ...),
+                       branches_col = assign_values_to_branches_edgePar(object = object, value = value, edgePar = "col", ...),
+                       branches_lwd = assign_values_to_branches_edgePar(object = object, value = value, edgePar = "lwd", ...),
+                       branches_lty = assign_values_to_branches_edgePar(object = object, value = value, edgePar = "lty", ...),
+                       by_labels_branches_col = branches_attr_by_labels(object, labels = value, attr = "col", ...),
+                       by_labels_branches_lwd = branches_attr_by_labels(object, labels = value, attr = "lwd", ...),
+                       by_labels_branches_lty = branches_attr_by_labels(object, labels = value, attr = "lty", ...),
+                       clear_branches = remove_branches_edgePar(object, ...),
+                       clear_leaves = remove_leaves_nodePar(object, ...)
+      )
+      object
+   }
+
+
+
+# ' @S3method set dendlist
+#' @export
+set.dendlist <- function(object, ..., which) {
+   
+   if(missing(which)) which <- 1:length(object)
+   
+   for(i in which) {
+      object[[i]] <- set(object[[i]],...)      
+   }
+   object
+}
+
+

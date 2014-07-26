@@ -265,7 +265,7 @@ plotNode_horiz <- function (x1, x2, subtree, type, center, leaflab, dLeaf, nodeP
 #' @seealso \link{plot.dendrogram}, \link{tanglegram}
 #' @examples
 #' \dontrun{
-#' dend <- as.dendrogram(hclust(dist(USArrests[1:10,])))
+#' dend <- USArrests[1:10,] %>% dist %>% hclust %>% as.dendrogram
 #' 
 #' par(mfrow =c(1,2), mar = rep(6,4))
 #' plot_horiz.dendrogram(dend, side=FALSE) 
@@ -441,12 +441,14 @@ plot_horiz.dendrogram <- function (x,
 #' @aliases 
 #' tanglegram.default
 #' tanglegram.dendrogram
+#' tanglegram.dendlist
 #' tanglegram.hclust
 #' tanglegram.phylo
 #' dendbackback
-#' @description Counts the number of leaves in a tree (dendrogram or hclust).
+#' @description 
+#' Plots a tanglegram plot of a side by side trees.
 #' 
-#' @author Tal Galili, plannapus
+#' @author Tal Galili, Johan Renaudie
 #' 
 #' @usage
 #' tanglegram(tree1, ...)
@@ -486,12 +488,16 @@ plot_horiz.dendrogram <- function (x,
 #'    cex_sub = cex_main,
 #'    ...)
 #' 
+#' \method{tanglegram}{dendlist}(tree1, which = c(1L,2L), ...)
+#' 
 #' \method{tanglegram}{hclust}(tree1, ...)
 #' 
 #' \method{tanglegram}{phylo}(tree1, ...)
 #' 
-#' @param tree1 tree object (dendrogram/hclust/phylo), plotted on the left
+#' @param tree1 tree object (dendrogram/dendlist/hclust/phylo), plotted on the left
 #' @param tree2 tree object (dendrogram/hclust/phylo), plotted on the right
+#' @param which an integer vector of length 2, indicating
+#' which of the trees in the dendlist object should be plotted
 #' @param sort logical (FALSE). Should the dendrogram's labels be "sorted"?
 #' (might give a better tree in some cases).
 #' @param color_lines a vector of colors for the lines connected the labels.
@@ -562,21 +568,28 @@ plot_horiz.dendrogram <- function (x,
 #' Notice that tanglegram does not "resize" well. In case you are resizing your
 #' window you would need to re-run the function.
 #' 
-#' @return An invisible list, with two trees after being
+#' @return An invisible \link{dendlist}, with two trees after being
 #' modified during the creation of the tanglegram.
 #' @source
-#' The function is based on code from plannapus, after major revisions. See:
+#' The function is based on code from Johan Renaudie (plannapus), after major revisions. See:
 #' \url{http://stackoverflow.com/questions/12456768/duelling-dendrograms-in-r-placing-dendrograms-back-to-back-in-r}
+#' 
+#' As far as I could tell, this code was originally inspired by Dylan Beaudette
+#' function \code{dueling.dendrograms} from the sharpshootR package:
+#' \url{http://cran.at.r-project.org/web/packages/sharpshootR/}
+#' tanglegram
 #' @seealso \link{remove_leaves_nodePar}, \link{plot_horiz.dendrogram}, \link{rank_branches},
 #' \link{hang.dendrogram}
 #' @examples
 #' \dontrun{
 #' set.seed(23235)
 #' ss <- sample(1:150, 10 )
-#' hc1 <- hclust(dist(iris[ss,-5]), "com")
-#' hc2 <- hclust(dist(iris[ss,-5]), "single")
-#' dend1 <- as.dendrogram(hc1)
-#' dend2 <- as.dendrogram(hc2)
+#' dend1 <- iris[ss,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+#' dend2 <- iris[ss,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
+#' dend12 <- dendlist(dend1, dend2)
+#' 
+#' dend12 %>% tanglegram
+#' 
 #' tanglegram(dend1 , dend2)
 #' tanglegram(dend1 , dend2, sort = TRUE)
 #' tanglegram(dend1 , dend2, remove_nodePar = TRUE)
@@ -604,14 +617,31 @@ tanglegram <- function (tree1, ...) {UseMethod("tanglegram")}
 
 tanglegram.default <- function (tree1, ...) {stop("No default function for tanglegram - must use a dendrogram/hclust/phylo object")}
 
-#' @S3method tanglegram hclust
+# ' @S3method tanglegram hclust
+#' @export
 tanglegram.hclust <- function(tree1, ...) {tanglegram.dendrogram(tree1 = tree1, ...)}
 
-#' @S3method tanglegram phylo
+# ' @S3method tanglegram phylo
+#' @export
 tanglegram.phylo <- function(tree1, ...) {tanglegram.dendrogram(tree1 = tree1, ...)}
 
+# ' @S3method tanglegram dendlist
+#' @export
+tanglegram.dendlist <- function(tree1, which = c(1L,2L), ...) {
+   # many things can go wrong here (which we might wish to fix):
+   # we could get a dendlist with a length of 1 - in which case, we can't plot
+   if(length(tree1) == 1) stop("Your dendlist has only 1 dendrogram - a tanglegram can not be plotted")
+   # we could get a dendlist with a length of >2 - in which case, should we only plot the first two items?
+   if(all(which %in% seq_len(length(tree1)))) {
+      tanglegram.dendrogram(tree1[[which[1]]], tree1[[which[2]]], ...)
+   } else {
+      stop("You are trying to plot trees which are outside the range of trees in your dendlist")
+   }   
+}
 
-#' @S3method tanglegram dendrogram
+
+# ' @S3method tanglegram dendrogram
+#' @export
 tanglegram.dendrogram <- function(tree1,tree2 , sort = FALSE, 
                                   color_lines = "darkgrey", 
                                   lwd = 3.5,
@@ -717,6 +747,7 @@ tanglegram.dendrogram <- function(tree1,tree2 , sort = FALSE,
    ord_arrow <- cbind((1:l)[order(order.dendrogram(tree1))],(1:l)[order(order.dendrogram(tree2))]) 
    
    # Set the layout of the plot elements
+   def_par <- par(no.readonly = TRUE) # save default, for resetting...
    layout(matrix(1:3,nrow=1),widths=columns_width)
       
    #################
@@ -768,10 +799,12 @@ tanglegram.dendrogram <- function(tree1,tree2 , sort = FALSE,
                          #         leaflab="none",        
                          yaxs = "r", xaxs = "i",...)
 
+   # layout(matrix(1)) # not required
+   par(def_par)  #- reset to default
+
    
    
-   
-   return(invisible(list(tree1 = tree1, tree2 = tree2)))
+   return(invisible(dendlist(tree1 = tree1, tree2 = tree2)))
 }
 
 

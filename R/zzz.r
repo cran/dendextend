@@ -292,7 +292,7 @@ dendextendWelcomeMessage <- function(){
 # 4) use:
 #### tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", gs_quality="ebook") 
 # tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf") 
-###   compacted ‘dendextend-tutorial.pdf’ from 961Kb to 737Kb
+###   compacted 'dendextend-tutorial.pdf' from 961Kb to 737Kb
 
 # For checking:
 # 1) get qpdf
@@ -306,17 +306,64 @@ dendextendWelcomeMessage <- function(){
 # options(repos=c("http://cran.rstudio.com", "http://www.stats.ox.ac.uk/pub/RWin" ))
 # to D:\R\R-devel\etc\Rprofile.site
 
+
+
+# 
+# # Run once:
+# shell('set PATH=%PATH%;"C:\\Program%20Files%20(x86)\\Git\\bin"', intern = TRUE)
+# shell("echo %PATH% ", intern= TRUE)
+# 
+# system('set PATH=%PATH%;C:\\xampp\\php')
+# 
+# 
+# 
+# # Creating a changelog using git
+# First make sure git is in the path. Run the 
+# following using cmd.exe, as admin:
+# setx PATH "C:\\Program Files (x86)\\Git\\bin"
+# 
+# Then - run the script to create the ChangeLog before shipping the package.
+# # http://stackoverflow.com/questions/10330425/how-do-i-export-a-git-log-to-a-text-file
+# # http://stackoverflow.com/questions/3523534/good-ways-to-manage-a-changelog-using-git
+# # http://www.commandlinefu.com/commands/view/12420/generate-a-change-log-with-git
+# shell("git log --decorate > ChangeLog", intern = T)
+
+# Modify it using: http://git-scm.com/book/en/Git-Basics-Viewing-the-Commit-History
+#         http://stackoverflow.com/questions/9007181/custom-log-format-omits-newline-at-end-of-output
+# shell('git log --graph --stat --date=iso > ChangeLog', intern = TRUE)
+# use this:
+# shell('git log --graph --stat --date=short --pretty=format:"%ad(%an) %s |%h" > ChangeLog', intern = TRUE)
+# 
+# system.PATH()
+# shell("path")
+
+
+# shell("echo %PATH% ", intern= TRUE)
+# require(rmarkdown)
+# render("NEWS",clean = TRUE,output_format = "html_document")
+
+
+
+
+
+
+
+
 # when a function is renamed, its document in man must be removed - otherwise it may cause problems with the built check (it will try to run the code in the example, and will fail.)
 # When all is done, run:
 # require(devtools)
 # check()
 # browseURL(tempdir())
 ### http://www.rstudio.com/ide/docs/packages/build_options
+# 
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-examples --no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes ", args = "--no-build-vignettes",  cran = FALSE, cleanup = FALSE)
 # check(args="--as-cran")
 # check("D:/Dropbox/aaaa good R code/AA - My packages/dendextend", args="--as-cran")
 #                 Thanks to: http://stackoverflow.com/questions/10017702/r-cmd-check-options-for-more-rigorous-testing-2-15-0
-# file.copy("NEWS", "NEWS.md")
+
+
+# shell('git log --graph --stat --date=short --pretty=format:"%ad(%an) %s |%h" > ChangeLog', intern = TRUE)
+# file.copy("NEWS", "NEWS.md",overwrite = TRUE)
 # build_win(version="R-devel")
 # release()

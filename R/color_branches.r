@@ -17,12 +17,11 @@
 #
 
 
-
-
 #' @title Color tree's branches according to sub-clusters
 #' @export
 #' @aliases
 #' colour_branches
+#' branches_color
 #' @description
 #' This function is for dendrogram and hclust objects.
 #' This function colors both the terminal leaves of a tree's cluster and the edges 
@@ -58,7 +57,7 @@
 #' @param groupLabels If TRUE add numeric group label - see Details for options
 #' @param ... ignored.
 #' @return a tree object of class dendrogram.
-#' @author Tal Galili, extensively based on code by jefferis
+#' @author Tal Galili, extensively based on code by Gregory Jefferis
 #' @source
 #' This function is a derived work from the \code{\link[dendroextras]{color_clusters}}
 #' function, with some ideas from the \code{\link[dendroextras]{slice}} function -
@@ -75,7 +74,7 @@
 #' @examples
 #' 
 #' \dontrun{
-#' dend <- as.dendrogram(hclust(dist(USArrests), "ave"))
+#' dend <- USArrests %>% dist %>% hclust(method = "ave") %>% as.dendrogram
 #' d1=color_branches(dend,5, col = c(3,1,1,4,1))
 #' plot(d1) # selective coloring of branches :)
 #' d2=color_branches(d1,5)
@@ -109,6 +108,7 @@
 #' dend_iris <- as.dendrogram(hc_iris)
 #' dend_iris=color_branches(dend_iris,k=3)
 #' 
+#' require(colorspace)
 #' labels_colors(dend_iris) <-
 #'  rainbow_hcl(3)[sort_levels_values(
 #'  as.numeric(iris[,5])[order.dendrogram(dend_iris)]
@@ -169,23 +169,26 @@
 #' 
 #' }
 #' 
-color_branches<-function(tree,k=NULL,h=NULL,col,groupLabels=NULL,...){
+color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, ...){
    
    if(missing(col)) {
-      if(require(colorspace)) {
-         col <- function(n) rainbow_hcl(n, c=90, l=50)
-      } else {
-         col <- rainbow
-      }      
-   }   
+      col <- if(require(colorspace))
+         function(n) rainbow_hcl(n, c=90, l=50) else
+            col <- rainbow
+   }      
+   
+   if(is.null(k) & is.null(h)) {
+      warning("k (number of clusters) is missing, using the tree size as a default")      
+      k <- nleaves(tree)
+   }
    
    if(!is.dendrogram(tree) && !is.hclust(tree)) stop("tree needs to be either a dendrogram or an hclust object")
-   g <- dendextend::cutree(tree,k=k,h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
-   if(is.hclust(tree)) tree=as.dendrogram(tree)
+   g <- dendextend::cutree(tree, k=k, h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
+   if(is.hclust(tree)) tree <- as.dendrogram(tree)
    
    k <- max(g)
    if(is.function(col)) {
-      col=col(k)
+      col <- col(k)
    } else {
       if(length(col) < k) {
          #          stop("Must give the same number of colors as number of clusters")
@@ -215,7 +218,7 @@ color_branches<-function(tree,k=NULL,h=NULL,col,groupLabels=NULL,...){
          stop("Must give same number of group labels as clusters")
    }
    
-   addcol<-function(dend_node,col) {      
+   addcol <- function(dend_node,col) {      
       if(is.null(attr(dend_node, "edgePar"))) {
          attr(dend_node,'edgePar') <- list(col=col)
       } else {            
@@ -227,12 +230,12 @@ color_branches<-function(tree,k=NULL,h=NULL,col,groupLabels=NULL,...){
       unclass(dend_node)
    }
    
-   descendTree<-function(sd){
+   descendTree <- function(sd){
       groupsinsubtree=unique(g[labels(sd)])
       if(length(groupsinsubtree)>1){
          # keep descending 
          for(i in seq(sd))
-            sd[[i]]<-descendTree(sd[[i]])
+            sd[[i]] <- descendTree(sd[[i]])
       } else {
          # else assign Colors
          # sd=dendrapply(sd,addcol,col[groupsinsubtree],groupsinsubtree)
@@ -256,8 +259,11 @@ color_branches<-function(tree,k=NULL,h=NULL,col,groupLabels=NULL,...){
 # plot(tree)
 
 # nice idea - make this compatible with colour/color
-colour_branches<-color_branches
+#' @export
+colour_branches <- color_branches
 
+#' @export
+branches_color <- color_branches
 
 
 
@@ -382,7 +388,7 @@ color_labels_by_labels <- function(tree, labels, col, warn=FALSE, ...) {
 #' 
 #' } 
 #' 
-color_labels<-function(tree,k=NULL,h=NULL,labels, col,warn =FALSE,...){
+color_labels <- function(tree,k=NULL,h=NULL,labels, col,warn =FALSE,...){
 
    if(!missing(labels)) return(color_labels_by_labels(tree=tree, labels=labels, col=col, warn=warn, ...) )     
    
@@ -429,7 +435,7 @@ color_labels<-function(tree,k=NULL,h=NULL,labels, col,warn =FALSE,...){
 
 
 # nice idea - make this compatible with colour/color
-colour_labels<-color_labels
+colour_labels <- color_labels
 
 
 
@@ -458,13 +464,13 @@ colour_labels<-color_labels
 #' @aliases leaf_colors
 #' @seealso \code{\link[dendroextras]{slice},\link{color_branches}}
 #' @examples
-#' dend <- as.dendrogram(hclust(dist(USArrests), "ave"))
+#' dend <- USArrests %>% dist %>% hclust(method = "ave") %>% as.dendrogram
 #' d5=color_branches(dend,5)
 #' leaf_Colors(d5)
-leaf_Colors<-function(d,col_to_return=c("edge",'node','label')){
+leaf_Colors <- function(d,col_to_return=c("edge",'node','label')){
    if(!inherits(d,'dendrogram')) stop("I need a dendrogram!")
    col_to_return=match.arg(col_to_return)
-   leaf_col<-function(n,col_to_return) {
+   leaf_col <- function(n,col_to_return) {
       if(is.leaf(n)) {
          col=switch(col_to_return,
                     edge=attr(n,'edgePar')$col,
@@ -478,4 +484,4 @@ leaf_Colors<-function(d,col_to_return=c("edge",'node','label')){
    unlist(dendrapply(d,leaf_col,col_to_return))
 }
 
-leaf_colors<-leaf_Colors
+leaf_colors <- leaf_Colors

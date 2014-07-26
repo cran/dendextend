@@ -46,7 +46,7 @@
 #' @examples
 #' \dontrun{
 #' 
-#' dend <- as.dendrogram(hclust(dist(USArrests[1:4,])))
+#' dend <- USArrests[1:4,] %>% dist %>% hclust %>% as.dendrogram
 #' order.dendrogram(dend) #  c(4L, 3L, 1L, 2L)
 #' 
 #' dend_changed <- dend
@@ -126,7 +126,7 @@ match_order_by_labels <- function(dend_change, dend_template , check_that_labels
 #' @examples
 #' \dontrun{
 #' 
-#' dend <- as.dendrogram(hclust(dist(USArrests[1:4,])))
+#' dend <- USArrests[1:4,] %>% dist %>% hclust %>% as.dendrogram
 #' order.dendrogram(dend) #  c(4L, 3L, 1L, 2L)
 #' 
 #' 
@@ -213,6 +213,7 @@ match_order_dendrogram_by_old_order <- function(dend_change, dend_template ,
 #' entanglement.dendrogram
 #' entanglement.hclust
 #' entanglement.phylo
+#' entanglement.dendlist
 #' @description 
 #' Measures the entanglement between two trees. 
 #' Entanglement is a measure between 1 (full entanglement) and 0 
@@ -222,9 +223,11 @@ match_order_dendrogram_by_old_order <- function(dend_change, dend_template ,
 #' 
 #' 
 #' @usage
-#' entanglement(tree1, tree2, ...) 
+#' entanglement(tree1, ...) 
 #' 
 #' \method{entanglement}{dendrogram}(tree1, tree2, L = 1.5, leaves_matching_method = c("labels", "order"),...)
+#' 
+#' \method{entanglement}{dendlist}(tree1, which = c(1L,2L), ...)
 #' 
 #' \method{entanglement}{hclust}(tree1, tree2, ...)
 #' 
@@ -232,6 +235,9 @@ match_order_dendrogram_by_old_order <- function(dend_change, dend_template ,
 #' 
 #' @param tree1 a tree object (of class dendrogram/hclust/phylo).
 #' @param tree2 a tree object (of class dendrogram/hclust/phylo).
+#' @param which an integer vector of length 2, indicating
+#' which of the trees in a dendlist object should have 
+#' their entanglement calculated
 #' @param L the distance norm to use for measuring the distance between the
 #' two trees. It can be any positive number, often one will want to
 #'  use 0, 1, 1.5, 2 (see 'details' for more).
@@ -271,12 +277,14 @@ match_order_dendrogram_by_old_order <- function(dend_change, dend_template ,
 #' @examples
 #' 
 #' \dontrun{
-#' hc1 <- hclust(dist(iris[,-5]), "com")
-#' hc2 <- hclust(dist(iris[,-5]), "single")
-#' dend1 <- as.dendrogram(hc1)
-#' dend2 <- as.dendrogram(hc2)
-#' tanglegram(dend1,dend2)
+#' dend1 <- iris[,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+#' dend2 <- iris[,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
+#' dend12 <- dendlist(dend1, dend2)
+#' tanglegram(dend12)
 #' 
+#' entanglement(dend12)
+#' entanglement(dend12, L = 0)
+#' entanglement(dend12, L = 0.25)
 #' entanglement(dend1,dend2, L = 0) # 1
 #' entanglement(dend1,dend2, L = 0.25) # 0.97
 #' entanglement(dend1,dend2, L = 1) # 0.93
@@ -310,20 +318,22 @@ match_order_dendrogram_by_old_order <- function(dend_change, dend_template ,
 #' 
 #' 
 #' }
-entanglement <- function (tree1, tree2, ...) { UseMethod("entanglement") }
+entanglement <- function (tree1, ...) { UseMethod("entanglement") }
 
 
 entanglement.default <- function (tree1, tree2,...) { stop("no default function for entanglement") }
 
 
-#' @S3method entanglement hclust
+# ' @S3method entanglement hclust
+#' @export
 entanglement.hclust <- function (tree1, tree2, ...) { 
    tree1 <- as.dendrogram(tree1)
    tree2 <- as.dendrogram(tree2)
    entanglement(tree1, tree2, ...)
 }
 
-#' @S3method entanglement phylo
+# ' @S3method entanglement phylo
+#' @export
 entanglement.phylo <- function (tree1, tree2,...) { 
    tree1 <- as.dendrogram(tree1)
    tree2 <- as.dendrogram(tree2)
@@ -331,7 +341,23 @@ entanglement.phylo <- function (tree1, tree2,...) {
 }
 
 
-#' @S3method entanglement dendrogram
+# ' @S3method entanglement dendlist
+#' @export
+entanglement.dendlist <- function(tree1, which = c(1L,2L), ...) {
+   # many things can go wrong here (which we might wish to fix):
+   # we could get a dendlist with a length of 1 - in which case, we can't plot
+   if(length(tree1) == 1) stop("Your dendlist has only 1 dendrogram - entanglement can not be calculated")
+   # we could get a dendlist with a length of >2 - in which case, should we only plot the first two items?
+   if(all(which %in% seq_len(length(tree1)))) {
+      entanglement.dendrogram(tree1[[which[1]]], tree1[[which[2]]], ...)
+   } else {
+      stop("You are trying to calculate the entanglement for trees which are outside the range of trees in your dendlist")
+   }   
+}
+
+
+# ' @S3method entanglement dendrogram
+#' @export
 entanglement.dendrogram <- function(tree1,tree2, L = 1.5, leaves_matching_method = c("labels", "order"),...) {
    # One day, one might think of other measures of entanglement.  
    # But for now, we have only one method ("cor.spearman").  Which is the 1-absolute value of the tanks of the values in the two dendrograms.
@@ -346,7 +372,8 @@ entanglement.dendrogram <- function(tree1,tree2, L = 1.5, leaves_matching_method
    n_leaves <- nleaves(tree1) # how many leaves do we have? (number of leaves)
    one_to_n_leaves <- seq_len(n_leaves)
    
-   if(leaves_matching_method[1] == "order") {   
+   leaves_matching_method <- match.arg(leaves_matching_method)
+   if(leaves_matching_method == "order") {   
       tree1_old_order <- order.dendrogram(tree1)
       order.dendrogram(tree1) <- one_to_n_leaves # change the leaves of tree1 to be 1:n	
       tree2 <- match_order_dendrogram_by_old_order(tree2	, tree1, tree1_old_order) 
