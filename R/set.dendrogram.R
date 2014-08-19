@@ -32,9 +32,13 @@
 #'    what = c("labels",
 #'             "labels_colors",
 #'             "labels_cex",
+#'             "labels_to_character",
 #'             "leaves_pch",
 #'             "leaves_cex",
 #'             "leaves_col",
+#'             "nodes_pch",
+#'             "nodes_cex",
+#'             "nodes_col",
 #'             "hang_leaves",
 #'             "branches_k_color",
 #'             "branches_col",
@@ -72,6 +76,31 @@
 #' The options of by_labels_branches_col, by_labels_branches_lwd, by_labels_branches_lty
 #' have extra parameters: type, attr, TF_value. You can read more about them here:
 #' \link{branches_attr_by_labels}
+#' 
+#' The "what" parameter" can accept the following options:
+#' 
+#' \itemize{
+#' \item{labels - set the labels (\link{labels<-.dendrogram})}
+#' \item{labels_colors - set the labels' colors (\link{color_labels})}
+#' \item{labels_cex - set the labels' size (\link{assign_values_to_leaves_nodePar})}
+#' \item{labels_to_character - set the labels' to be characters}
+#' \item{leaves_pch - set the leaves' point type (\link{assign_values_to_leaves_nodePar})}
+#' \item{leaves_cex - set the leaves' point size (\link{assign_values_to_leaves_nodePar})}
+#' \item{leaves_col - set the leaves' point color (\link{assign_values_to_leaves_nodePar})}
+#' \item{nodes_pch - set the nodes' point type (\link{assign_values_to_nodes_nodePar})}
+#' \item{nodes_cex - set the nodes' point size (\link{assign_values_to_nodes_nodePar})}
+#' \item{nodes_col - set the nodes' point color (\link{assign_values_to_nodes_nodePar})}
+#' \item{hang_leaves - hang the leaves (\link{hang.dendrogram})}
+#' \item{branches_k_color - color the branches (\link{color_branches})}
+#' \item{branches_col - set the color of branches (\link{assign_values_to_branches_edgePar}) }
+#' \item{branches_lwd - set the line width of branches (\link{assign_values_to_branches_edgePar}) }
+#' \item{branches_lty - set the line type of branches (\link{assign_values_to_branches_edgePar}) }
+#' \item{by_labels_branches_col - set the color of branches with specific labels (\link{branches_attr_by_labels}) }
+#' \item{by_labels_branches_lwd - set the line width of branches with specific labels (\link{branches_attr_by_labels}) }
+#' \item{by_labels_branches_lty - set the line type of branches with specific labels (\link{branches_attr_by_labels}) }
+#' \item{clear_branches - clear branches' attributes (\link{remove_branches_edgePar})}
+#' \item{clear_leaves - clear leaves' attributes (\link{remove_branches_edgePar})}
+#' }
 #' 
 #' 
 #' @seealso
@@ -196,7 +225,7 @@
 #' ##
 #' ##' demonstrate the effect of row and column dendrogram options
 #' ##
-#' require(magrittr)
+#' library(magrittr)
 #' Rowv_dend <- x %>% dist %>% hclust %>% 
 #'    as.dendrogram %>% 
 #'    set("branches_k", k = 3) %>% 
@@ -223,9 +252,13 @@ set.dendrogram <-
             what = c("labels",
                      "labels_colors",
                      "labels_cex",
+                     "labels_to_character",                     
                      "leaves_pch",
                      "leaves_cex",
                      "leaves_col",
+                     "nodes_pch",
+                     "nodes_cex",
+                     "nodes_col",
                      "hang_leaves",
                      "branches_k_color",
                      "branches_col",
@@ -238,16 +271,26 @@ set.dendrogram <-
                      "clear_leaves"
             ),
             value, ...){
+      if(missing(what)) {
+         if(dendextend_options("warn")) warning("'what' is missing, returning the dendrogram as is")      
+         return(object)
+      }
+
       what <- match.arg(what)
       object <- switch(what, 
                        #                     labels = dendextend:::`labels<-.dendrogram`(object, value = value)
                        labels = `labels<-.dendrogram`(object, value = value, ...),
-                       labels_colors = `labels_colors<-`(object, value = value, ...),
+                       labels_colors = color_labels(object, col = value, ...),
+                       #      labels_colors = `labels_colors<-`(object, value = value, ...),
                        #      labels_colors = assign_values_to_leaves_nodePar(object, value, "lab.col", ...),
                        labels_cex = assign_values_to_leaves_nodePar(object, value, "lab.cex", ...),
+                       labels_to_character = set(object, what = "labels", value = as.character(labels(object)), ...),                                              
                        leaves_pch = assign_values_to_leaves_nodePar(object, value, "pch", ...),
                        leaves_cex =assign_values_to_leaves_nodePar(object, value, "cex", ...),
                        leaves_col =assign_values_to_leaves_nodePar(object, value, "col", ...),
+                       nodes_pch = assign_values_to_nodes_nodePar(object, value, "pch", ...),
+                       nodes_cex =assign_values_to_nodes_nodePar(object, value, "cex", ...),
+                       nodes_col =assign_values_to_nodes_nodePar(object, value, "col", ...),
                        hang_leaves = hang.dendrogram(dend = object, hang = ifelse(missing(value), .1, value),...),
                        branches_k_color = color_branches(tree = object, col = value,  ...),
                        branches_col = assign_values_to_branches_edgePar(object = object, value = value, edgePar = "col", ...),

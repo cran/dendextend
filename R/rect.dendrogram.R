@@ -36,7 +36,6 @@
 #' @param border Vector with border colors for the rectangles.
 #' @param cluster Optional vector with cluster memberships as returned by 
 #' cutree(dend_obj, k = k), can be specified for efficiency if already computed.
-#' @param ... parameters passed to rect (such as lwd, lty, etc.)
 #' @param horiz logical (FALSE), indicating if the rectangles 
 #' should be drawn horizontally or not (for when using 
 #' plot(dend, horiz = TRUE) ) .
@@ -52,6 +51,20 @@
 #' When NULL (default), no text is displayed.
 #' @param text_cex a numeric (scalar) value of the text's cex value.
 #' @param text_col a (scalar) value of the text's col(or) value.
+#' @param xpd A logical value (or NA.), passed to \link{par}.
+#' Default is TRUE, in order to allow the rect to be below the labels.
+#' If FALSE, all plotting is clipped to the plot region, if TRUE,
+#' all plotting is clipped to the figure region, and if NA, all plotting 
+#' is clipped to the device region. See also \link{clip}.
+#' @param lower_rect a (scalar) value of how low should the lower part of the rect be.
+#' If missing, it will take the value of par("usr")[3L] (or par("usr")[2L], depending
+#' if horiz = TRUE or not), with also the width of the labels. (notice that we
+#' would like to keep xpd = TRUE if we want the rect to be after the labels!)
+#' You can use a value such as 0, to get the rect above the labels.
+#' 
+#' Notice that for a plot with small margins, it would be better to set this 
+#' parameter manually.
+#' @param ... parameters passed to rect (such as lwd, lty, etc.)
 #' @seealso
 #' \link{rect.hclust}, \link{order.dendrogram}, \link{cutree.dendrogram}
 #' @return 
@@ -90,7 +103,7 @@
 #' rect.dendrogram(dend,4, border = 4, lty = 2, lwd = 3, horiz = TRUE)
 rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, border = 2, 
           cluster = NULL, horiz = FALSE, density = NULL, angle = 45, 
-          text = NULL, text_cex = 1, text_col =1 , ...) 
+          text = NULL, text_cex = 1, text_col = 1 , xpd = TRUE, lower_rect, ...) 
 {
    if(!is.dendrogram(tree)) stop("x is not a dendrogram object.")
 
@@ -99,8 +112,12 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
    
    # In tree_heights I am removing the first element
    # in order to be consistant with rect.hclust
-   tree_heights <- heights_per_k.dendrogram(tree)[-1]
-   tree_order <- order.dendrogram(tree)   
+   tree_heights <- heights_per_k.dendrogram(tree)[-1] # this is NOT really tree heights, but the height for which you need to cut in order to cut the tree
+   tree_order <- order.dendrogram(tree)
+#    rm0 <- function(x) x[x != 0]
+#    height_to_add <- min(rm0(abs(diff(tree_heights))))/2 # the height to add so to be sure we get a "clear" cut
+   
+   
    
    if (!is.null(h)) {
       if (!is.null(k)) 
@@ -133,23 +150,33 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
                     k), domain = NA)
    border <- rep_len(border, length(which))
    retval <- list()
+   
+   old_xpd <- par()["xpd"]
+   par(xpd=xpd)
+   
    for (n in seq_along(which)) {
       
       if(!horiz) { # the default
          xleft = m[which[n]] + 0.66
-         ybottom = par("usr")[3L]
+         if(missing(lower_rect)) lower_rect <- par("usr")[3L] - strheight("W")*(max(nchar(labels(tree))) + 1)
+         ybottom =  lower_rect
          xright = m[which[n] + 1] + 0.33
-         ytop = mean(tree_heights[(k - 1):k])
+         #          ytop = mean(tree_heights[(k - 1):k])
+         #          ytop = tree_heights[k] + abs(ybottom)
+#          ytop = mean(tree_heights[(k - 1):k]) + abs(ybottom)
+         ytop = tree_heights[names(tree_heights) == k] # + height_to_add # + abs(ybottom)          
       } else {         
-         xleft = mean(tree_heights[(k - 1):k])
          ybottom = m[which[n]] + 0.66
-         xright = par("usr")[2L]
+         if(missing(lower_rect)) lower_rect <- par("usr")[2L] + strwidth("X")*(max(nchar(labels(tree))) + 1) 
+         xright = lower_rect
          ytop = m[which[n] + 1] + 0.33
+#          xleft = mean(tree_heights[(k - 1):k])
+         xleft = tree_heights[names(tree_heights) == k] # tree_heights[k] + height_to_add # + abs(xright)
       }      
       rect(xleft, 
            ybottom,
            xright , 
-           ytop , 
+           ytop, 
            border = border[n], density = density, angle = angle, ...)
 
       # allow for a vectorized version of "text"      
@@ -160,8 +187,16 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
       
       retval[[n]] <- which(cluster == as.integer(names(clustab)[which[n]]))
    }
+   
+   
+   par(xpd=old_xpd)   
    invisible(retval)
 }
+
+
+
+
+
 
 
 

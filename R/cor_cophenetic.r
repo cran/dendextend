@@ -141,7 +141,7 @@ sort_dist_mat <- function(dist_mat, by_rows = TRUE, by_cols = TRUE, ...) {
 #' 
 #' 
 #' # cophenetic correlation is about 10 times (!) faster than bakers_gamma cor:
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' microbenchmark(
 #'    cor_bakers_gamma = cor_bakers_gamma(dend1, dend2, try_cutree_hclust=FALSE),
 #'    cor_cophenetic = cor_cophenetic(dend1, dend2)   ,
@@ -199,7 +199,7 @@ cor_cophenetic.dendlist <- function(tree1, which = c(1L, 2L), method = c("pearso
 # 
 # 
 # # ' @S3method cor_bakers_gamma dendrogram
-# cor_cophenetic.dendrogram <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = TRUE, ...)
+# cor_cophenetic.dendrogram <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = dendextend_options("warn"), ...)
 # {
 #     return(bakers_gamma)
 # }

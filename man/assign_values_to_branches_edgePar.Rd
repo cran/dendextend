@@ -4,7 +4,7 @@
 \title{Assign values to edgePar of dendrogram's branches}
 \usage{
 assign_values_to_branches_edgePar(object, value, edgePar, skip_leaves = FALSE,
-  warn = TRUE, ...)
+  warn = dendextend_options("warn"), ...)
 }
 \arguments{
 \item{object}{a dendrogram object}
@@ -15,11 +15,9 @@ assign_values_to_branches_edgePar(object, value, edgePar, skip_leaves = FALSE,
 
 \item{skip_leaves}{logical (FALSE) - should the leaves be skipped/ignored?}
 
-\item{warn}{logical (TRUE). Should warning be issued?
-Generally, it is safer to keep this at TRUe.
-But for specific uses it might be more user-friendly
-to turn it off (for example, in the \link{tanglegram}
-function)}
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.}
 
 \item{...}{not used}
 }
@@ -29,9 +27,7 @@ A dendrogram, after adjusting the edgePar attribute in all of its branches,
 \description{
 Go through the dendrogram branches and updates the values inside its edgePar
 
-If the value has NA then the value in edgePar will not be changed.
-(it could have also been something like NULL or Inf,
-but for now it is only NA)
+If the value has Inf then the value in edgePar will not be changed.
 }
 \examples{
 \dontrun{

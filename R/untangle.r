@@ -42,7 +42,9 @@
 #'    method = c("random", "step1side", "step2side", "DendSer"),
 #'    ...)
 #' 
-#' \method{untangle}{dendlist}(dend1, method, which = c(1L,2L), ...)
+#' \method{untangle}{dendlist}(dend1, 
+#'    method = c("random", "step1side", "step2side", "DendSer"),
+#'    which = c(1L,2L), ...)
 #' 
 #' @param dend1 a dednrogram or a dendlist object
 #' @param dend2 A second dednrogram (to untangle against)
@@ -112,7 +114,10 @@ untangle.dendrogram <- function (dend1, dend2,
 
 # ' @S3method untangle dendlist
 #' @export
-untangle.dendlist <- function(dend1, method, which = c(1L,2L), ...) {
+untangle.dendlist <- function(dend1, 
+                              method = c("random", "step1side", "step2side", "DendSer"), 
+                              which = c(1L,2L), ...) {
+   method <- match.arg(method)
    untangle(dend1[[which[1]]], dend1[[which[2]]], method = method, ...)
 }
 
@@ -237,7 +242,7 @@ shuffle.phylo <- shuffle.default
 #'  use 0, 1, 1.5, 2 (see 'details' for more). 
 #'  It is passed to \link{entanglement}.
 #' @param leaves_matching_method a character scalar passed to \link{entanglement}.
-#' It can be either "order" (default) or "labels". If using "labels", 
+#' It can be either "order" or "labels" (default). If using "labels", 
 #' then we use the labels for matching the leaves order value.
 #' And if "order" then we use the old leaves order value for matching the 
 #' leaves order value.
@@ -283,15 +288,15 @@ shuffle.phylo <- shuffle.default
 #' 
 #' 
 #' }
-untangle_random_search <- function(tree1, tree2, R = 100L, L = 1, leaves_matching_method = c("order", "labels"), ...) {
+untangle_random_search <- function(tree1, tree2, R = 100L, L = 1, leaves_matching_method = c("labels", "order"), ...) {
    # this is a simple random search algorithm for the optimal tanglegram layout problem.
    # it shufflers the trees, and see if we got a better entanglement or not
    
    leaves_matching_method <- match.arg(leaves_matching_method)
    if(leaves_matching_method == "order") {
       old_tree2 <- tree2
-      tree2 <- match_order_by_labels(old_tree2, tree1)   
-      if(!identical(tree2,old_tree2)) warning("The leaves order in 'tree2' were changed. If you want to avoid that, use leaves_matching_method = 'labels'.")
+      tree2 <- match_order_by_labels(old_tree2, tree1)         
+      if(!identical(tree2,old_tree2) & dendextend_options("warn")) warning("The leaves order in 'tree2' were changed. If you want to avoid that, use leaves_matching_method = 'labels'.")
    }
    
    optimal_tree1 <- tree1
@@ -302,7 +307,7 @@ untangle_random_search <- function(tree1, tree2, R = 100L, L = 1, leaves_matchin
    for(i in 1:R) {
       s_tree1 <- shuffle(tree1)
       s_tree2 <- shuffle(tree2)
-      current_entanglement <- entanglement(s_tree1, s_tree2, L,leaves_matching_method)
+      current_entanglement <- entanglement(s_tree1, s_tree2, L, leaves_matching_method)
       
       # if we came across a better ordaring, then update the "Best" treerograms 
       if(current_entanglement < best_ordaring_entanglement) {
@@ -397,7 +402,7 @@ flip_leaves <- function(dend, leaves1, leaves2,...) {
 
 
 # I didn't use this evantually:
-# require(combinat)
+# library(combinat)
 # source for this package: http://stackoverflow.com/questions/7906332/how-to-calculate-combination-and-permutation-in-r	
 
 
@@ -546,6 +551,23 @@ all_couple_rotations_at_k <- function(dend, k, dend_heights_per_k,...) {
 #' 
 #' @param dend_heights_per_k a numeric vector of values which indicate which height will produce which number of clusters (k)
 #' 
+#' @param leaves_matching_method a character scalar passed to \link{entanglement}.
+#' It can be either "order" or "labels" (default). If using "labels", 
+#' then we use the labels for matching the leaves order value.
+#' And if "order" then we use the old leaves order value for matching the 
+#' leaves order value.
+#' 
+#' Using "order" is faster, but "labels" is safer. "order" will assume that 
+#' the original two trees had their labels and order values MATCHED.
+#' 
+#' Hence, it is best to make sure that the trees used here have the same labels 
+#' and the SAME values matched to these values - and then use "order" (for
+#' fastest results).
+#' 
+#' If "order" is used, the function first calls \link{match_order_by_labels}
+#' in order to make sure that the two trees have their labels synced with 
+#' their leaves order values.
+#' 
 #' @param ... not used
 #' 
 #' @return A dendlist with 
@@ -570,13 +592,19 @@ all_couple_rotations_at_k <- function(dend, k, dend_heights_per_k,...) {
 #' 
 #' }
 untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = c("forward", "backward"), 
-                                       k_seq = NULL, dend_heights_per_k , ...) {
+                                       k_seq = NULL, dend_heights_per_k, leaves_matching_method = c("labels", "order"), ...) {
    # this function gets two dendgrams, and goes over each k splits of the first dend1, and checks if the flip at level k of splitting imporves the entanglement between dend1 and dend2 (Which is fixed)
-   require(plyr)
+   library(plyr)
    n_leaves <- nleaves(dend1)
    best_dend <- dend1
    if(missing(dend_heights_per_k)) dend_heights_per_k <- heights_per_k.dendrogram(best_dend) # since this function takes a looong time, I'm running it here so it will need to run only once!	
    
+   leaves_matching_method <- match.arg(leaves_matching_method)
+   if(leaves_matching_method == "order") {
+      old_dend2_fixed <- dend2_fixed
+      dend2_fixed <- match_order_by_labels(old_dend2_fixed, dend1)         
+      if(!identical(dend2_fixed, old_dend2_fixed) & dendextend_options("warn")) warning("The leaves order in 'dend2_fixed' were changed. If you want to avoid that, use leaves_matching_method = 'labels'.")
+   }
    
    direction <- match.arg(direction)
    if(is.null(k_seq)) {
@@ -591,7 +619,7 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
    
    for(k in k_seq) {
       dend1_k_rotated <- all_couple_rotations_at_k(best_dend, k, dend_heights_per_k = dend_heights_per_k)
-      dend1_cut_k_entanglements <- laply(dend1_k_rotated, entanglement, tree2 = dend2_fixed, L = L)
+      dend1_cut_k_entanglements <- lapply(dend1_k_rotated, entanglement, tree2 = dend2_fixed, L = L, leaves_matching_method = leaves_matching_method)
       ss_best_dend <- which.min(dend1_cut_k_entanglements)
       current_best_dend <- dend1_k_rotated[[ss_best_dend]]
       
@@ -678,7 +706,7 @@ untangle_step_rotate_1side <- function(dend1, dend2_fixed, L = 1.5, direction = 
 #' entanglement(dend12_corrected_2[[1]],dend12_corrected_2[[2]], L=2) # 0 - PERFECT.
 #' 
 #' }                              
-untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("forward", "backward"), max_n_iterations = 10L, print_times = TRUE, 
+untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("forward", "backward"), max_n_iterations = 10L, print_times = dendextend_options("warn"),
                                        k_seq = NULL,...) {
    # this function gets two dendgrams, and orders dend1 and 2 until a best entengelment is reached.
    
@@ -760,7 +788,7 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
 # 
 # untangle.forward.step.rotate.1side <- function(dend1, dend2_fixed) {
 #    # this function gets two dendgrams, and goes over each k splits of the first dend1, and checks if the flip at level k of splitting imporves the entanglement between dend1 and dend2 (Which is fixed)
-# 	require(plyr)
+# 	library(plyr)
 # 	leaves_order <- order.dendrogram(dend1)
 # 	best_dend <- dend1
 # 	
@@ -773,8 +801,8 @@ untangle_step_rotate_2side <- function(dend1, dend2, L = 1.5, direction = c("for
 # 		dend1_k_p1_rotated <- all_couple_rotations_at_k(best_dend, k+1)
 # 		dend1_k_m1_rotated <- all_couple_rotations_at_k(best_dend, k-1)
 # 		# find the enteglement for all of them:
-# 		dend1_cut_k_p1_entanglements <- laply(dend1_k_p1_rotated, entanglement, dend2 = dend2_fixed)
-# 		dend1_cut_k_m1_entanglements <- laply(dend1_k_m1_rotated, entanglement, dend2 = dend2_fixed)
+# 		dend1_cut_k_p1_entanglements <- lapply(dend1_k_p1_rotated, entanglement, dend2 = dend2_fixed)
+# 		dend1_cut_k_m1_entanglements <- lapply(dend1_k_m1_rotated, entanglement, dend2 = dend2_fixed)
 # 		# what is best, forward or backward?
 # 		if(min(dend1_cut_k_p1_entanglements) > min(dend1_cut_k_m1_entanglements)) {
 # 		
@@ -852,7 +880,7 @@ untangle_evolution <- function(brother_1_dend1, brother_1_dend2,
 
 untangle_best_k_to_rotate_by_1side <- function(dend1, dend2_fixed, L = 1) {
    # this function gets two dendgrams, and goes over each k splits of the first dend1, and checks if the flip at level k of splitting imporves the entanglement between dend1 and dend2 (Which is fixed)
-   require(plyr)
+   library(plyr)
    leaves_order <- order.dendrogram(dend1)
    best_dend <- dend1
    dend1_k_rotated <- NULL
@@ -866,7 +894,7 @@ untangle_best_k_to_rotate_by_1side <- function(dend1, dend2_fixed, L = 1) {
                                                      dend_heights_per_k = best_dend_heights_per_k))
    }
    
-   dend1_cut_k_entanglements <- laply(dend1_k_rotated, entanglement, dend2 = dend2_fixed, L = L)
+   dend1_cut_k_entanglements <- lapply(dend1_k_rotated, entanglement, dend2 = dend2_fixed, L = L)
    ss_best_dend <- which.min(dend1_cut_k_entanglements)
    best_dend <- dend1_k_rotated[[ss_best_dend]]
    return(best_dend)	
@@ -1048,13 +1076,13 @@ if(F) {
    
    
    #### profiling
-   require(profr)
+   library(profr)
    slow_dude <- profr(untangle_step_rotate_1side(dend2, dend1))
    head(slow_dude)
    summary(slow_dude)
    plot(slow_dude)
    
-   require(reshape)
+   library(reshape)
    a <- cast(slow_dude, f~., value="time", fun.aggregate=c(length, sum))
    a[order(a[,3]),]
    ## End(Not run)
@@ -1063,7 +1091,7 @@ if(F) {
    
    # this also helped:
    # 	install.packages("microbenchmark")
-   require(microbenchmark)
+   library(microbenchmark)
    
    system.time(entanglement(dend1, dend2) 	) # 0.01
    microbenchmark( entanglement(dend1, dend2) , times = 10 )# so this is 10 times faster (the medians)
@@ -1194,114 +1222,4 @@ if(F){
 
 
 
-
-
-
-
-#' @title Tries to run DendSer on a dendrogram
-#' @export
-#' @description
-#' Implements dendrogram seriation.
-#' The function tries to turn the dend into hclust, on 
-#' which it runs \link[DendSer]{DendSer}.
-#' 
-#' Also, if a distance matrix is missing, it will try
-#' to use the \link{cophenetic} distance.
-#' @param dend An object of class dendrogram
-#' @param ser_weight Used by cost function to evaluate
-#'  ordering. For cost=costLS, this is a vector of
-#'   object weights. Otherwise is a dist or symmetric matrix.
-#' passed to DendSer.
-#' If it is missing, the cophenetic distance is used instead.
-#' @param ... parameters passed to \link[DendSer]{DendSer}
-#' @return Numeric vector giving an optimal dendrogram order
-#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
-#' \link{untangle_DendSer} 
-#' @examples
-#' \dontrun{
-#' require(DendSer) # already used from within the function
-#' hc <- hclust(dist(USArrests[1:4,]), "ave")
-#' dend <- as.dendrogram(hc)
-#' DendSer.dendrogram(dend)
-#' }
-DendSer.dendrogram <- function(dend, ser_weight, ...) {
-   h <- as.hclust(dend)
-   if(missing(ser_weight)) ser_weight <- cophenetic(dend)
-   require(DendSer)
-   DendSer(h = h, ser_weight = ser_weight,...)
-}
-
-
-#' @title Rotates dend based on DendSer
-#' @export
-#' @description
-#' Rotates a dendrogram based on its seriation
-#' 
-#' The function tries to turn the dend into hclust using
-#' \link{DendSer.dendrogram} (based on \link[DendSer]{DendSer})
-#' 
-#' Also, if a distance matrix is missing, it will try
-#' to use the \link{cophenetic} distance.
-#' @param dend An object of class dendrogram
-#' @param ser_weight Used by cost function to evaluate
-#'  ordering. For cost=costLS, this is a vector of
-#'   object weights. Otherwise is a dist or symmetric matrix.
-#' passed to \link{DendSer.dendrogram} and from
-#' there to \link[DendSer]{DendSer}.
-#' 
-#' If it is missing, the cophenetic distance is used instead.
-#' @param ... parameters passed to \link[DendSer]{DendSer}
-#' @return Numeric vector giving an optimal dendrogram order
-#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
-#' \link{untangle_DendSer} 
-#' @examples
-#' \dontrun{
-#' require(DendSer) # already used from within the function
-
-#' dend <- USArrests[1:4,] %>% dist %>% hclust("ave") %>% as.dendrogram
-#' DendSer.dendrogram(dend)
-#' 
-#' tanglegram(dend, rotate_DendSer(dend))
-#' 
-#' }
-rotate_DendSer <- function(dend, ser_weight, ...) {
-   ord <- tryCatch(DendSer.dendrogram(dend, ser_weight = ser_weight), error = function(e) seq_len(nleaves(dend)))
-#    print(ord)
-   rotate(dend, ord)
-}
-
-#' @title Tries to run DendSer on a dendrogram
-#' @export
-#' @description
-#' The function tries to turn the dend into hclust.
-#' It then uses the \link{cophenetic} distance matrix
-#' for optimizing the tree's rotation.
-#' 
-#' This is a good (and fast) starting point for link{untangle_step_rotate_2side}
-#' @param dend An object of class \link{dendlist}
-#' @param ... NOT USED
-#' @return A dendlist object with ordered dends
-#' @seealso \code{\link[DendSer]{DendSer}}, \link{DendSer.dendrogram} ,
-#' \link{untangle_DendSer} 
-#' @examples
-#' \dontrun{
-#' set.seed(232)
-#' ss <- sample(1:150, 20)
-#' dend1 <- iris[ss,-5] %>% dist %>% hclust("com") %>% as.dendrogram
-#' dend2 <- iris[ss,-5] %>% dist %>% hclust("sin") %>% as.dendrogram
-#' dend12 <- dendlist(dend1, dend2)
-#' 
-#' # bad solutions
-#' dend12 %>% tanglegram
-#' dend12 %>% untangle("step2") %>% tanglegram
-#' dend12 %>% untangle_DendSer %>% tanglegram
-#' # but the combination is quite awsome:
-#' dend12 %>% untangle_DendSer %>% untangle("step2") %>% tanglegram
-#' }
-untangle_DendSer <- function(dend, ...) {
-   dendlist(
-      rotate_DendSer(dend[[1]]),
-      rotate_DendSer(dend[[2]])
-      )
-}
 

@@ -1,5 +1,8 @@
-# require(testthat)
-# require(dendextend)
+# library(testthat)
+# library(dendextend)
+
+# set this for testing
+dendextend_options("warn", TRUE)
 
 context("Cutting a dendrogram")
 
@@ -151,8 +154,8 @@ test_that("cutree a dendrogram to k clusters",{
 
 
 test_that("cutree dendrogram method works for k",{
-   # data
-   hc <- hclust(dist(USArrests[c(1,6,13,20, 23),]), "ave")
+   # data   
+   hc <- USArrests[c(1,6,13,20, 23),] %>% dist %>% hclust("ave")
    dend <- as.dendrogram(hc)
    unbranch_dend <- unbranch(dend,2)
    
@@ -210,7 +213,7 @@ test_that("cutree dendrogram method works for k",{
    
    # cases of no possible k's:
    expect_warning(cutree(unbranch_dend, 2))
-   expect_equal(cutree(unbranch_dend, 2, warn = FALSE), rep(NA,5))
+   expect_equal(cutree(unbranch_dend, 2, warn = FALSE), rep(0, 5))
    
    # now to check vectorization
    
@@ -244,7 +247,7 @@ test_that("cutree for dendrogram works (k,h and vectorization)",{
    # it still works for missing k's, it just returns NA's in the second column
    cutree_unbranch_dend <- cutree(unbranch_dend, k=1:4, warn = FALSE)
    expect_true( is.matrix(cutree_unbranch_dend) )
-   expect_true( all(is.na(cutree_unbranch_dend[,2])) ) # 2nd column is NA.
+   expect_true( all(cutree_unbranch_dend[,2] == 0) ) # 2nd column is NA.
    
    cutree_unbranch_dend_2 <- cutree(unbranch_dend, k=1:4,   
                                   warn = FALSE, order_clusters_as_data = FALSE,
@@ -399,8 +402,8 @@ test_that("Compare labels which are character vs integer",{
 })
 
 
-require(stats)
-# require(dendextendRcpp)
+library(stats)
+# library(dendextendRcpp)
 
 
 test_that("Having cutree work when using a subsetted tree",{
@@ -446,5 +449,5 @@ test_that("Having cutree work when using a subsetted tree",{
 
    
 
-
+dendextend_options("warn", FALSE)
 

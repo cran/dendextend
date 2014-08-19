@@ -17,6 +17,42 @@
 #
 
 
+
+
+
+
+
+
+#' @title Check if all the elements in a vector are unique
+#' @export
+#' @param x a vector
+#' @param ... ignored.
+#' @return
+#' logical (are all the elements in the vector unique)
+#' 
+#' @source 
+#' 
+#' \url{http://r.789695.n4.nabble.com/Is-there-a-function-to-test-if-all-the-elements-in-a-vector-are-unique-td931833.html}
+#' 
+#' @seealso \link{unique}
+#' 
+#' @examples
+#' 
+#' all_unique(c(1:5, 1,1))
+#' all_unique(c(1,1,2))
+#' all_unique(c(1,1,2, 3,3,3,3))
+#' all_unique(c(1,3,2))
+#' all_unique(c(1:10))
+#' 
+all_unique <- function(x, ...) {
+   anyDuplicated(x) == 0L   
+}
+
+
+
+
+
+
 #' @title Color tree's branches according to sub-clusters
 #' @export
 #' @aliases
@@ -55,6 +91,9 @@
 #' (with parameters c=90 and l=50). If \code{colorspace} is not available,
 #' It will fall back on the \link{rainbow} function.
 #' @param groupLabels If TRUE add numeric group label - see Details for options
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' @param ... ignored.
 #' @return a tree object of class dendrogram.
 #' @author Tal Galili, extensively based on code by Gregory Jefferis
@@ -101,14 +140,14 @@
 #' d5=color_branches(tree=dend[[1]],k=5)
 #'  
 #' 
-#' require(dendextend) 
+#' library(dendextend) 
 #' data(iris, envir = environment()) 
 #' d_iris <- dist(iris[,-5])
 #' hc_iris <- hclust(d_iris)
 #' dend_iris <- as.dendrogram(hc_iris)
 #' dend_iris=color_branches(dend_iris,k=3)
 #' 
-#' require(colorspace)
+#' library(colorspace)
 #' labels_colors(dend_iris) <-
 #'  rainbow_hcl(3)[sort_levels_values(
 #'  as.numeric(iris[,5])[order.dendrogram(dend_iris)]
@@ -125,7 +164,7 @@
 #' # cutree(dend_iris,k=3, order_clusters_as_data=FALSE,
 #'    # sort_cluster_numbers = TRUE, try_cutree_hclust=TRUE)
 #' 
-#' require(colorspace)
+#' library(colorspace)
 #' 
 #' data(iris, envir = environment()) 
 #' d_iris <- dist(iris[,-5])
@@ -167,18 +206,28 @@
 #' # str(dendrapply(d2, unclass))
 #' # unclass(d1)
 #' 
+#' c(1:5) %>% # take some data
+#'    dist %>% # calculate a distance matrix, 
+#'    hclust(method = "single") %>% # on it compute hierarchical clustering using the "average" method, 
+#'    as.dendrogram %>% color_branches(k=3) %>% plot # nice, returns the tree as is...
+#' 
 #' }
 #' 
-color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, ...){
+color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, warn = dendextend_options("warn"), ...){
+
+   # Make sure the function works when the labels of the tree are not all unique
+   old_labels <- labels(tree)
+   labels_arent_unique <- !all_unique(old_labels)
+   if(labels_arent_unique) {
+      if(warn) warning("Your tree labels are NOT unique!\n This may cause an un expected issue with the color of the branches.\n Hence, your labels were temporarily turned unique (and then fixed as they were before).")
+      labels(tree) <- seq_along(old_labels)
+   }
    
-   if(missing(col)) {
-      col <- if(require(colorspace))
-         function(n) rainbow_hcl(n, c=90, l=50) else
-            col <- rainbow
-   }      
+   
+   if(missing(col)) col <- rainbow_fun
    
    if(is.null(k) & is.null(h)) {
-      warning("k (number of clusters) is missing, using the tree size as a default")      
+      if(warn) warning("k (number of clusters) is missing, using the tree size as a default")      
       k <- nleaves(tree)
    }
    
@@ -187,6 +236,13 @@ color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, ...){
    if(is.hclust(tree)) tree <- as.dendrogram(tree)
    
    k <- max(g)
+   
+   # For when we have flat trees
+   if(k == 0L) {
+      if(warn) warning("Tree has only one level - returning the dendrogram with no colors.")
+      return(tree)
+   }
+   
    if(is.function(col)) {
       col <- col(k)
    } else {
@@ -252,6 +308,10 @@ color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, ...){
    if(!is.character(labels(tree))) labels(tree) <- as.character(labels(tree))
    tree <- descendTree(tree)
    class(tree) <- "dendrogram"
+
+   # If we previously had "uniqified" the labels, they should now be "fixed back" before returning the tree.
+   if(labels_arent_unique) labels(tree) <- old_labels
+
    tree   
 }
 
@@ -288,14 +348,14 @@ if(F) {
    is.integer(labels(dend_iris)) # this could cause problems...
    
    # than add this function to color_labels, add a labels parameter - and have it override everything else!
-   plot(color_labels_by_labels(dend_iris, c("1","4"), c(2,3,5), warn = T))
+   plot(color_labels_by_labels(dend_iris, c("1","4"), c(2,3,5), warn = TRUE))
    
    # Maybe I should create color_labels_by_kh!!!
    color_labels
    # add a "warn" parameter
 }
 
-color_labels_by_labels <- function(tree, labels, col, warn=FALSE, ...) {
+color_labels_by_labels <- function(tree, labels, col, warn = dendextend_options("warn"), ...) {
    tree_labels <- labels(tree)
    tree_col <- labels_colors(tree)
    
@@ -356,7 +416,9 @@ color_labels_by_labels <- function(tree, labels, col, warn=FALSE, ...) {
 #' It will fall back on the \link{rainbow} function.
 #' @param labels character vecotor. If not missing, it overrides k and h,
 #' and simply colors these labels in the tree based on "col" parameter.
-#' @param warn logical (FALSE). Should warning be issued?
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' (in case h/k/labels are not supplied, or if col is too short)
 #' @param ... ignored.
 #' @return a tree object of class dendrogram.
@@ -388,18 +450,12 @@ color_labels_by_labels <- function(tree, labels, col, warn=FALSE, ...) {
 #' 
 #' } 
 #' 
-color_labels <- function(tree,k=NULL,h=NULL,labels, col,warn =FALSE,...){
+color_labels <- function(tree, k=NULL, h=NULL, labels, col, warn = dendextend_options("warn"),...){
 
    if(!missing(labels)) return(color_labels_by_labels(tree=tree, labels=labels, col=col, warn=warn, ...) )     
    
    
-   if(missing(col)) {
-      if(require(colorspace)) {
-         col <- function(n) rainbow_hcl(n, c=90, l=50)
-      } else {
-         col <- rainbow
-      }      
-   }   
+   if(missing(col)) col <- rainbow_fun
    
    if(!is.dendrogram(tree) && !is.hclust(tree)) stop("tree needs to be either a dendrogram or an hclust object")
    
@@ -440,12 +496,12 @@ colour_labels <- color_labels
 
 
 # 
-# require(microbenchmark)
+# library(microbenchmark)
 # microbenchmark(
 #    stats:::labels.dendrogram(dend),
 #    labels(dend)
 #    )
-# require(dendextendRcpp)
+# library(dendextendRcpp)
 # 
 
 
@@ -453,8 +509,7 @@ colour_labels <- color_labels
 
 
 
-#' Return the leaf Colors of a dendrogram
-#' 
+#' @title Return the leaf Colors of a dendrogram
 #' @details The returned Colors will be in dendrogram order.
 #' @param d the dendrogram
 #' @param col_to_return Character scalar - kind of Color attribute to return
@@ -484,4 +539,15 @@ leaf_Colors <- function(d,col_to_return=c("edge",'node','label')){
    unlist(dendrapply(d,leaf_col,col_to_return))
 }
 
+
+#' @export
 leaf_colors <- leaf_Colors
+
+
+
+
+
+
+
+
+

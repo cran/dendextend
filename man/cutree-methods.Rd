@@ -13,7 +13,8 @@ cutree(tree, k = NULL, h = NULL,...)
                            use_labels_not_values = TRUE,
                           order_clusters_as_data =TRUE,
                           sort_cluster_numbers = TRUE,
-                          warn = TRUE,
+                          warn = dendextend_options("warn"),
+                          NA_to_0L = TRUE,
                           ...)
 
 \method{cutree}{phylo}(tree, k = NULL, h = NULL,...)
@@ -23,8 +24,9 @@ cutree(tree, k = NULL, h = NULL,...)
                               use_labels_not_values = TRUE,
                               order_clusters_as_data =TRUE,
                               sort_cluster_numbers = TRUE,
-                              warn = TRUE,
+                              warn = dendextend_options("warn"),
                               try_cutree_hclust = TRUE,
+                              NA_to_0L = TRUE,
                               ...)
 }
 \arguments{
@@ -56,8 +58,10 @@ be sorted? (default is TRUE in order to make the function compatible with
 \code{ \link[stats]{cutree}  } ) from {stats}, but it allows for sensible
 color order when using \link{color_branches}.}
 
-\item{warn}{logical. Should the function send a warning in case the desried
-k is not available? (deafult is TRUE)}
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.
+Should the function send a warning in case the desried k is not available?}
 
 \item{try_cutree_hclust}{logical. default is TRUE. Since cutree for hclust is
 MUCH faster than for dendrogram - cutree.dendrogram will first try to change the
@@ -65,6 +69,9 @@ dendrogram into an hclust object. If it will fail (for example, with unbranched 
 it will continue using the cutree.dendrogram function.
 If try_cutree_hclust=FALSE, it will force to use cutree.dendrogram and not
 cutree.hclust.}
+
+\item{NA_to_0L}{logical. default is TRUE. When no clusters are possible,
+Should the function return 0 (TRUE, default), or NA (when set to FALSE).}
 
 \item{...}{(not currently in use)}
 }
@@ -124,7 +131,7 @@ cutree(unbranch_dend, h = c(20, 25.5, 50,170))
 cutree(dend, h = c(20, 25.5, 50,170))
 
 
-require(microbenchmark)
+library(microbenchmark)
 ## this shows how as.hclust is expensive - but still worth it if possible
 microbenchmark(
       cutree(hc, k=2:4),

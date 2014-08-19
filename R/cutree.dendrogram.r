@@ -88,8 +88,10 @@ fac2num <- function(x, force_integer = FALSE, keep_names = TRUE, ...) {
 #'  it can be a character vector selecting dimension names.
 #' @param decreasing logical (FALSE). Should the sort be increasing or decreasing? 
 #' @param force_integer logical (FALSE). Should the values returned be integers?
-#' @param warn logical (TRUE). Should the function print warnings? (for example
-#' when x had NA values in it)
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
+#' (for example when x had NA values in it)
 #' @param ... ignored.
 #' @return if x is an object - it returns logical - is the object of class dendrogram.
 #' @seealso \code{\link{sort}}, \code{\link{fac2num}}, \code{\link[dendextend]{cutree}}
@@ -114,7 +116,7 @@ fac2num <- function(x, force_integer = FALSE, keep_names = TRUE, ...) {
 #' x
 #' apply(x, 2, sort_levels_values)
 #' 
-sort_levels_values <- function(x, MARGIN = 2,  decreasing = FALSE, force_integer = FALSE, warn = TRUE, ...) {
+sort_levels_values <- function(x, MARGIN = 2,  decreasing = FALSE, force_integer = FALSE, warn = dendextend_options("warn"), ...) {
    if(any(is.na(x))) {
       if(warn) warning("'x' had NA values - it is returned as is.")
       return(x)   
@@ -192,7 +194,9 @@ is.natural.number <- function(x, tol = .Machine$double.eps^0.5, ...) {
 #' to order the clusters: 1) By the order of the original data. 2) by the order of the 
 #' labels in the dendrogram. In order to be consistent with \link[stats]{cutree}, this is set
 #' to TRUE.
-#' @param warn logical. Should the function report warning in extreme cases.
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' @param ... (not currently in use)
 #' @return \code{cutree_1h.dendrogram} returns an integer vector with group memberships 
 #' @author Tal Galili
@@ -214,7 +218,7 @@ is.natural.number <- function(x, tol = .Machine$double.eps^0.5, ...) {
 #' 
 #' # make it faster
 #' \dontrun{
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' microbenchmark(
 #'          cutree_1h.dendrogram(dend, h=50),
 #'          cutree_1h.dendrogram(dend, h=50,use_labels_not_values = FALSE)
@@ -225,7 +229,7 @@ is.natural.number <- function(x, tol = .Machine$double.eps^0.5, ...) {
 #' 
 cutree_1h.dendrogram <- function(tree, h, 
                                  order_clusters_as_data = TRUE, use_labels_not_values = TRUE,
-                                 warn = TRUE, ...)
+                                 warn = dendextend_options("warn"), ...)
 {
    
    if(missing(h)) stop("h is missing")   
@@ -361,7 +365,7 @@ cutree_1h.dendrogram <- function(tree, h,
 #'        # we do NOT have a height for k=2 because of the tree's structure.
 #'        
 #'    
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' dend = as.dendrogram(hclust(dist(iris[1:150,-5])))
 #' dend = as.dendrogram(hclust(dist(iris[1:30,-5])))
 #' dend = as.dendrogram(hclust(dist(iris[1:3,-5])))
@@ -427,8 +431,10 @@ dendextend_heights_per_k.dendrogram <- function(tree,...)
 #' labels in the dendrogram. In order to be consistent with \link[stats]{cutree}, this is set
 #' to TRUE.
 #' This is passed to \code{cutree_1h.dendrogram}.
-#' @param warn logical. Should the function send a warning in case the desried 
-#' k is not available? (deafult is TRUE)
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
+#' Should the function send a warning in case the desried k is not available?
 #' @param ... (not currently in use)
 #' @return \code{cutree_1k.dendrogram} returns an integer vector with group 
 #' memberships.
@@ -455,7 +461,7 @@ dendextend_heights_per_k.dendrogram <- function(tree,...)
 #' 
 #' # make it faster
 #' \dontrun{
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' dend_ks <- heights_per_k.dendrogram
 #' microbenchmark(
 #'          cutree_1k.dendrogram = cutree_1k.dendrogram(dend, k=4),
@@ -473,7 +479,7 @@ cutree_1k.dendrogram <- function(tree, k,
                                  dend_heights_per_k = NULL, 
                                  use_labels_not_values = TRUE, 
                                  order_clusters_as_data =TRUE, 
-                                 warn = TRUE, ...)
+                                 warn = dendextend_options("warn"), ...)
 {
 #    if(!is.integer(k) && warn) warning("k is not an integer - using k<-as.integer(k)")   
    k <- as.integer(k) # making this consistant with cutree.hclust!!   
@@ -562,7 +568,8 @@ cutree_1k.dendrogram <- function(tree, k,
 #'                            use_labels_not_values = TRUE, 
 #'                           order_clusters_as_data =TRUE,
 #'                           sort_cluster_numbers = TRUE,
-#'                           warn = TRUE,
+#'                           warn = dendextend_options("warn"),
+#'                           NA_to_0L = TRUE,
 #'                           ...)
 #' 
 #' \method{cutree}{phylo}(tree, k = NULL, h = NULL,...)
@@ -572,8 +579,9 @@ cutree_1k.dendrogram <- function(tree, k,
 #'                               use_labels_not_values = TRUE, 
 #'                               order_clusters_as_data =TRUE, 
 #'                               sort_cluster_numbers = TRUE,
-#'                               warn = TRUE, 
+#'                               warn = dendextend_options("warn"), 
 #'                               try_cutree_hclust = TRUE,
+#'                               NA_to_0L = TRUE,
 #'                               ...)
 #' 
 #' @param tree   a dendrogram object
@@ -597,14 +605,18 @@ cutree_1k.dendrogram <- function(tree, k,
 #' be sorted? (default is TRUE in order to make the function compatible with
 #' \code{ \link[stats]{cutree}  } ) from {stats}, but it allows for sensible
 #' color order when using \link{color_branches}.
-#' @param warn logical. Should the function send a warning in case the desried 
-#' k is not available? (deafult is TRUE)
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
+#' Should the function send a warning in case the desried k is not available?
 #' @param try_cutree_hclust logical. default is TRUE. Since cutree for hclust is 
 #' MUCH faster than for dendrogram - cutree.dendrogram will first try to change the 
 #' dendrogram into an hclust object. If it will fail (for example, with unbranched trees),
 #' it will continue using the cutree.dendrogram function.
 #' If try_cutree_hclust=FALSE, it will force to use cutree.dendrogram and not
 #' cutree.hclust.
+#' @param NA_to_0L logical. default is TRUE. When no clusters are possible,
+#' Should the function return 0 (TRUE, default), or NA (when set to FALSE).
 #' @param ... (not currently in use)
 #' 
 #' @details
@@ -667,7 +679,7 @@ cutree_1k.dendrogram <- function(tree, k,
 #' cutree(dend, h = c(20, 25.5, 50,170))
 #' 
 #' 
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' ## this shows how as.hclust is expensive - but still worth it if possible
 #' microbenchmark(
 #'       cutree(hc, k=2:4),
@@ -718,7 +730,8 @@ cutree.hclust <- function(tree, k = NULL, h = NULL,
                           use_labels_not_values = TRUE, # ignored here...
                           order_clusters_as_data =TRUE,
                           sort_cluster_numbers = TRUE,
-                          warn = TRUE,
+                          warn = dendextend_options("warn"),
+                          NA_to_0L = TRUE, # ignored here...
                           ...) { 
    
    ## Add an important warning before R crashes.
@@ -782,8 +795,9 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
                               use_labels_not_values = TRUE, 
                               order_clusters_as_data =TRUE, 
                               sort_cluster_numbers = TRUE,
-                              warn = TRUE, 
+                              warn = dendextend_options("warn"), 
                               try_cutree_hclust = TRUE,
+                              NA_to_0L = TRUE,
                               ...)
 {
    
@@ -869,7 +883,8 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
    if(sort_cluster_numbers) clusters <- sort_levels_values(clusters, force_integer = TRUE, warn = FALSE)
          # we know that cluster id is an integer, so it is fine to use force_integer = TRUE
    
-   
+   if(NA_to_0L) clusters[is.na(clusters)] <- 0L
+
    return(clusters)
 }
 
@@ -878,7 +893,7 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
 
 
 if(FALSE) {
-   require(dendextend)
+   library(dendextend)
    
    set.seed(23235)
    ss <- sample(1:150, 10 )

@@ -16,7 +16,8 @@ Also, it allows REPEATED cluster color assignments to branches on to
 the same tree. Something which the original function was not able to handle.
 }
 \usage{
-color_branches(tree, k = NULL, h = NULL, col, groupLabels = NULL, ...)
+color_branches(tree, k = NULL, h = NULL, col, groupLabels = NULL,
+  warn = dendextend_options("warn"), ...)
 }
 \arguments{
 \item{tree}{A \code{dendrogram} or \code{hclust} tree object}
@@ -31,6 +32,10 @@ color_branches(tree, k = NULL, h = NULL, col, groupLabels = NULL, ...)
 It will fall back on the \link{rainbow} function.}
 
 \item{groupLabels}{If TRUE add numeric group label - see Details for options}
+
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.}
 
 \item{...}{ignored.}
 }
@@ -90,14 +95,14 @@ plot(dend_override)
 d5=color_branches(tree=dend[[1]],k=5)
 
 
-require(dendextend)
+library(dendextend)
 data(iris, envir = environment())
 d_iris <- dist(iris[,-5])
 hc_iris <- hclust(d_iris)
 dend_iris <- as.dendrogram(hc_iris)
 dend_iris=color_branches(dend_iris,k=3)
 
-require(colorspace)
+library(colorspace)
 labels_colors(dend_iris) <-
  rainbow_hcl(3)[sort_levels_values(
  as.numeric(iris[,5])[order.dendrogram(dend_iris)]
@@ -114,7 +119,7 @@ main = "Clustered Iris dataset",
 # cutree(dend_iris,k=3, order_clusters_as_data=FALSE,
    # sort_cluster_numbers = TRUE, try_cutree_hclust=TRUE)
 
-require(colorspace)
+library(colorspace)
 
 data(iris, envir = environment())
 d_iris <- dist(iris[,-5])
@@ -155,6 +160,11 @@ plot(dend_iris1)
 
 # str(dendrapply(d2, unclass))
 # unclass(d1)
+
+c(1:5) \%>\% # take some data
+   dist \%>\% # calculate a distance matrix,
+   hclust(method = "single") \%>\% # on it compute hierarchical clustering using the "average" method,
+   as.dendrogram \%>\% color_branches(k=3) \%>\% plot # nice, returns the tree as is...
 
 }
 }

@@ -5,7 +5,7 @@
 \usage{
 cutree_1k.dendrogram(tree, k, dend_heights_per_k = NULL,
   use_labels_not_values = TRUE, order_clusters_as_data = TRUE,
-  warn = TRUE, ...)
+  warn = dendextend_options("warn"), ...)
 }
 \arguments{
 \item{tree}{a dendrogram object}
@@ -28,8 +28,10 @@ labels in the dendrogram. In order to be consistent with \link[stats]{cutree}, t
 to TRUE.
 This is passed to \code{cutree_1h.dendrogram}.}
 
-\item{warn}{logical. Should the function send a warning in case the desried
-k is not available? (deafult is TRUE)}
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.
+Should the function send a warning in case the desried k is not available?}
 
 \item{...}{(not currently in use)}
 }
@@ -64,7 +66,7 @@ cutree_1k.dendrogram(dend, k=3, order_clusters_as_data = FALSE)
 
 # make it faster
 \dontrun{
-require(microbenchmark)
+library(microbenchmark)
 dend_ks <- heights_per_k.dendrogram
 microbenchmark(
          cutree_1k.dendrogram = cutree_1k.dendrogram(dend, k=4),

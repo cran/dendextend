@@ -1,4 +1,4 @@
-# require(testthat)
+# library(testthat)
 
 
 # we don't need the warning now... http://stackoverflow.com/questions/16194212/how-to-supress-warnings-globally-in-an-r-script
@@ -6,11 +6,11 @@ old_warn_opt <- options()$warn
 options(warn=-1)
 
 
-context("Checknig update.dendrogram")
+context("Checknig set.dendrogram")
 
 
 test_that("labels options works",{
-#    require(magrittr)
+#    library(magrittr)
    set.seed(23235)
    ss <- sample(1:150, 10 )
 	dend <- iris[ss,-5] %>% dist %>% hclust %>% as.dendrogram
@@ -18,18 +18,30 @@ test_that("labels options works",{
    expect_equal(dend %>% set("labels", 1:10) %>% labels,
                 as.character(1:10))
 
+      dendextend_options("warn", TRUE)
    expect_warning(set(dend, "labels_color"))
+      dendextend_options("warn", FALSE)
 
+
+   # before doing anything, we have NULL labels colors:
+   expect_null(dend %>% labels_colors)
+   
    # piping is the same as not (just MUCH more readable)
+   expect_equal(set(dend, "labels_color"),
+                dend %>% set("labels_color"))
+
+   # here we update the colors, and then try to see them:
    expect_equal(labels_colors(set(dend, "labels_color")),
                 dend %>% set("labels_color") %>% labels_colors)
+      
    
-   new_col_labels <- structure(c("#E495A5", "#D89F7F", "#BDAB66", "#96B56C", "#65BC8C", 
-                                 "#39BEB1", "#55B8D0", "#91ACE1", "#C29DDE", "#DE94C8"), .Names = c("123", 
+   new_col_labels <- structure(c("#CC476B", "#B76100", "#917600", "#518600", "#009232", 
+                                 "#009681", "#008FB7", "#1678D5", "#A352D1", "#CB39AA"), .Names = c("123", 
                                                                                                     "145", "126", "109", "23", "29", "94", "59", "67", "97"))
-   
+#    dend %>% set("labels_color") %>% plot
    expect_equal(dend %>% set("labels_color") %>% labels_colors,
                 new_col_labels)
+#    dend %>% set("labels_color", new_col_labels) %>% plot
 
    
    # we get the correct attribue set...
@@ -49,7 +61,7 @@ test_that("labels options works",{
 
 
 test_that("leaves options works",{
-#    require(magrittr)
+#    library(magrittr)
 
    set.seed(23235)
    ss <- sample(1:150, 10 )
@@ -81,7 +93,7 @@ expect_equal(
 
 
 test_that("branches options works",{
-#    require(magrittr)
+#    library(magrittr)
 
    set.seed(23235)
    ss <- sample(1:150, 10 )
@@ -89,8 +101,9 @@ test_that("branches options works",{
 
    tmp <- dend %>% 
       set("branches_k_col", c(3,1,2), k=3) 
+#    tmp %>% plot
    
-   expect_equal(unlist(get_nodes_attr(tmp, "edgePar"))[1:3],
+   expect_equal(unname(unlist(get_nodes_attr(tmp, "edgePar"))[1:3]),
                 c(NA, 3, 3)
             )
       
@@ -99,7 +112,7 @@ test_that("branches options works",{
 
    tmp <- dend
 	tmp <- tmp %>% 
-      set("branches_col", c(1,2, 1, 2, NA)) %>%
+      set("branches_col", c(1,2, 1, 2, Inf)) %>%
       set("branches_lwd", c(2,1,2)) %>% 
       set("branches_lty", c(1,2,1)) # %>% plot
 
@@ -116,7 +129,7 @@ test_that("branches options works",{
 
 
 test_that("clearing options works",{
-#    require(magrittr)
+#    library(magrittr)
 
    set.seed(23235)
    ss <- sample(1:150, 10 )
@@ -125,14 +138,14 @@ test_that("clearing options works",{
 
    tmp <- dend
 	tmp <- tmp %>% 
-	   set("leaves_pch", c(19,19, NA)) %>% 
-	   set("labels_color", c(19,19, NA))# %>% 
+	   set("leaves_pch", c(19,19, Inf)) %>% 
+	   set("labels_color", c(19,19, Inf))# %>% 
 # 	   set("clear_leaves") %>% plot
    expect_identical(dend, set(tmp, "clear_leaves"))
    
 	tmp <- dend
 	tmp <- tmp %>% 
-	   set("branches_col", c(1,2, 1, 2, NA)) %>%
+	   set("branches_col", c(1,2, 1, 2, Inf)) %>%
 	   set("branches_lwd", c(2,1,2)) %>% 
 	   set("branches_lty", c(1,2,1)) # %>% plot
 	# We can remove all the branch attributes

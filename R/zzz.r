@@ -40,7 +40,7 @@
 #              envir=as.environment("package:dendextend"))
 #       
 # 
-# 	  # require(utils) # doesn't help really...
+# 	  # library(utils) # doesn't help really...
 # 	  # but this does: (!)
 # 		# http://stackoverflow.com/questions/13595145/overriding-a-package-function-inherited-by-another-package
 # # 	  get("assignInNamespace", envir=asNamespace("utils"))
@@ -89,94 +89,6 @@
 
 
 
-# create_dendextend_options <- function() { 
-#    # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
-#    
-#    
-# }
-# # create_dendextend_options()
-# # dendextend_options
-# # dendextend_options()
-
-
-
-#' @title Access to dendextend_options
-#' @export
-#' @description
-#' This is a function inside its own environment. This enables a bunch of
-#' functions to be manipulated outside the package, even when they are called
-#' from function within the dendextend package.
-#' @author Kurt Hornik
-#' @param option a character scalar of the value of the options we would
-#' like to access or update.
-#' @param value any value that we would like to update into the "option"
-#' element in dendextend_options
-#' @return a list with functions
-#' @examples
-#' 
-#' dendextend_options("a")
-#' dendextend_options("a", 1)
-#' dendextend_options("a")
-#' dendextend_options("a", NULL)
-#' dendextend_options("a")
-#' dendextend_options()
-#' 
-dendextend_options <- local({
-   options <- list()
-   function(option, value) {
-      #          ellipsis <- list(...)         
-      if(missing(option)) return(options)
-      
-      if(missing(value))
-         options[[option]]
-      else options[[option]] <<- value
-   }
-})
-# a=2
-# dendextend_options()
-# dendextend_options(a=3)  # sadly, this will fail, and ellipsis does not help
-# dendextend_options(a<-3)
-# dendextend_options("a",3)
-# dendextend_options("a")
-# dendextend_options()
-
-
-
-
-#' @title Populates dendextend functions into dendextend_options
-#' @export
-#' @return NULL
-assign_dendextend_options <- function() { 
-   # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
-
-   
-   dendextend_options("get_branches_heights" , dendextend::dendextend_get_branches_heights)
-   dendextend_options("heights_per_k.dendrogram" , dendextend::dendextend_heights_per_k.dendrogram)
-   dendextend_options("cut_lower_fun" , dendextend::dendextend_cut_lower_fun)
-   
-}
-
-# dendextend_options("cut_lower_fun")
-#
-
-
-
-
-
-
-
-
-
-
-remove_dendextend_options <- function() { 
-   # assigns the functions which could later be replaced by the FASTER dendextendRcpp functions 
-#    options(dendextend_get_branches_heights = NULL)
-#    options(dendextend_heights_per_k.dendrogram = NULL)
-#    options(dendextend_cut_lower_fun = NULL)
-#    rm(dendextend_options)
-}
-
-
 
 
 
@@ -186,6 +98,9 @@ remove_dendextend_options <- function() {
    # adding and removing menus from the Rgui when loading and detaching the library
    # setHook(packageEvent("installr", "attach"), {function(pkgname, libpath) {add.installr.GUI()}  } )
    setHook(packageEvent("dendextend", "detach"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
+
+   # set default options for d3 dendrogram.
+   d3dendro_defaults(D3DENDRODEFAULTS)
 }
 
 # menus are added and removed as needed: !!
@@ -232,7 +147,7 @@ remove_dendextend_options <- function() {
 
 
 dendextendWelcomeMessage <- function(){
-   require(utils)   
+   library(utils)   
    
    paste("\n",     
          "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
@@ -267,7 +182,7 @@ dendextendWelcomeMessage <- function(){
 
 
 
-# require(dendextend)
+# library(dendextend)
 # environmentIsLocked(as.environment("package:dendextend"))
 # lockEnvironment(env=as.environment("package:dendextend"), bindings = FALSE)
 # lockEnvironment(env=as.environment("package:dendextend"), bindings = TRUE)
@@ -281,18 +196,55 @@ dendextendWelcomeMessage <- function(){
 # +    'zzz.r'
 
 
+############
+## OLD
 # Steps:
 # http://r.789695.n4.nabble.com/vignettes-problems-with-PDF-compaction-td4664909.html
 # 1) install gs - http://www.ghostscript.com/download/gsdnld.html
 # 2) find where it is, and update R_GSCMD:
 # Sys.setenv(R_GSCMD="C:\\Program Files\\gs\\gs9.10\\bin\\gswin64c.exe")
+# Sys.setenv(R_GSCMD="C:\\Program Files\\gs\\gs9.14\\bin\\gswin64c.exe")
+# Sys.setenv(R_GSCMD="D:\\temp\\qpdf-5.1.2\\bin\\qpdf.exe")
 # Sys.getenv("R_GSCMD")
 # 3) Check that it works: 
 # system2(Sys.getenv("R_GSCMD"), args="--version") 
 # 4) use:
+# library(tools)
+# tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", gs_quality="printer") 
+# tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", 
+# qpdf = "D:\\temp\\qpdf-5.1.2\\bin\\qpdf.exe", gs_cmd = "C:\\Program Files\\gs\\gs9.14\\bin\\gswin64c.exe") 
 #### tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", gs_quality="ebook") 
-# tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf") 
-###   compacted 'dendextend-tutorial.pdf' from 961Kb to 737Kb
+#### tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", gs_quality="screen") 
+#### tools::compactPDF("vignettes\\dendextend-tutorial.pdf") 
+###   compacted 'dendextend-tutorial.pdf' from 964Kb to 737Kb
+#### tools::compactPDF("vignettes\\dendextend-tutorial.pdf", gs_quality="ebook") 
+##############
+
+
+
+##########
+##########
+##########
+##########
+## NEW
+# How to deal with compression:
+# 1) Download the latest qpdf: http://sourceforge.net/projects/qpdf/files/  (and place it somewhere)
+# 2) Install gs - http://www.ghostscript.com/download/gsdnld.html
+# 3) Run the following:
+
+# tools::compactPDF("inst\\doc\\dendextend-tutorial.pdf", 
+#                   qpdf = "C:\\Program Files (x86)\\qpdf-5.1.2\\bin\\qpdf.exe", 
+#                   gs_cmd = "C:\\Program Files\\gs\\gs9.14\\bin\\gswin64c.exe",
+#                   gs_quality="ebook") 
+
+##########
+##########
+##########
+
+
+
+
+
 
 # For checking:
 # 1) get qpdf
@@ -339,7 +291,7 @@ dendextendWelcomeMessage <- function(){
 
 
 # shell("echo %PATH% ", intern= TRUE)
-# require(rmarkdown)
+# library(rmarkdown)
 # render("NEWS",clean = TRUE,output_format = "html_document")
 
 
@@ -351,7 +303,7 @@ dendextendWelcomeMessage <- function(){
 
 # when a function is renamed, its document in man must be removed - otherwise it may cause problems with the built check (it will try to run the code in the example, and will fail.)
 # When all is done, run:
-# require(devtools)
+# library(devtools)
 # check()
 # browseURL(tempdir())
 ### http://www.rstudio.com/ide/docs/packages/build_options

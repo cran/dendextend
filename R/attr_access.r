@@ -17,6 +17,18 @@
 #
 
 
+# like is.infinite but acts differently for character
+is.infinite2 <- function(x) {
+	if(is.character(x)) { return(x == "Inf") } 
+	# else { return(
+	is.infinite(x)	
+}
+
+
+
+
+
+
 ### # ' @aliases 
 ### # ' set_leaves_attr
 ### # ' @usage
@@ -98,6 +110,9 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #' @param include_leaves logical. Should leaves attributes be included as well?
 #' @param include_branches logical. Should non-leaf (branch node) 
 #' attributes be included as well?
+#' @param simplify logical (default is TRUE). should the result be simplified 
+#' to a vector (using \link{simplify2array} ) if possible? If it is not possible
+#' it will return a matrix. When FALSE, a list is returned.
 #' @param na.rm logical. Should NA attributes be REMOVED from the resulting vector?
 #' @param ... not used
 #' @source Heavily inspired by the code in the 
@@ -141,7 +156,7 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #' 
 #' 
 #' \dontrun{
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' # get_leaves_attr is twice faster than get_nodes_attr
 #' microbenchmark(   get_leaves_attr(dend, "members"), # should be 1's
 #'                     get_nodes_attr(dend, "members", include_branches = FALSE, na.rm = TRUE)
@@ -150,6 +165,7 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #' 
 get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
                             include_branches = TRUE,
+                            simplify = TRUE,
                             na.rm = FALSE, ...) {
    if(!is.dendrogram(object)) warning("'object' should be a dendrogram.")   
    if(missing(attribute)) stop("'attribute' parameter is missing.")
@@ -163,7 +179,10 @@ get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
    #    return((dendrapply(object, get_attr_from_node)))   
    
    
-   object_attr <- rep(NA, nnodes(object))
+#    object_attr <- rep(NA, nnodes(object))
+#   empty_list <- vector("list", nnodes(object))
+   empty_list <- as.list(rep(NA, nnodes(object)))
+   object_attr <- empty_list
    
    # this function is used to modify object_attr. What it returns is not important.
    i_node <- 0
@@ -175,14 +194,19 @@ get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
       if(!include_branches && !is.leaf(dend_node)) return(NULL)      
       
       i_attr <- attr(dend_node, attribute)
-      if(!is.null(i_attr)) object_attr[i_node] <<- i_attr
+      if(!is.null(i_attr)) object_attr[[i_node]] <<- i_attr
       return(NULL)
    }   
    dendrapply(object, get_attr_from_node)   
 
    # as.vector is to remove all classes of the na.omit
    # thank you Prof. Brian Ripley http://tolstoy.newcastle.edu.au/R/e2/devel/07/01/1965.html
+   if(simplify) object_attr <- simplify2array(object_attr)
+
    if(na.rm) object_attr <- as.vector(na.omit(object_attr)) 
+
+   
+   if(dendextend_options("warn") && identical(object_attr, simplify2array(empty_list))) warning("It seems that the attribute '", attribute, "' does not exist - returning NA.")
    
    return(object_attr)   
 }
@@ -277,8 +301,8 @@ rllply <- function(x, FUN,add_notation = FALSE, ...)
 #' dat1 <- iris[1:150,-5]
 #' dat1 <- rbind(dat1,dat1,dat1,dat1,dat1,dat1,dat1)
 #' dend = as.dendrogram(hclust(dist(dat1)))
-#' require(microbenchmark)
-#' require(dendextendRcpp)
+#' library(microbenchmark)
+#' library(dendextendRcpp)
 #' microbenchmark(
 #'    dendextendRcpp::dendextendRcpp_get_branches_heights(dend),
 #'    old_get_branches_heights(dend,sort=F)
@@ -511,16 +535,16 @@ rank_branches <- function(dend, diff_height =1, ...) {
 #' @export
 #' @description
 #' Go through the dendrogram leaves and updates the values inside its nodePar
+#' 
+#' If the value has Inf then the value in edgePar will not be changed. 
 #' @param object a dendrogram object 
 #' @param value a new value vector for the nodePar attribute. It should be 
 #' the same length as the number of leaves in the tree. If not, it will recycle
 #' the value and issue a warning.
 #' @param nodePar the value inside nodePar to adjust.
-#' @param warn logical (TRUE). Should warning be issued?
-#' Generally, it is safer to keep this at TRUe.
-#' But for specific uses it might be more user-friendly
-#' to turn it off (for example, in the \link{tanglegram}
-#' function)
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' @param ... not used
 #' @return 
 #' A dendrogram, after adjusting the nodePar attribute in all of its leaves, 
@@ -529,9 +553,7 @@ rank_branches <- function(dend, diff_height =1, ...) {
 #' 
 #' \dontrun{
 #' 
-#' hc <- hclust(dist(USArrests[1:5,]), "ave")
-#' dend <- as.dendrogram(hc)
-#' 
+#' dend <- USArrests[1:5,] %>% dist %>% hclust("ave") %>% as.dendrogram
 #' 
 #' # reproduces "labels_colors<-" 
 #' # although it does force us to run through the tree twice, 
@@ -554,7 +576,7 @@ rank_branches <- function(dend, diff_height =1, ...) {
 #' 
 #' }
 #' 
-assign_values_to_leaves_nodePar <- function(object, value, nodePar, warn = TRUE, ...) {
+assign_values_to_leaves_nodePar <- function(object, value, nodePar, warn = dendextend_options("warn"), ...) {
    if(!is.dendrogram(object)) stop("'object' should be a dendrogram.")   
    
    if(missing(value)) {
@@ -571,7 +593,13 @@ assign_values_to_leaves_nodePar <- function(object, value, nodePar, warn = TRUE,
    set_value_to_leaf <- function(dend_node) {
       if(is.leaf(dend_node)) {			
          i_leaf_number <<- i_leaf_number + 1
-         attr(dend_node, "nodePar")[[nodePar]] <- value[i_leaf_number] # this way it doesn't erase other nodePar values (if they exist)
+
+		 to_update_attr <- !is.infinite2(value[i_leaf_number])
+		 if(to_update_attr) {
+         # if(!is.infinite2(value[i_leaf_number])) {
+            attr(dend_node, "nodePar")[[nodePar]] <- value[i_leaf_number] # this way it doesn't erase other nodePar values (if they exist)
+         }      
+         
          
          if(length(attr(dend_node, "nodePar")) == 0) {
             attr(dend_node, "nodePar") <- NULL # remove nodePar if it is empty
@@ -599,24 +627,124 @@ assign_values_to_leaves_nodePar <- function(object, value, nodePar, warn = TRUE,
 
 
 
+
+
+
+
+
+
+
+#' @title Assign values to nodePar of dendrogram's nodes
+#' @export
+#' @description
+#' Go through the dendrogram nodes and updates the values inside its nodePar
+#' 
+#' If the value has Inf then the value in edgePar will not be changed. 
+#' 
+#' @param object a dendrogram object 
+#' @param value a new value vector for the nodePar attribute. It should be 
+#' the same length as the number of nodes in the tree. If not, it will recycle
+#' the value and issue a warning.
+#' @param nodePar the value inside nodePar to adjust. 
+#' This may contain components named pch, cex, col, xpd, and/or bg.
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
+#' @param ... not used
+#' @return 
+#' A dendrogram, after adjusting the nodePar attribute in all of its nodes, 
+#' @seealso \link{get_leaves_attr}, \link{assign_values_to_leaves_nodePar}
+#' @examples
+#' 
+#' \dontrun{
+#' 
+#' dend <- USArrests[1:5,] %>% dist %>% hclust("ave") %>% as.dendrogram
+#' 
+#' # reproduces "labels_colors<-" 
+#' # although it does force us to run through the tree twice, 
+#' # hence "labels_colors<-" is better...
+#' plot(dend)
+#' dend2 <- dend %>% 
+#'    assign_values_to_nodes_nodePar(value = 19, nodePar = "pch") %>% 
+#'    assign_values_to_nodes_nodePar(value = c(1,2), nodePar = "cex")  %>% 
+#'    assign_values_to_nodes_nodePar(value = c(2,1), nodePar = "col")
+#' plot(dend2)
+#' 
+#' }
+#' 
+assign_values_to_nodes_nodePar <- function(object, value, nodePar = c("pch", "cex", "col", "xpd", "bg"), warn = dendextend_options("warn"), ...) {
+   if(!is.dendrogram(object)) stop("'object' should be a dendrogram.")   
+   
+   if(missing(value)) {
+      warning("value is missing, returning the dendrogram as is.")
+      return(object)
+   }
+   
+   nodePar <- match.arg(nodePar)
+   
+   
+   nodes_length <- nnodes(object) # length(labels(object)) # it will be faster to use order.dendrogram than labels...   
+   if(nodes_length > length(value)) {
+      if(warn) warning("Length of value vector was shorter than the number of nodes - vector value recycled")
+      value <- rep(value, length.out = nodes_length)
+   }       
+   
+   set_value_to_node <- function(dend_node) {
+      i_node_number <<- i_node_number + 1
+      
+	  to_update_attr <- !is.infinite2(value[i_node_number])
+	  if(to_update_attr) {
+      # if(!is.infinite2(value[i_node_number])) {
+         attr(dend_node, "nodePar")[[nodePar]] <- value[i_node_number] # this way it doesn't erase other nodePar values (if they exist)
+      }      
+      
+      if(length(attr(dend_node, "nodePar")) == 0) {
+         attr(dend_node, "nodePar") <- NULL # remove nodePar if it is empty
+      } else {
+         # if we have some nodePar, and we don't have pch - let's make 
+         # sure it is NA - so that we don't see that annoying dot.
+         if(! ("pch"  %in%  names(attr(dend_node, "nodePar"))) ) {
+            attr(dend_node, "nodePar")["pch"] <- NA
+         }               
+      }
+      return(unclass(dend_node))
+   }   
+   i_node_number <- 0
+   new_dend_object <- dendrapply(object, set_value_to_node)
+   class(new_dend_object) <- "dendrogram"
+   return(new_dend_object)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #' @title Assign values to edgePar of dendrogram's branches
 #' @export
 #' @description
 #' Go through the dendrogram branches and updates the values inside its edgePar
 #' 
-#' If the value has NA then the value in edgePar will not be changed. 
-#' (it could have also been something like NULL or Inf,
-#' but for now it is only NA)
+#' If the value has Inf then the value in edgePar will not be changed. 
 #' 
 #' @param object a dendrogram object 
 #' @param value a new value scalar for the edgePar attribute. 
 #' @param edgePar the value inside edgePar to adjust.
 #' @param skip_leaves logical (FALSE) - should the leaves be skipped/ignored?
-#' @param warn logical (TRUE). Should warning be issued?
-#' Generally, it is safer to keep this at TRUe.
-#' But for specific uses it might be more user-friendly
-#' to turn it off (for example, in the \link{tanglegram}
-#' function)
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' @param ... not used
 #' @return 
 #' A dendrogram, after adjusting the edgePar attribute in all of its branches, 
@@ -636,7 +764,7 @@ assign_values_to_leaves_nodePar <- function(object, value, nodePar, warn = TRUE,
 #' 
 #' }
 #' 
-assign_values_to_branches_edgePar <- function(object, value, edgePar, skip_leaves = FALSE, warn = TRUE, ...) {
+assign_values_to_branches_edgePar <- function(object, value, edgePar, skip_leaves = FALSE, warn = dendextend_options("warn"), ...) {
    if(!is.dendrogram(object)) stop("'object' should be a dendrogram.")   
   
    if(missing(value)) {
@@ -657,7 +785,8 @@ assign_values_to_branches_edgePar <- function(object, value, edgePar, skip_leave
       # else - keep as usual.   
       
       i_node <<- i_node + 1
-      if(!is.na(value[i_node])) {
+	  to_update_attr <- !is.infinite2(value[i_node])
+      if(to_update_attr) {
          attr(dend_node, "edgePar")[[edgePar]] <- value[i_node] # [i_leaf_number] # this way it doesn't erase other edgePar values (if they exist)
       }
       if(length(attr(dend_node, "edgePar")) == 0) attr(dend_node, "edgePar") <- NULL # remove edgePar if it is empty

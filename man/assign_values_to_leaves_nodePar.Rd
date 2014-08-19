@@ -3,7 +3,8 @@
 \alias{assign_values_to_leaves_nodePar}
 \title{Assign values to nodePar of dendrogram's leaves}
 \usage{
-assign_values_to_leaves_nodePar(object, value, nodePar, warn = TRUE, ...)
+assign_values_to_leaves_nodePar(object, value, nodePar,
+  warn = dendextend_options("warn"), ...)
 }
 \arguments{
 \item{object}{a dendrogram object}
@@ -14,11 +15,9 @@ the value and issue a warning.}
 
 \item{nodePar}{the value inside nodePar to adjust.}
 
-\item{warn}{logical (TRUE). Should warning be issued?
-Generally, it is safer to keep this at TRUe.
-But for specific uses it might be more user-friendly
-to turn it off (for example, in the \link{tanglegram}
-function)}
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.}
 
 \item{...}{not used}
 }
@@ -27,13 +26,13 @@ A dendrogram, after adjusting the nodePar attribute in all of its leaves,
 }
 \description{
 Go through the dendrogram leaves and updates the values inside its nodePar
+
+If the value has Inf then the value in edgePar will not be changed.
 }
 \examples{
 \dontrun{
 
-hc <- hclust(dist(USArrests[1:5,]), "ave")
-dend <- as.dendrogram(hc)
-
+dend <- USArrests[1:5,] \%>\% dist \%>\% hclust("ave") \%>\% as.dendrogram
 
 # reproduces "labels_colors<-"
 # although it does force us to run through the tree twice,

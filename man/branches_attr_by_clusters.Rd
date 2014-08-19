@@ -10,7 +10,7 @@ branches_attr_by_clusters(dend, clusters, values, attr = c("col", "lwd",
 \item{dend}{a dendrogram dend}
 
 \item{clusters}{an integer vector of clusters.
-The HAS to be of the size of the number of leaves.
+This HAS to be of the size of the number of leaves.
 Items that belong to no cluster should get the value 0.
 The vector should be of the same order as that of the labels in the dendrogram.
 If you create the clusters from something like \link{cutree} you would first
@@ -67,14 +67,14 @@ system.time(branches_attr_by_clusters(dend, clusters)) # 1.61 sec
 #--------------------------
 
 # let's get the clusters
-require(dynamicTreeCut)
+library(dynamicTreeCut)
 clusters <- cutreeDynamic(hc, distM = as.matrix(iris_dist))
 # we need to sort them to the order of the dendrogram:
 clusters <- clusters[order.dendrogram(dend)]
 
 # get some functions:
-require(dendextendRcpp)
-require(colorspace)
+library(dendextendRcpp)
+library(colorspace)
 no0_unique <- function(x) {
    u_x <- unique(x)
    u_x[u_x != 0]

@@ -1,4 +1,4 @@
-# require(testthat)
+# library(testthat)
 
 context("attr access (get/set)")
 
@@ -25,7 +25,7 @@ test_that("Get a dendrogram leaves attributes",{
 
 
 test_that("Get a dendrogram nodes attributes",{
-   hc <- hclust(dist(USArrests[1:3,]), "ave")
+   hc <- USArrests[1:3,] %>% dist %>% hclust("ave")
    dend <- as.dendrogram(hc)
    
    expect_error(get_nodes_attr(dend)) # we need attribute!
@@ -59,11 +59,20 @@ test_that("Get a dendrogram nodes attributes",{
    )
    
    expect_identical(get_nodes_attr(dend, "members"), c(3L, 1L, 2L, 1L, 1L))
+   
+   
+   expect_identical(get_nodes_attr(dend, "members", simplify = FALSE), 
+                    list(3L, 1L, 2L, 1L, 1L))
+   
+   # dealing with a missing/junk attribute:
+   expect_identical(get_nodes_attr(dend, "blablabla"), 
+                    c(NA, NA, NA, NA, NA))   
+   
 })
 
 
 # \dontrun{
-# require(microbenchmark)
+# library(microbenchmark)
 # # get_leaves_attr is twice faster than get_nodes_attr
 # microbenchmark(   get_leaves_attr(dend, "members"), # should be 1's
 #                     get_nodes_attr(dend, "members", include_branches = FALSE, na.rm = TRUE)

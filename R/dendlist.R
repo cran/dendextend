@@ -75,7 +75,7 @@ is.dendlist <- function(x) {
 #' It accepts several dendrograms and or dendlist objects
 #' and chain them all together.
 #' This function aim to help with the usability of 
-#' comparing two or more dendrograms
+#' comparing two or more dendrograms.
 #' 
 #' @param ... several dendrogram/hclust/phylo or dendlist objects
 #' If an object is hclust or phylo - it will be converted
@@ -257,4 +257,19 @@ as.dendlist <- function (x, ...) {
    
    return(x_final)   
 }
+
+
+
+
+
+#' @export
+head.dendlist <- function (x, ...) {
+   for(i in seq_len(length(x))) {
+      cat("============\n", "dend ", i, "\n", "---------\n")
+      head(x[[i]], ...)
+   }
+}
+
+
+
 

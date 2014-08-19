@@ -128,7 +128,9 @@ bakers_gamma_for_2_k_matrix <- function(k_matrix_tree1, k_matrix_tree2, to_plot 
 #' BUT, it assumes the two trees have the exact same leaves order values for 
 #' each labels. This can be assured by using \link{match_order_by_labels}.
 #' @param to_plot logical (FALSE). Passed to \link{bakers_gamma_for_2_k_matrix}
-#' @param warn logical (TRUE). In case of problems when cutting the tree,
+#' @param warn logical (default from dendextend_options("warn") is FALSE).
+#' Set if warning are to be issued, it is safer to keep this at TRUE,
+#' but for keeping the noise down, the default is FALSE.
 #' should a warning be issued when using \link[dendextend]{cutree}?
 #' @param ... Passed to \link[dendextend]{cutree}.
 #' 
@@ -185,7 +187,7 @@ bakers_gamma_for_2_k_matrix <- function(k_matrix_tree1, k_matrix_tree2, to_plot 
 #' dend1 <- match_order_by_labels(dend1, dend2) # if you are not sure
 #' cor_bakers_gamma(dend1, dend2, use_labels_not_values = FALSE)   
 #' 
-#' require(microbenchmark)
+#' library(microbenchmark)
 #' microbenchmark(
 #'    with_labels = cor_bakers_gamma(dend1, dend2, try_cutree_hclust=FALSE)   ,
 #'    with_values = cor_bakers_gamma(dend1, dend2, 
@@ -199,7 +201,7 @@ bakers_gamma_for_2_k_matrix <- function(k_matrix_tree1, k_matrix_tree2, to_plot 
 #' 
 #' }
 #' 
-cor_bakers_gamma <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = TRUE, ...){
+cor_bakers_gamma <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = dendextend_options("warn"), ...){
    UseMethod("cor_bakers_gamma")
 }
 
@@ -212,7 +214,7 @@ cor_bakers_gamma.default <- function(tree1, tree2, ...) {
 
 # ' @S3method cor_bakers_gamma dendrogram
 #' @export
-cor_bakers_gamma.dendrogram <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = TRUE, ...)
+cor_bakers_gamma.dendrogram <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = dendextend_options("warn"), ...)
 {
    k_matrix_tree1 <- cutree(tree1, k = 1:nleaves(tree1), use_labels_not_values=use_labels_not_values,warn=warn,...)
    k_matrix_tree2 <- cutree(tree2, k = 1:nleaves(tree2), use_labels_not_values=use_labels_not_values,warn=warn,...)
@@ -223,7 +225,7 @@ cor_bakers_gamma.dendrogram <- function(tree1, tree2, use_labels_not_values = TR
 
 # ' @S3method cor_bakers_gamma hclust
 #' @export
-cor_bakers_gamma.hclust <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = TRUE, ...)
+cor_bakers_gamma.hclust <- function(tree1, tree2, use_labels_not_values = TRUE, to_plot = FALSE, warn = dendextend_options("warn"), ...)
 {
    k_matrix_tree1 <- cutree(tree1, k = 1:nleaves(tree1), use_labels_not_values=use_labels_not_values,warn=warn,...)
    k_matrix_tree2 <- cutree(tree2, k = 1:nleaves(tree2), use_labels_not_values=use_labels_not_values,warn=warn,...)
@@ -235,7 +237,7 @@ cor_bakers_gamma.hclust <- function(tree1, tree2, use_labels_not_values = TRUE, 
 
 # k_matrix_tree1 <- cutree(hc1, k = 1:nleaves(hc1))
 # k_matrix_tree2 <- cutree(hc2, k = 1:nleaves(hc1))
-# require(compiler)
+# library(compiler)
 # enableJIT(3)
 # system.time(bakers_gamma_for_2_k_matrix(k_matrix_tree1, k_matrix_tree2)) 
 # before: 2.37

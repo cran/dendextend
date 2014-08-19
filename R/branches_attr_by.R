@@ -40,7 +40,7 @@
 #' 
 #' @param dend a dendrogram dend 
 #' @param clusters an integer vector of clusters.
-#' The HAS to be of the size of the number of leaves.
+#' This HAS to be of the size of the number of leaves.
 #' Items that belong to no cluster should get the value 0.
 #' The vector should be of the same order as that of the labels in the dendrogram.
 #' If you create the clusters from something like \link{cutree} you would first
@@ -85,14 +85,14 @@
 #' #--------------------------
 #' 
 #' # let's get the clusters
-#' require(dynamicTreeCut)
+#' library(dynamicTreeCut)
 #' clusters <- cutreeDynamic(hc, distM = as.matrix(iris_dist))
 #' # we need to sort them to the order of the dendrogram:
 #' clusters <- clusters[order.dendrogram(dend)]
 #' 
 #' # get some functions:
-#' require(dendextendRcpp)
-#' require(colorspace)
+#' library(dendextendRcpp)
+#' library(colorspace)
 #' no0_unique <- function(x) {
 #'    u_x <- unique(x)   
 #'    u_x[u_x != 0]
@@ -143,8 +143,8 @@ branches_attr_by_clusters <- function(dend, clusters, values, attr = c("col", "l
    
    if(missing(values) & attr == "col" ) {
       values <- rep(1, length(clusters)) # make a vector of black colors
-      require(colorspace) # this might need to be fixed later for getting no error in checks.
-      values <- rainbow_hcl(n_clusters)
+      # library(colorspace) # this package is now in imports
+      values <- rainbow_fun(n_clusters)
    }
    
    
@@ -174,10 +174,10 @@ branches_attr_by_clusters <- function(dend, clusters, values, attr = c("col", "l
    
    # no we can go through all of the clusters and modify the dend as we should:
    for(i in seq_along(u_clusters)) {
-      # set tmp values to be the cluster value (for relevant nodes) or NA (for the rest):
-      tmp_values <- ifelse(nodes_cluster_TF_mat[,i], values[i], NA)
-      # but if we have an overlap, let's set values back to NA!
-      tmp_values <- ifelse(nodes_cluster_TF_mat_overlap, NA, tmp_values)
+      # set tmp values to be the cluster value (for relevant nodes) or Inf (for the rest):
+      tmp_values <- ifelse(nodes_cluster_TF_mat[,i], values[i], Inf)
+      # but if we have an overlap, let's set values back to Inf!
+      tmp_values <- ifelse(nodes_cluster_TF_mat_overlap, Inf, tmp_values)
       
       # update the dend:
       dend <- assign_values_to_branches_edgePar(object = dend, value = tmp_values, edgePar = attr)     
@@ -185,3 +185,116 @@ branches_attr_by_clusters <- function(dend, clusters, values, attr = c("col", "l
    
    return(dend)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' @title Change col/lwd/lty of branches matching labels condition
+#' @export
+#' @description
+#' The user supplies a dend, labels, and type of condition (all/any), and TF_values
+#' And the function returns a dendrogram with branches col/lwd/lty accordingly
+#' @param dend a dendrogram dend 
+#' @param labels a character vector of labels from the tree
+#' @param TF_values a two dimensional vector with the TF_values to use in case a branch fulfills the condition (TRUE)
+#' and in the case that it does not (FALSE). Defaults are 2/Inf for col, lwd and lty.
+#' (so it will insert the first value, and will not change all the FALSE cases)
+#' @param attr a character with one of the following values: col/lwd/lty
+#' @param type a character vector of either "all" or "any", indicating which of 
+#' the branches should be painted: ones that all of their labels belong to the supplied labels,
+#' or also ones that even some of their labels are included in the labels vector.
+#' @param ... ignored.
+#' @return 
+#' A dendrogram with modified branches (col/lwd/lty).
+#' @seealso \link{noded_with_condition}, \link{get_leaves_attr}, \link{nnodes}, \link{nleaves}
+#' @examples
+#' \dontrun{
+#' 
+#' library(dendextend)
+#' library(magrittr)
+#' 
+#' set.seed(23235)
+#' ss <- sample(1:150, 10 )
+#' 
+#' # Getting the dend dend
+#' dend <- iris[ss,-5] %>% dist %>% hclust %>% as.dendrogram
+#' dend %>% plot
+#' 
+#' dend %>% 
+#'    branches_attr_by_labels(c("123", "126", "23", "29")) %>%
+#'    plot
+#' dend %>% 
+#'    branches_attr_by_labels(c("123", "126", "23", "29"), "all") %>% 
+#'    plot # the same as above
+#' dend %>% 
+#'    branches_attr_by_labels(c("123", "126", "23", "29"), "any") %>% 
+#'    plot
+#' 
+#' dend %>% 
+#'       branches_attr_by_labels(c("123", "126", "23", "29"),
+#'       "any", "col", c("blue", "red")) %>% plot
+#' dend %>%
+#'       branches_attr_by_labels(c("123", "126", "23", "29"),
+#'       "any", "lwd", c(4,1)) %>% plot
+#' dend %>%
+#'       branches_attr_by_labels(c("123", "126", "23", "29"),
+#'        "any", "lty", c(2,1)) %>% plot
+#' 
+#' }
+branches_attr_by_labels <- function(dend, labels, TF_values = c(2,Inf), attr = c("col", "lwd", "lty"), type = c("all", "any"), ...) {
+   if(!is.dendrogram(dend)) stop("'dend' should be a dendrogram.")   
+   if(missing(labels)) stop("'labels' parameter is missing.")
+   if(!is.character(labels)) {      
+      if(dendextend_options("warn")) warning("'labels' parameter was not a character vector, and was coerced into one.")
+      labels <- as.character(labels)
+   }
+   
+   
+   type <- match.arg(type)
+   attr <- match.arg(attr)
+   
+   # make sure that if the TF_values has only one value, 
+   # the other one will be Inf
+   if(length(TF_values) == 1) TF_values <- c(TF_values, Inf)
+   
+   # deal with the case we have labels not included in the tree dend:
+   labels_in_dend <- labels %in% labels(dend)
+   if(!all(labels_in_dend)) {
+      warning("Not all of the labels you provided are included in the dendrogram.\n",
+              "The following labels were omitted:", labels[!labels_in_dend])
+      #       cat("\n")
+      labels <- labels[labels_in_dend]
+   }
+   
+   has_any_labels <- function(sub_dend, the_labels) any(labels(sub_dend) %in% the_labels)
+   has_all_labels <- function(sub_dend, the_labels) all(labels(sub_dend) %in% the_labels)
+   
+   what_to_change <- switch(type, 
+                            all = noded_with_condition(dend, has_all_labels, the_labels = labels),
+                            any = noded_with_condition(dend, has_any_labels, the_labels = labels)
+   )
+   the_TF_values <- ifelse(what_to_change, TF_values[1], TF_values[2])
+   # warnings()
+   
+   
+   switch(attr, 
+          col = set(dend, "branches_col", the_TF_values)      ,
+          lwd = set(dend, "branches_lwd", the_TF_values)      ,
+          lty = set(dend, "branches_lty", the_TF_values)      
+   )   
+}
+
+
+
+
+

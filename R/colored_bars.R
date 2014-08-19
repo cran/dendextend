@@ -61,6 +61,8 @@ rescale <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE))
 #' under the dendrogram.
 #' @param dend a dendrogram object. If missing, the colors are plotted without and re-ordering
 #' (this assumes that the colors are already ordered based on the dend's labels)
+#' This is also important in order to get the correct height/location of the colored bars
+#' (i.e.: adjusting the y_scale and y_shift)
 #' @param rowLabels Labels for the colorings given in \code{colors}. The labels will be printed to the
 #' left of the color rows in the plot. If the argument is given, it must be a vector of length
 #' equal to the number of columns in \code{colors}. If not given, \code{names(colors)}
@@ -70,8 +72,17 @@ rescale <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE))
 #' @param add logical(TRUE), should the colored bars be added to an existing
 #' dendrogram plot?
 #' @param y_scale how much should the bars be stretched on the y axis?
+#' If no dend is supplied - the default will be 1
 #' @param y_shift where should the bars be plotted underneath the x axis?
+#' By default it will try to locate the bars underneath the labels (it may miss,
+#' in which case you would need to enter a number manually)
+#' If no dend is supplied - the default will be 0
 #' @param text_shift a dendrogram object 
+#' @param sort_by_labels_order logical(FALSE) - if TRUE, then the order of the 
+#' colored bars will be sorted based on the order needed to change the original
+#' order of the observations to the current order of the labels in the dendrogram.
+#' If FALSE (default) the colored bars are plotted as-is, based on the order
+#' of the colors vector.
 #' @param ... ignored at this point.
 #' @author Steve Horvath \email{SHorvath@@mednet.ucla.edu},
 #' Peter Langfelder \email{Peter.Langfelder@@gmail.com},
@@ -130,6 +141,7 @@ rescale <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE))
 #' # the colors of the items so that ofter sorting they would be
 #' # from left to right. Here is how it can be done:
 #' the_k <- 3
+#' library(colorspace)
 #' cols3 <- rainbow_hcl(the_k, c=90, l=50)
 #' dend %>% update("branches_k_color", k = the_k, with = cols3) %>% plot
 #' 
@@ -150,20 +162,45 @@ rescale <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE))
 #' 
 colored_bars <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9, 
                        add = TRUE, 
-                       y_scale = 1, y_shift = 0,
+                       y_scale, y_shift,
                        text_shift = 1,
+                       sort_by_labels_order = FALSE,
                        #below_labels = TRUE,
                        ...) 
 {
-
-   if(missing(dend)) {
-      dend_order <- seq_along(colors)
+   
+   dim_colors <- dim(colors)
+   num_of_rows <- ifelse(is.null(dim_colors), 0 , dim_colors[2])
+   
+   if(missing(dend) | !sort_by_labels_order) {
+      if(is.null(dim_colors)) { # then colors is a vector
+         dend_order <- seq_along(colors)   
+      } else { # color is a matrix
+         dend_order <- seq_len(dim_colors[1])
+      }
+      
    } else {
       # make sure we are working with a dend:
       if(!is.dendrogram(dend)) dend <- as.dendrogram(dend)      
       # get labels' order:
       dend_order <- order.dendrogram(dend)      
    }
+   
+   # Get y_shift to be underneath the labels
+   if(missing(dend)) {
+      if(missing(y_shift)) y_shift <- 0
+      if(missing(y_scale)) y_scale <- 1 * num_of_rows
+      
+   } else {
+      labels_dend <- labels(dend)
+      if(missing(y_shift)) y_shift <- -max(strheight(labels_dend))+par()$usr[3L]-2*strheight("x") # a bit of a hack, oh well...
+      if(missing(y_scale)) y_scale <- median(strheight(labels_dend)) * num_of_rows
+   }
+   
+   
+   
+   
+   
    # moving the y location and scale of the bars
    # this allows us to have it underneath the dend
    # in a way that would look nice.
@@ -259,7 +296,7 @@ colored_bars <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
 #    kx  <- sort_levels_values(kx[ord])   
 #    kx  <- kx[match(seq_along(ord), ord)]
 #    
-#    require(colorspace)
+#    library(colorspace)
 #    dend %>% update("branches_k_color", k = the_k, with = the_cols) %>% plot
 #    colored_bars(dend, cols3[kx], y_shift = -2)
 #    
@@ -271,7 +308,7 @@ colored_bars <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
 #    k4 <- cutree(dend, k = 4)
 #    plot(dend)
 #    colored_bars(dend, k4)
-#    require(colorspace)
+#    library(colorspace)
 #    dend %>% update("branches_k_color", k = 4) %>% plot
 #    colored_bars(dend, rainbow_hcl(4)[c(4,2,3,1)][k4], y_shift = -2)
 #    
@@ -288,7 +325,7 @@ colored_bars <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
 #    kx  <- sort_levels_values(kx[ord])   
 #    kx  <- kx[match(seq_along(ord), ord)]
 #    
-#    require(colorspace)
+#    library(colorspace)
 #    dend %>% update("branches_k_color", k = the_k, with = the_cols) %>% plot
 #    colored_bars(dend, the_cols[kx], y_shift = -2)
 #    

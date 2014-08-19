@@ -4,7 +4,7 @@
 \alias{dendextend_cut_lower_fun}
 \title{Cut a dendrogram - and run a function on the output}
 \usage{
-cut_lower_fun(tree, h, FUN = labels, warn = FALSE, ...)
+cut_lower_fun(tree, h, FUN = labels, warn = dendextend_options("warn"), ...)
 }
 \arguments{
 \item{tree}{a dendrogram object.}
@@ -13,8 +13,10 @@ cut_lower_fun(tree, h, FUN = labels, warn = FALSE, ...)
 
 \item{FUN}{a function to run. (default is "labels")}
 
-\item{warn}{logical (FALSE) - should the user be warned if reverting to
-default? (I set it to FALSE since it can be very noisy sometimes...)}
+\item{warn}{logical (default from dendextend_options("warn") is FALSE).
+Set if warning are to be issued, it is safer to keep this at TRUE,
+but for keeping the noise down, the default is FALSE.
+Should the user be warned if reverting to default?}
 
 \item{...}{passed to FUN.}
 }
@@ -40,10 +42,10 @@ cut_lower_fun(dend, .4, order.dendrogram)
 
 
 \dontrun{
-# require(dendextend)
-require(dendextendRcpp)
+# library(dendextend)
+library(dendextendRcpp)
 dend_big = as.dendrogram(hclust(dist(iris[1:150,-5])))
-require(microbenchmark)
+library(microbenchmark)
 microbenchmark(old_cut_lower_fun(dend_big,.1),
                dendextendRcpp::dendextendRcpp_cut_lower_fun(dend_big,.1),
                times = 100)
