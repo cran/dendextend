@@ -81,7 +81,7 @@ c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
 #  dend <- as.dendrogram(hclust(dist(c(1:5)), method = "average"))
 
 ## ----, eval = FALSE------------------------------------------------------
-#  dend <- c(1:5) %>% # take the iris dataset,
+#  dend <- c(1:5) %>% # take the a vector from 1 to 5
 #           dist %>% # calculate a distance matrix,
 #           hclust(method = "average") %>% # on it compute hierarchical clustering using the "average" method,
 #           as.dendrogram # and lastly, turn that object into a dendrogram.
@@ -665,4 +665,7 @@ plot(dend_iris,
 legend("topleft", legend = iris_species, fill = rainbow_hcl(3))
 
 
+
+## ----, cache=FALSE-------------------------------------------------------
+sessionInfo()
 
