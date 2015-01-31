@@ -19,7 +19,7 @@
 
 
 
-#' @title get attributes from the dendrogram's root branches
+#' @title get attributes from the dendrogram's root(!) branches
 #' @export
 #' @param dend dendrogram object
 #' @param the_attr the attribute to get from the branches (for example "height")
@@ -35,10 +35,10 @@
 #' hc <- hclust(dist(USArrests[2:9,]), "com")
 #' dend <- as.dendrogram(hc)
 #' 
-#' get_branches_attr(dend, "height") # 0.00000 71.96247
+#' get_root_branches_attr(dend, "height") # 0.00000 71.96247
 #' # plot(dend)
 #' str(dend, 2)
-get_branches_attr <- function(dend, the_attr, warn = dendextend_options("warn"),...) {
+get_root_branches_attr <- function(dend, the_attr, warn = dendextend_options("warn"),...) {
    if(!is.dendrogram(dend))
    {
       if(warn) warning("dend wasn't of class dendrogram - be sure it makes sense...")
@@ -167,9 +167,9 @@ Please choose another branch to be the root.")
       attr(new_dend, "height") <- attr(dend, "height") # + attr(dend[[branch_becoming_root]], "height") 
    }
    class(new_dend) <- 'dendrogram'
-   attr(new_dend, "members") <- sum(get_branches_attr(new_dend, "members")) # the new members of the root is the sum of the members in all of his branches
+   attr(new_dend, "members") <- sum(get_root_branches_attr(new_dend, "members")) # the new members of the root is the sum of the members in all of his branches
    attr(new_dend, "midpoint") <- 
-      suppressWarnings(mean(get_branches_attr(new_dend, "midpoint"), na.rm = TRUE) )      
+      suppressWarnings(mean(get_root_branches_attr(new_dend, "midpoint"), na.rm = TRUE) )      
    # the new midpoint of the root is the mean of the midpoint in all of his branches
    # if some are NA, they are ignored
 
@@ -197,7 +197,7 @@ unbranch.hclust <- function(x, branch_becoming_root = 1, new_root_height, ...) {
 #' @export
 unbranch.phylo <- function(x, ...) {
 		# ape::unbranch(phy = x)
-   library(ape)
+   # library(ape)
    x_dend <- as.dendrogram(x)
    x_dend_unbranch <- unbranch(x_dend, ...) # branch_becoming_root , new_root_height,
    x_unbranch <- ape::as.phylo(x_dend_unbranch)  
@@ -242,10 +242,104 @@ unbranch.phylo <- function(x, ...) {
 flatten.dendrogram <- function(dend, FUN = max, new_height,...)
 {
    if(missing(new_height)) {
-      dend_branches_height <- get_branches_attr(dend, "height")
+      dend_branches_height <- get_root_branches_attr(dend, "height")
       new_height <- FUN(dend_branches_height)      
    }
    for(i in seq_len(length(dend))) attr(dend[[i]], "height") <- new_height
    return(dend)
 }
 
+
+
+# get_all_leaves(dend)
+get_all_leaves <- function(dend, ...) {
+   
+   leaves <- as.list(rep(NA, nleaves(dend)))
+   
+   # this function is used to modify object_attr. What it returns is not important.
+   i_leaf <- 0
+   get_attr_from_node <- function(dend_node) {
+      if(is.leaf(dend_node)) {
+         i_leaf <<- i_leaf + 1   
+         leaves[[i_leaf]] <<- unclass(dend_node)
+      }      
+      return(invisible())
+   }   
+   dendrapply(dend, get_attr_from_node)   
+   
+   leaves
+}
+
+
+
+
+
+#' @title Collapse branches under a tolerance level
+#' @description
+#' Collapse branches under a tolerance level
+#' @export
+#' @param dend dendrogram object
+#' @param tol a numeric value giving the tolerance to consider a branch length significantly greater than zero
+#' @param lower logical (TRUE). collapse branches which are lower than tol?
+#' @param ... passed on (not used)
+#' @return A dendrogram with both of the root's branches of the same height
+#' @seealso \link[ape]{multi2di}
+#' @examples
+#' 
+#' # # ladderize is like sort(..., type = "node")
+#' dend <- iris[1:5,-5] %>% dist %>% hclust %>% as.dendrogram 
+#' par(mfrow = c(1,3))
+#' dend %>% ladderize %>% plot(horiz = TRUE); abline(v = .2, col = 2, lty = 2)
+#' dend %>% collapse_branch(tol = 0.2) %>% ladderize %>% plot(horiz = TRUE)
+#' dend %>% collapse_branch(tol = 0.2) %>% ladderize %>% 
+#'       hang.dendrogram(hang = 0) %>% plot(horiz = TRUE)
+#' 
+#' par(mfrow = c(1,2))
+#' dend %>% collapse_branch(tol = 0.2, lower = FALSE) %>% plot(horiz = TRUE, main = "dendrogram")
+#' library(ape)
+#' dend %>% as.phylo %>% di2multi(tol = 0.2) %>% plot(main = "phylo")
+collapse_branch <- function(dend, tol = 1e-08, lower = TRUE, ...)
+{
+   if(!is.dendrogram(dend)) stop("'dend' should be a dendrogram.")   
+   if(nleaves(dend) == 1) {
+      warning("nleaves(dend) == 1  - returning dend")
+      if(attr(dend, "height") < tol) warning("dend height < tol")
+      return(dend)
+   }
+   
+   fix_height_attr_per_node <- function(dend_node)
+   {     
+      if(is.leaf(dend_node)) return(unclass(dend_node))
+      
+      the_leaves <- list()
+      nodes_to_rm <- NULL
+      
+      for(i_nodes in seq_len(length(dend_node))) {
+         a_leaf <- is.leaf(dend_node[[i_nodes]])
+         short <- attr(dend_node[[i_nodes]], "height") < tol
+         if(!lower) short <- !short
+         
+         if(!a_leaf & short) {            
+               the_leaves <- c(the_leaves, get_all_leaves(dend_node[[i_nodes]]))               
+               nodes_to_rm <- c(nodes_to_rm, i_nodes)               
+         } else {
+            dend_node[[i_nodes]] <- fix_height_attr_per_node(dend_node[[i_nodes]])
+         }
+      }
+      
+      if(!is.null(nodes_to_rm)) {
+         tmp_attr <- attributes(dend_node)
+         dend_node <- c(dend_node, the_leaves)
+         dend_node <- dend_node[-nodes_to_rm]
+         attributes(dend_node) <- tmp_attr
+      }
+      return(unclass(dend_node))
+   }
+   
+   dend <- fix_height_attr_per_node(dend)   
+   class(dend) <- "dendrogram"
+   dend <- suppressWarnings(stats_midcache.dendrogram(dend)) # might through warnings if we have 3 branches (but it will keep the "midpoints" in check 
+   return(dend)
+}
+
+#TODO: add tests

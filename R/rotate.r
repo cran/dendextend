@@ -33,17 +33,17 @@
 #' sort.dendrogram
 #' rev.hclust
 #' @usage
-#' rotate(x, order, ...)
+#' rotate(x, ...)
 #' 
 #' \method{rotate}{dendrogram}(x, order, ...)
 #' 
 #' \method{rotate}{hclust}(x, order, ...)
 #' 
-#' \method{rotate}{phylo}(x, ...)
+#' \method{rotate}{phylo}(x, ..., phy)
 #' 
 #' \method{rev}{hclust}(x, ...)
 #' 
-#' \method{sort}{dendrogram}(x, decreasing=FALSE, ...)
+#' \method{sort}{dendrogram}(x, decreasing=FALSE, type = c("labels", "nodes"), ...)
 #' 
 #' \method{sort}{hclust}(x, decreasing=FALSE, ...)
 #' 
@@ -57,6 +57,10 @@
 #' order we'd like to have the new tree.
 #' @param decreasing logical. Should the sort be increasing or decreasing? Not available for partial sorting. (relevant only to \code{sort})
 #' @param ... parameters passed (for example, in case of sort)
+#' @param type a character indicating how to sort. If "labels" then by lexicographic
+#' order of the labels. If "nodes", then by using \link{ladderize} (order so that 
+#' recursively, the leftmost branch will be the smallest)
+#' @param phy a placeholder in case the user uses "phy ="
 #' @details 
 #' The motivation for this function came from the function 
 #' \code{\link{order.dendrogram}} NOT being very intuitive.
@@ -94,7 +98,7 @@
 #'  
 #' @return A rotated tree object
 #' @seealso \code{\link{order.dendrogram}},  \code{\link{order}}, 
-#' \code{\link{rev.dendrogram}}, \code{\link[ape]{rotate}} ({ape})
+#' \code{\link{rev.dendrogram}}, \code{\link[ape]{rotate}} ({ape}), \link{ladderize}
 #' @examples
 #' hc <- hclust(dist(USArrests[c(1,6,13,20, 23),]), "ave")
 #' dend <- as.dendrogram(hc)
@@ -119,7 +123,14 @@
 #' plot(rotate(hc, c(2:5,1)), main = "Rotates the left most leaf \n 
 #' into the right side of the tree")
 #' 
-rotate <- function(x, order,...) {UseMethod("rotate")}
+#' par(mfrow = c(1,3))
+#' dend %>% plot(main = "Original tree") 
+#' dend %>% sort %>% plot(main = "labels sort") 
+#' dend %>% sort(type = "nodes") %>% plot(main = "nodes (ladderize) sort") 
+#' 
+rotate <- function(x, ...) {
+   UseMethod("rotate")
+}
 
 ### TODO: maybe add k, h parameters.
 # ' @param k    numeric scalar, with the number of clusters
@@ -177,15 +188,21 @@ rotate.hclust <- function(x, order,...)
 
 # ' @S3method rotate phylo
 #' @export
-rotate.phylo <- function(x, ...) {
-	library(ape)
+rotate.phylo <- function(x, ..., phy) {
+   if(!missing(phy)) x <- phy
+   # library(ape)
 	ape::rotate(phy=x, ...)
 }
 
 
 # ' @S3method sort dendrogram
 #' @export
-sort.dendrogram <- function(x, decreasing = FALSE,...) {rotate(x, order(labels(x),decreasing =decreasing ,...))}
+sort.dendrogram <- function(x, decreasing = FALSE, type = c("labels", "nodes"), ...) {
+   type <- match.arg(type)
+   switch(type, 
+          "labels" = rotate(x, order(labels(x),decreasing =decreasing ,...)),
+          "nodes" = ladderize(x, right = decreasing, ...))   
+}
 
 # ' @S3method sort hclust
 #' @export
@@ -341,3 +358,108 @@ click_rotate.dendrogram <- function(x, plot = TRUE, plot_after = plot, horiz = F
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#' @title Ladderize a Tree
+#' @export
+#' @description 
+#' This function reorganizes the internal structure of the tree to get the ladderized effect when plotted.
+#' @aliases 
+#' ladderize.dendrogram
+#' ladderize.phylo
+#' ladderize.dendlist
+#' @usage
+#' ladderize(x, right = TRUE, ...)
+#' 
+#' \method{ladderize}{dendrogram}(x, right = TRUE, ...)
+#' 
+#' \method{ladderize}{phylo}(x, right = TRUE, phy, ...)
+#' 
+#' \method{ladderize}{dendlist}(x, right = TRUE, ...)
+#' 
+#' @param x a tree object (either a \link{dendrogram}, \link{dendlist}, or \link[ape]{phylo})
+#' @param right a logical (TRUE) specifying whether the smallest clade is on the right-hand side (when the tree is plotted upwards), or the opposite (if FALSE).
+#' @param ... Currently ignored.
+#' @param phy a placeholder in case the user uses "phy ="
+#' 
+#' @return A rotated tree object
+#' @seealso \code{\link[ape]{ladderize}},
+#' \code{\link{rev.dendrogram}}, \code{\link[ape]{rotate}} ({ape})
+#' @examples
+#' 
+#' dend <- USArrests[1:8,] %>% dist %>% hclust %>% as.dendrogram %>% 
+#'    set("labels_colors") %>% set("branches_k_color", k = 5)
+#' set.seed(123)
+#' dend <- shuffle(dend)
+#' 
+#' par(mfrow = c(1,3))
+#' dend %>% plot(main = "Original")
+#' dend %>% ladderize(TRUE) %>% plot(main = "Right (default)")
+#' dend %>% ladderize(FALSE) %>% plot(main = "Left (rev of right)")
+#' 
+ladderize <- function(x, right = TRUE,...) {
+   UseMethod("ladderize")
+}
+
+
+#' @export
+ladderize.dendrogram <- function (x, right = TRUE, ...)  {
+   if(!is.dendrogram(x)) stop("'object' should be a dendrogram.")   
+   
+   ladderize_node <- function(node) {
+      all_children_leaves <- all(sapply(x, is.leaf))
+      if(is.leaf(node) | all_children_leaves) {return(unclass(node))}
+      # else
+      attr_backup <- attributes(node)
+      new_order <- order(sapply(node, nleaves), decreasing = TRUE)
+      node <- node[new_order]
+      attributes(node) <- attr_backup # fix attributes         
+      
+      for(i in 1:length(node)) {
+         node[[i]] <- ladderize_node(node[[i]])
+      }
+      
+      return(unclass(node))      
+   }
+   
+   new_x <- ladderize_node(x)
+   class(new_x) <- "dendrogram"
+   new_x <- suppressWarnings(stats_midcache.dendrogram(new_x)) # fixes the attributes   
+   
+   if(!right) new_x <- rev(new_x)
+   
+   return(new_x)   
+}
+
+
+
+#' @export
+ladderize.phylo <- function(x, right = TRUE, phy, ...) {
+   if(!missing(phy)) x <- phy
+   # library(ape)
+   ape::ladderize(phy=x, right = right)
+}
+
+#' @export
+ladderize.dendlist <- function (x, right = TRUE, ...)  {
+   for(i in seq_len(length(x))) {
+      x[[i]]  <- ladderize(x[[i]], right = right, ...)
+   }
+   x
+}
+   
+# TODO: add tests to ladderize!
+# TODO: this is probably a nice starting point for untangle (better than sort). Maybe play with it.

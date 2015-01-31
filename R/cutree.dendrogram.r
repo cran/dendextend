@@ -238,6 +238,16 @@ cutree_1h.dendrogram <- function(tree, h,
       if(warn) warning("h has length > 1 and only the first element will be used")
       h <- h[1]
    }
+
+   # deal with cases that we cut the tree to all leaves. (negative h)
+   if(h < 0) {
+      labels_tree <- labels(tree)
+      cluster_vec <- 1:length(labels_tree)
+      names(cluster_vec)[order.dendrogram(tree)] <- labels_tree
+      return(cluster_vec)
+   }
+   
+   
    
    if(use_labels_not_values) {
       FUN <- labels
@@ -299,7 +309,7 @@ cutree_1h.dendrogram <- function(tree, h,
    
    names(cluster_vec) <- unlist(names_in_clusters)
    
-   
+
    # note: The order of the items in cluster_vec, is according to their order in the dendrogram.
    # If the dendrogram was created through as.dendrogram(hclust_object)
    # The original order of the names of the items, from which the hclust (and the dendrogram) object was created from, will not be preserved!
@@ -502,6 +512,15 @@ cutree_1k.dendrogram <- function(tree, k,
                                           ...)
       return(cluster_vec)
    }
+   
+   # deal with cases that we cut the tree to all leaves. (negative h)
+   if(k == nleaves(tree)) {
+      labels_tree <- labels(tree)
+      cluster_vec <- 1:length(labels_tree)
+      names(cluster_vec)[order.dendrogram(tree)] <- labels_tree
+      return(cluster_vec)
+   }
+   
    
    
    # step 1: find all possible h cuts for tree	
@@ -713,7 +732,12 @@ cutree_1k.dendrogram <- function(tree, k,
 #' ##_trying_to_hclust        6.945375 7.079198 7.148629 7.577536 16.99780   100
 #' ##There were 50 or more warnings (use warnings() to see the first 50)        
 #'                  
-#'                          
+#' # notice that if cutree can't find clusters for the desired k/h, it will produce 0's instead!
+#' # (It will produce a warning though...)
+#' # This is a different behaviout than stats::cutree                        
+#' # For example:
+#' cutree(as.dendrogram(hclust(dist(c(1,1,1,2,2)))),
+#'       k=5)
 #'                                          
 #' }
 #' 
@@ -852,7 +876,7 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
          # since this is a step which takes a long time, If possible, I'd rather supply this to the function, so to make sure it runs faster...
          dend_heights_per_k <- heights_per_k.dendrogram(tree)
       }
-      cutree_per_k <- function(x,...) cutree_1k.dendrogram(k=x,...)
+      cutree_per_k <- function(x, tree, ...) cutree_1k.dendrogram(k=x, tree = tree, ...)
       clusters <- sapply(X=k,FUN = cutree_per_k, 
                          tree=tree ,            
                          dend_heights_per_k= dend_heights_per_k,
@@ -875,7 +899,7 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
                          ...)
       colnames(clusters) <- h            
    }
-      
+   
    # return a vector if h/k are scalars:
    if(ncol(clusters)==1) clusters <- clusters[,1] # make it NOT a matrix
 
@@ -883,6 +907,8 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
    if(sort_cluster_numbers) clusters <- sort_levels_values(clusters, force_integer = TRUE, warn = FALSE)
          # we know that cluster id is an integer, so it is fine to use force_integer = TRUE
    
+   if(any(is.na(clusters))) warning("It is impossible to produce a one-to-one cut for the k/h you specidied. 0's have been introduced.")
+
    if(NA_to_0L) clusters[is.na(clusters)] <- 0L
 
    return(clusters)
@@ -892,34 +918,34 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
 
 
 
-if(FALSE) {
-   library(dendextend)
+# if(FALSE) {
+   # library(dendextend)
    
-   set.seed(23235)
-   ss <- sample(1:150, 10 )
-   hc1 <- hclust(dist(iris[ss,-5]), "com")
-   dend1 <- as.dendrogram(hc1)
+   # set.seed(23235)
+   # ss <- sample(1:150, 10 )
+   # hc1 <- hclust(dist(iris[ss,-5]), "com")
+   # dend1 <- as.dendrogram(hc1)
 
-   # does not give the same results!
-   cutree(dend1, k=2:3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=FALSE) 
+   ##does not give the same results!
+   # cutree(dend1, k=2:3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=FALSE) 
    
-   # this gives the same results as the default:
-   cutree.hclust(as.hclust(dend1), k = 3, order_clusters_as_data=TRUE, sort_cluster_numbers=FALSE)
-   stats::cutree(as.hclust(dend1), k = 3)
-   # but not for dendrogram:   
-   cutree(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=TRUE) 
-   cutree(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=FALSE) 
-   
-   
-   # this gives the same results as the default:
-   cutree.hclust(as.hclust(dend1), k = 3, order_clusters_as_data=TRUE, sort_cluster_numbers=TRUE)
-   stats::cutree(as.hclust(dend1), k = 3)
-   stats::cutree(hc1, k = 3)
-   cutree.dendrogram(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, 
-          sort_cluster_numbers=TRUE) 
+   ##this gives the same results as the default:
+   # cutree.hclust(as.hclust(dend1), k = 3, order_clusters_as_data=TRUE, sort_cluster_numbers=FALSE)
+   # stats::cutree(as.hclust(dend1), k = 3)
+   ##but not for dendrogram:   
+   # cutree(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=TRUE) 
+   # cutree(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, sort_cluster_numbers=FALSE) 
    
    
-}
+   ##this gives the same results as the default:
+   # cutree.hclust(as.hclust(dend1), k = 3, order_clusters_as_data=TRUE, sort_cluster_numbers=TRUE)
+   # stats::cutree(as.hclust(dend1), k = 3)
+   # stats::cutree(hc1, k = 3)
+   # cutree.dendrogram(dend1, k=3, order_clusters_as_data=TRUE, try_cutree_hclust=FALSE, 
+          # sort_cluster_numbers=TRUE) 
+   
+   
+# }
 
 
 

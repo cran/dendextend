@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
-Title: Extending R's dendrogram functionality
-Version: 0.17.5
-Date: 2014-09-22
+Title: Extending R's Dendrogram Functionality
+Version: 0.18.3
+Date: 2015-01-31
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "http://www.r-statistics.com"),
     person("Gavin", "Simpson", role = "ctb"), person("Gregory","Jefferis", role
@@ -19,25 +19,28 @@ Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     role = "ctb"), person("skullkey", role = "ctb"), person("Mark",
     "Van Der Loo", email = "mark.vanderloo@gmail.com", comment =
     "https://github.com/markvanderloo d3dendrogram", role = "ctb"),
+    person("Andrie",
+    "de Vries", email = "apdevries@gmail.com", comment =
+    "ggdendro author", role = "ctb"),
     person("Yoav", "Benjamini", role = "ths"))
-Description: The dendextend package offers a set of functions for extending
+Description: Offers a set of functions for extending
     dendrogram objects in R, letting you visualize and compare trees of
     hierarchical clusterings. You can (1) Adjust a trees graphical parameters
     - the color, size, type, etc of its branches, nodes and labels. (2)
     Visually and statistically compare different dendrograms to one another.
 Depends: R (>= 3.0.0)
 Imports: utils, stats, magrittr (>= 1.0.1), whisker
-Suggests: dendextendRcpp (>= 0.5.0), knitr, testthat, colorspace, plyr,
-        profdpm, microbenchmark, gplots, DendSer, dynamicTreeCut,
-        pvclust
-Enhances: ggdendro, labeltodendro,dendroextras, data.table, ape
+Suggests: dendextendRcpp (>= 0.5.0), knitr, testthat, colorspace,
+        ggplot2, plyr, ape, profdpm, microbenchmark, gplots, DendSer,
+        dynamicTreeCut, pvclust
+Enhances: ggdendro, labeltodendro,dendroextras, data.table
 VignetteBuilder: knitr
 License: GPL-2 | GPL-3
 URL: https://github.com/talgalili/dendextend/,
         http://cran.r-project.org/web/packages/dendextend/,
         http://www.r-statistics.com/tag/dendextend/
 BugReports: https://github.com/talgalili/dendextend/issues
-Packaged: 2014-09-22 10:09:11 UTC; user
+Packaged: 2015-01-31 18:26:49 UTC; junior
 Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Gavin Simpson [ctb],
   Gregory Jefferis [ctb] (imported code from his dendroextras package),
@@ -52,8 +55,9 @@ Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Peter Langfelder [ctb],
   skullkey [ctb],
   Mark Van Der Loo [ctb] (https://github.com/markvanderloo d3dendrogram),
+  Andrie de Vries [ctb] (ggdendro author),
   Yoav Benjamini [ths]
 Maintainer: Tal Galili <tal.galili@gmail.com>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-09-22 14:10:09
+Date/Publication: 2015-01-31 21:57:37

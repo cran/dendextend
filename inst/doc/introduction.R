@@ -50,6 +50,110 @@ tanglegram(dendlist(dend1, dend2), margin_inner = 9,
 
 
 
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+# Like: 
+# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+
+# By default, the dend has no colors to the labels
+labels_colors(dend)
+par(mfrow = c(1,2))
+plot(dend, main = "Original dend")
+
+# let's add some color:
+labels_colors(dend) <- 1:5
+# Now each state has a color
+labels_colors(dend) 
+plot(dend, main = "A color for every state")
+
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+small_iris <- iris[c(1, 51, 101, 2, 52, 102), ]
+dend <- as.dendrogram(hclust(dist(small_iris[,-5])))
+# Like: 
+# dend <- small_iris[,-5] %>% dist %>% hclust %>% as.dendrogram
+
+# By default, the dend has no colors to the labels
+labels_colors(dend)
+par(mfrow = c(1,2))
+plot(dend, main = "Original dend")
+
+# let's add some color:
+colors_to_use <- as.numeric(small_iris[,5])
+colors_to_use
+# But sort them based on their order in dend:
+colors_to_use <- colors_to_use[order.dendrogram(dend)]
+colors_to_use
+# Now we can use them
+labels_colors(dend) <- colors_to_use
+# Now each state has a color
+labels_colors(dend) 
+plot(dend, main = "A color for every Species")
+
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+# Like: 
+# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+
+dend1 <- color_branches(dend, k = 3)
+dend2 <- color_labels(dend, k = 3)
+
+par(mfrow = c(1,2))
+plot(dend1, main = "Colored branches")
+plot(dend2, main = "Colored labels")
+
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+# Like: 
+# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+
+labels(dend)
+labels(dend) <- 1:5
+labels(dend)
+
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+# Like: 
+# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+
+# By default, the dend has no text size to it (showing only the first leaf)
+get_leaves_nodePar(dend)[[1]]
+par(mfrow = c(1,2), mar = c(10,4,4,2))
+plot(dend, main = "Original dend")
+
+# let's increase the size of the labels:
+dend <- set(dend, "labels_cex", 2)
+# Now each state has a larger label
+get_leaves_nodePar(dend)[[1]]
+plot(dend, main = "A larger font for labels")
+
+## ------------------------------------------------------------------------
+# install.packages("dendextend")
+library(dendextend)
+
+dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
+# Like: 
+# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+
+# midpoint for all nodes
+get_nodes_attr(dend, "midpoint")
+# Maybe also the height:
+get_nodes_attr(dend, "height")
+
 ## ----, echo=FALSE--------------------------------------------------------
 
 c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
@@ -134,6 +238,7 @@ dend <- 1:5 %>% dist %>% hclust %>% as.dendrogram
 dend %>% get_nodes_attr("height") # node's height
 dend %>% hang.dendrogram %>% get_nodes_attr("height") # node's height (after raising the leaves)
 dend %>% get_nodes_attr("members") # number of members (leaves) under that node
+dend %>% get_nodes_attr("members", id = c(2,5)) # number of members for nodes 2 and 5
 dend %>% get_nodes_attr("midpoint") # how much "left" is this node from its left-most child's location
 dend %>% get_nodes_attr("leaf") # is this node a leaf
 dend %>% get_nodes_attr("label") # what is the label on this node
@@ -305,6 +410,15 @@ dend15 %>%
    rotate(5:1) %>% # the fifth label to go first is "4"
    plot(main = "Rotated tree\n based on order")
 
+## ------------------------------------------------------------------------
+dend110 <- c(1, 3:5, 7,9,10) %>% dist %>% hclust(method = "average") %>% 
+   as.dendrogram %>% color_labels %>% color_branches
+
+par(mfrow = c(1,3))
+dend110 %>% plot(main = "Original tree")
+dend110 %>% sort %>% plot(main = "labels sort")
+dend110 %>% sort(type = "nodes") %>% plot(main = "nodes (ladderize) sort")
+
 ## ----, fig.width=10, fig.height=3----------------------------------------
 par(mfrow = c(1,3))
 dend15 %>% plot(main = "First tree", ylim = c(0,3))
@@ -328,6 +442,14 @@ par(mfrow = c(1,2))
 dend_intersected <- intersect_trees(dend13, dend15)
 dend_intersected[[1]] %>% plot
 dend_intersected[[2]] %>% plot
+
+## ------------------------------------------------------------------------
+# ladderize is like sort(..., type = "node")
+dend <- iris[1:5,-5] %>% dist %>% hclust %>% as.dendrogram
+par(mfrow = c(1,3))
+dend %>% ladderize %>%  plot(horiz = TRUE); abline(v = .2, col = 2, lty = 2)
+dend %>% collapse_branch(tol = 0.2) %>% ladderize %>% plot(horiz = TRUE)
+dend %>% collapse_branch(tol = 0.2) %>% ladderize %>% hang.dendrogram(hang = 0) %>% plot(horiz = TRUE)
 
 ## ----, fig.width=6, fig.height=3-----------------------------------------
 layout(t(c(1,1,1,2,2)))
@@ -353,6 +475,25 @@ the_bars[the_bars==2] <- 8
 
 dend15 %>% plot
 colored_bars(colors = the_bars, dend = dend15)
+
+## ------------------------------------------------------------------------
+# Create a complex dend:
+dend <- iris[1:30,-5] %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k=3) %>% set("branches_lwd", c(1.5,1,1.5)) %>%
+   set("branches_lty", c(1,1,3,1,1,2)) %>%
+   set("labels_colors") %>% set("labels_cex", c(.9,1.2))
+# plot the dend in usual "base" plotting engine:
+plot(dend)
+# Now let's do it in ggplot2 :)
+ggd1 <- as.ggdend(dend)
+library(ggplot2)
+ggplot(ggd1) # reproducing the above plot in ggplot2 :)
+ggplot(ggd1, horiz = TRUE, theme = NULL) # horiz plot (and let's remove theme) in ggplot2
+# Adding some extra spice to it...
+# creating a radial plot:
+# ggplot(ggd1) + scale_y_reverse(expand = c(0.2, 0)) + coord_polar(theta="x")
+# The text doesn't look so great, so let's remove it:
+ggplot(ggd1, labels = FALSE) + scale_y_reverse(expand = c(0.2, 0)) + coord_polar(theta="x")
 
 ## ----, fig.width=7, fig.height=3-----------------------------------------
 par(mfrow = c(1,2))
@@ -459,6 +600,16 @@ dends_15_51 <- dendlist(dend15, dend51)
 dends_15_51
 head(dends_15_51)
 
+## ------------------------------------------------------------------------
+# example 1
+x <- 1:5 %>% dist %>% hclust %>% as.dendrogram
+y <- set(x, "labels", 5:1)
+
+# example 2
+dend1 <- 1:10 %>% dist %>% hclust %>% as.dendrogram
+dend2 <- dend1 %>% set("labels", c(1,3,2,4, 5:10) )
+dend_diff(dend1, dend2)
+
 ## ----, fig.width=5, fig.height=3-----------------------------------------
 tanglegram(dends_15_51)
 # Same as using:
@@ -485,6 +636,49 @@ x %>% plot(main = paste("entanglement =", round(entanglement(x), 2)))
 ## ----, fig.width=5, fig.height=3-----------------------------------------
 x <- dends_15_51 %>% untangle(method = "step2side") 
 x %>% plot(main = paste("entanglement =", round(entanglement(x), 2)))
+
+## ------------------------------------------------------------------------
+set.seed(23235)
+ss <- sample(1:150, 10 )
+dend1 <- iris[ss,-5] %>% dist %>% hclust("com") %>% as.dendrogram
+dend2 <- iris[ss,-5] %>% dist %>% hclust("single") %>% as.dendrogram
+dend3 <- iris[ss,-5] %>% dist %>% hclust("ave") %>% as.dendrogram
+dend4 <- iris[ss,-5] %>% dist %>% hclust("centroid") %>% as.dendrogram
+
+dend1234 <- dendlist("Complete" = dend1, "Single" = dend2, "Average" = dend3, "Centroid" = dend4)
+
+par(mfrow = c(2,2))
+plot(dend1, main = "Complete")
+plot(dend2, main = "Single")
+plot(dend3, main = "Average")
+plot(dend4, main = "Centroid")
+
+
+## ------------------------------------------------------------------------
+all.equal(dend1, dend1)
+all.equal(dend1, dend2)
+all.equal(dend1, dend2, use.edge.length = FALSE)
+all.equal(dend1, dend2, use.edge.length = FALSE, use.topology = FALSE)
+
+all.equal(dend2, dend4, use.edge.length = TRUE)
+all.equal(dend2, dend4, use.edge.length = FALSE)
+
+all.equal(dendlist(dend1, dend1, dend1))
+
+all.equal(dend1234)
+all.equal(dend1234, use.edge.length = FALSE)
+
+## ------------------------------------------------------------------------
+x <- 1:5 %>% dist %>% hclust %>% as.dendrogram
+y <- set(x, "labels", 5:1)
+
+dist.dendlist(dendlist(x1 = x,x2 = x,y1 = y))
+dend_diff(x,y)
+
+dist.dendlist(dend1234)
+
+## ------------------------------------------------------------------------
+cor.dendlist(dend1234)
 
 ## ------------------------------------------------------------------------
 cor_bakers_gamma(dend15, dend51)

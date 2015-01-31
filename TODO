@@ -4,7 +4,36 @@ TODO for future releases:
 Next action
 --------------
 
+
+
+
+add to vignette:
+1) examples of using ggdendro for plotting a dendrogram!
+2) דוגמא לפונקציות נוחות הכי חשובות 
+labels <-
+labels_colors
+branches_colors
+לדבר על ברירות המחדל שלהם.
+לדבר על כך שהפונקציות הללו מאפשרות לשנות את הפרמטרים הללו של האובייקט.
+אבל שדרך עבודה יותר נוחה היא פונקציה שמקבלת עץ ופולטת עץ.
+
+
+
+לתקן את המשפט על דנדאקסטנד שמופיע כאן:
+http://cran.r-project.org/web/views/Phylogenetics.html
+
+
+להוסיף ל installr
+עוד תפריט של "להתקין חבילת ZIP מ URL" - שיקפיץ חלון טקסט, ואז יריץ את 
+install.packages.zip("http://www.christophheibl.de/phyloch_1.5-5.zip")
+
+
+* Make a cheat sheet!
+
 * tanglegram - add a default color to the lines, so that streight lines will be green, and the red ones will be red. (like in the vignette)
+
+
+* vignette - add examples of using color_labels, color_branches (just because people are likely to want to use it)
 
 
 

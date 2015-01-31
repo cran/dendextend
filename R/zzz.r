@@ -147,7 +147,7 @@
 
 
 dendextendWelcomeMessage <- function(){
-   library(utils)   
+   # library(utils)   
    
    paste("\n",     
          "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
@@ -317,11 +317,11 @@ dendextendWelcomeMessage <- function(){
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes ", args = "--no-build-vignettes",  cran = FALSE, cleanup = FALSE)
 # check(args="--as-cran")
-# check("D:/Dropbox/aaaa good R code/AA - My packages/dendextend", args="--as-cran")
+# devtools::check("C:/Dropbox/aaaa good R code/AA - My packages/dendextend", args="--as-cran")
 #                 Thanks to: http://stackoverflow.com/questions/10017702/r-cmd-check-options-for-more-rigorous-testing-2-15-0
 
 
 # shell('git log --graph --stat --date=short --pretty=format:"%ad(%an) %s |%h" > ChangeLog', intern = TRUE)
 # file.copy("NEWS", "NEWS.md",overwrite = TRUE)
-# build_win(version="R-devel")
+# devtools::build_win(version="R-devel")
 # release()

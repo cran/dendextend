@@ -1,3 +1,112 @@
+dendextend 0.18.3 (2015-01-31)
+----------------------------------------
+
+###OTHER NOTES: (Thanks to Prof Brian Ripley for help.)
+   * Fix "title case" for the package's Title in the DESCRIPTION
+   * Fix "No package encoding and non-ASCII characters in the following R files"
+   * Fix "Please use :: or requireNamespace() instead." by commenting out all "library", since using "::" is enough!
+   * dendextend 0.18.3 is intended to be shipped to CRAN.
+
+
+
+dendextend 0.18.2 (2015-01-31)
+----------------------------------------
+
+###OTHER NOTES:
+   * Minor doc fix for `collapse_branch`
+   * dendextend 0.18.2 is intended to be shipped to CRAN.
+
+
+
+dendextend 0.18.1 (2015-01-31)
+----------------------------------------
+
+###VIGNETTE - new sections!
+   * Quick functions for FAQ
+      * How to colour the labels of a dendrogram by an additional factor variable
+      * How to color a dendrogram's branches/labels based on cluster (i.e.: cutree result)
+      * Change dendrogram's labels
+      * Larger font for leaves in a dendrogram
+      * How to view attributes of a dendrogram
+   * ggplot2 integration (!)
+   * Comparing trees: 
+      * dend_diff
+      * all.equal
+      * dist.dendlist
+      * cor.dendlist
+   * Others
+      * rotate - explain about sort
+      * collapse_branch
+
+
+###UPDATED FUNCTIONS:
+   * `sort.dendrogram` - added a new parameter: type = c("labels", "nodes"), to use `ladderize` for sorting
+   * `ggplot.ggdend` - support theme = NULL
+
+###OTHER NOTES:
+   * dendextend 0.18.1 is intended to be shipped to CRAN.
+
+
+dendextend 0.18.0 (2015-01-29)
+----------------------------------------
+
+###NEW FILES:
+   * ape.R - moved `as.dendrogram.phylo` and `as.phylo.dendrogram` functions to it.
+   * cor.dendlist.R - For the cor.dendlist function
+   * renamed imports_stats.R to stats_imports.R
+   * ggdendro.R
+   * ggdend.R
+   * dist_long.R
+
+###NEW FUNCTIONS:
+   * More connections:
+      * A new phylo method for `labels` and `labels<-`
+   * More ways to compare trees:
+      * cor.dendlist - Correlation matrix between a list of trees.
+      * partition_leaves - A list with labels for each subtree (edge)
+      * distinct_edges - Finds the edges present in the first tree but not in the second
+      * highlight_distinct_edges - Highlight distint edges in a tree (compared to another one). Works for both dendrogram and dendlist.
+      * dend_diff - Plots two trees side by side, highlighting edges unique to each tree in red. Works for both dendrogram and dendlist.
+      * dist.dendlist - Topological Distances Between Two dendrograms (currently only the Robinson-Foulds distance)
+      * all.equal.dendrogram/all.equal.dendlist - Global Comparison of two (or more) dendrograms
+      * `which_node` - finds Which node is common to a group of labels
+   * Dendrograms in ggplot2! (enhancing the ggdendro package)
+      * `dendrogram_data` (internal) function - a copy of the function from the ggdendro package (the basis for the new ggdend class).
+      * `get_leaves_nodePar` - Get nodePar of dendrogram's leaves (designed to help with as.ggdend)
+      * `as.ggdend.dendrogram` - turns a dendrogram to the ggdend class, ready to be plotted with ggplot2.
+      * `prepare.ggdend` - fills a ggdend object with various default values (to be later used when plotted)
+      * `ggplot.ggdend` - plots a ggdend with the ggplot2 engine (also the function `theme_dendro` was imported from the ggdendro package).
+   * Others:
+      * `remove_nodes_nodePar` - as the name implies...
+      * `collapse_branch` - simplifies a tree with branches lower than some tollerance level   
+      * `ladderize` - Ladderize a Tree (reorganizes the internal structure of the tree to get the ladderized effect when plotted)
+
+###NEW TESTS:
+   * partition_leaves
+   * distinct_edges
+   * dend_diff 
+   * dist.dendlist
+
+
+###UPDATED FUNCTIONS:
+   * `nleaves.phylo` - no longer require conversion to a dendrogram in order to compute.
+   * `labels<-.dendrogram` - no longer forces as.character conversion
+   * `tanglegram` - a new highlight_distinct_edges parameter (default is TRUE)
+   * `cutree` - now produces warnings if it returns 0's. i.e.: when it can't cut the tree based on the required parameter. (following isue #5 reported by grafab)
+   * `cutree_1h.dendrogram` and `cutree_1k.dendrogram` - will now create clusters as the number of items if k==nleaves(tree) or if h<0. This is both consistent with stats::hclust, but it also "makes sense" (since this is well defined for ANY tree). Also updated the tests.
+   * Rename `get_branches_attr` to be `get_root_branches_attr`
+   * `get_nodes_attr` - added the "id" parameter (to get attributes of only a subset of id's)
+   * `as.dendrogram.phylo` is properly exported now.
+
+
+dendextend 0.17.6 (2014-12-08)
+----------------------------------------
+
+###NEW FUNCTIONS:
+   * dist_long - Turns a dist object to a "long" table.
+
+
+
 dendextend 0.17.5 (2014-09-22)
 ----------------------------------------
 

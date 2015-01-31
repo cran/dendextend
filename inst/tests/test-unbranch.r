@@ -7,9 +7,9 @@ test_that("Get attribute of node's branches (height)",{
    hc <- hclust(dist(USArrests[1:3,]), "ave")
    dend <- as.dendrogram(hc)
       
-   expect_equal(get_branches_attr(dend, "height") , c(0, 37.17700902))   
-   expect_true(unlist(get_branches_attr(dend, "leaf")))
-   expect_warning(get_branches_attr(unclass(dend), "height")) # warn when used on an object which is NOT of class "dendrogram"
+   expect_equal(get_root_branches_attr(dend, "height") , c(0, 37.17700902))   
+   expect_true(unlist(get_root_branches_attr(dend, "leaf")))
+   expect_warning(get_root_branches_attr(unclass(dend), "height")) # warn when used on an object which is NOT of class "dendrogram"
 })
 
 
@@ -28,7 +28,7 @@ test_that("Raising a dendrogram's root height",{
 
 
 test_that("unbranching a dendrogram",{
-   hc <- hclust(dist(USArrests[10:13,]), "ward")
+   hc <- hclust(dist(USArrests[10:13,]), "ave")
    dend <- as.dendrogram(hc)
 #    plot(dend)
    

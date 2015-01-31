@@ -97,6 +97,51 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 
 
 
+#' @title Get nodePar of dendrogram's leaves
+#' @export
+#' @param object a dendrogram object 
+#' @param simplify logical (default is FALSE). If TRUE, then the return vector is 
+#' after using \code{unlist} on it.
+#' @param ... not used
+#' @return 
+#' A list (or a vector) with the dendrogram's leaves nodePar attribute
+#' @seealso \link{get_nodes_attr}, \link{assign_values_to_leaves_nodePar}, \link{labels_colors}
+#' @examples
+#' # define dendrogram object to play with:
+#' hc <- hclust(dist(USArrests[1:3,]), "ave")
+#' dend <- as.dendrogram(hc)
+#' 
+#' # get_leaves_attr(dend) # error :)
+#' get_leaves_nodePar(dend)
+#' labels_colors(dend) <- 1:3
+#' get_leaves_nodePar(dend)
+#' 
+#' dend <- assign_values_to_leaves_nodePar(dend, 2, "lab.cex")
+#' get_leaves_nodePar(dend)
+#' 
+#' plot(dend)
+#' 
+get_leaves_nodePar <- function (object, simplify = FALSE, ...) {
+   if(!is.dendrogram(object)) warning("'object' should be a dendrogram.")   
+   
+   is_node_leaf <- get_nodes_attr(object, "leaf")
+   is_node_leaf[is.na(is_node_leaf)] <- FALSE
+   
+   ret <- get_nodes_attr(object, "nodePar", simplify = FALSE)[is_node_leaf]
+   if(simplify) ret <- unlist(ret)   
+   
+   return(ret)   
+}
+
+
+
+
+
+
+
+
+
+
 
 #' @title Get attributes of dendrogram's nodes
 #' @export
@@ -107,6 +152,7 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #' @param object a dendrogram object 
 #' @param attribute character scalar of the attribute (\code{attr})
 #' we wish to get from the nodes
+#' @param id integer vector. If given - only the attr of these nodes id will be returned (via depth first search)
 #' @param include_leaves logical. Should leaves attributes be included as well?
 #' @param include_branches logical. Should non-leaf (branch node) 
 #' attributes be included as well?
@@ -141,8 +187,12 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #' get_leaves_attr(dend, "members") # should be 1's
 #' get_nodes_attr(dend, "members", include_branches = FALSE, na.rm = TRUE) # 
 #' get_nodes_attr(dend, "members") # 
+#' get_nodes_attr(dend, "members",  simplify = FALSE)  
 #' get_nodes_attr(dend, "members", include_leaves = FALSE, na.rm = TRUE) # 
 #' 
+#' get_nodes_attr(dend, "members",  id = c(1,3), simplify = FALSE)  
+#' get_nodes_attr(dend, "members", id = c(1,3)) # 
+#'
 #' 
 #' hang_dend <- hang.dendrogram(dend)
 #' get_leaves_attr(hang_dend, "height") # no longer 0!
@@ -163,7 +213,9 @@ get_leaves_attr <- function (object, attribute, simplify = TRUE, ...) {
 #'                )
 #' }
 #' 
-get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
+get_nodes_attr <- function (object, attribute, 
+                            id,
+                            include_leaves = TRUE,
                             include_branches = TRUE,
                             simplify = TRUE,
                             na.rm = FALSE, ...) {
@@ -183,19 +235,27 @@ get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
 #   empty_list <- vector("list", nnodes(object))
    empty_list <- as.list(rep(NA, nnodes(object)))
    object_attr <- empty_list
-   
+   missing_id  <-  missing(id)   
+
+
    # this function is used to modify object_attr. What it returns is not important.
    i_node <- 0
    get_attr_from_node <- function(dend_node) {
       i_node <<- i_node + 1
       
+      # if we have id's and this is not it - we can skip it...
+      # FALSE & NULL # fails
+      # FALSE && NULL # works...
+      if(!missing_id && !(i_node %in% id) ) return(invisible())
+      
+         
       # if we should not include_leaves, then we skip when a leaf is encountered.
       if(!include_leaves && is.leaf(dend_node)) return(NULL)
       if(!include_branches && !is.leaf(dend_node)) return(NULL)      
       
       i_attr <- attr(dend_node, attribute)
       if(!is.null(i_attr)) object_attr[[i_node]] <<- i_attr
-      return(NULL)
+      return(invisible())
    }   
    dendrapply(object, get_attr_from_node)   
 
@@ -207,7 +267,14 @@ get_nodes_attr <- function (object, attribute, include_leaves = TRUE,
 
    
    if(dendextend_options("warn") && identical(object_attr, simplify2array(empty_list))) warning("It seems that the attribute '", attribute, "' does not exist - returning NA.")
-   
+
+   # TODO: this could probably be more optimized - say, by looking only at the above mentioned id's
+   # and not create all of the vector and only then take a subset. 
+   # But for now, I think this is more maintainable...
+   if(!missing_id) {
+      object_attr <- object_attr[id]
+   }
+
    return(object_attr)   
 }
 
@@ -830,7 +897,8 @@ assign_values_to_nodes_nodePar <- function(object, value, nodePar = c("pch", "ce
 #' 
 #' @param object a dendrogram object 
 #' @param value a new value scalar for the edgePar attribute. 
-#' @param edgePar the value inside edgePar to adjust.
+#' @param edgePar a character indicating the value inside edgePar to adjust.
+#' Can be either "col", "lty", or "lwd".
 #' @param skip_leaves logical (FALSE) - should the leaves be skipped/ignored?
 #' @param warn logical (default from dendextend_options("warn") is FALSE).
 #' Set if warning are to be issued, it is safer to keep this at TRUE,
@@ -838,7 +906,7 @@ assign_values_to_nodes_nodePar <- function(object, value, nodePar = c("pch", "ce
 #' @param ... not used
 #' @return 
 #' A dendrogram, after adjusting the edgePar attribute in all of its branches, 
-#' @seealso \link{get_branches_attr}
+#' @seealso \link{get_root_branches_attr}
 #' @examples
 #' 
 #' \dontrun{
@@ -902,7 +970,7 @@ assign_values_to_branches_edgePar <- function(object, value, edgePar, skip_leave
 #' @param ... not used
 #' @return 
 #' A dendrogram, after removing the edgePar attribute in all of its branches, 
-#' @seealso \link{get_branches_attr}, \link{assign_values_to_branches_edgePar}
+#' @seealso \link{get_root_branches_attr}, \link{assign_values_to_branches_edgePar}
 #' @examples
 #' 
 #' \dontrun{
@@ -919,7 +987,7 @@ remove_branches_edgePar <- function(object, ...) {
    if(!is.dendrogram(object)) stop("'object' should be a dendrogram.")   
    
    remove_edgePar_from_branch <- function(dend_node) {
-      attr(dend_node, "edgePar") <- NULL # remove edgePar if it is empty
+      attr(dend_node, "edgePar") <- NULL # remove edgePar
       return(unclass(dend_node))
    }   
    new_dend_object <- dendrapply(object, remove_edgePar_from_branch)
@@ -927,6 +995,41 @@ remove_branches_edgePar <- function(object, ...) {
    return(new_dend_object)
 }
 
+
+
+
+#' @title Remove all nodePar values from a dendrogram's nodes
+#' @export
+#' @description
+#' Go through the dendrogram nodes and remove its nodePar
+#' @param object a dendrogram object 
+#' @param ... not used
+#' @return 
+#' A dendrogram, after removing the nodePar attribute in all of its nodes, 
+#' @seealso \link{get_root_branches_attr}, \link{assign_values_to_branches_edgePar}
+#' @examples
+#' 
+#' \dontrun{
+#' 
+#' dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
+#' dend <- color_branches(dend, 3)
+#' par(mfrow = c(1,2))
+#' plot(dend)
+#' plot(remove_branches_edgePar(dend))
+#' 
+#' }
+#' 
+remove_nodes_nodePar <- function(object, ...) {
+   if(!is.dendrogram(object)) stop("'object' should be a dendrogram.")   
+   
+   remove_nodePar_from_node <- function(dend_node) {
+      attr(dend_node, "nodePar") <- NULL # remove nodePar
+      return(unclass(dend_node))
+   }   
+   new_dend_object <- dendrapply(object, remove_nodePar_from_node)
+   class(new_dend_object) <- "dendrogram"
+   return(new_dend_object)
+}
 
 
 

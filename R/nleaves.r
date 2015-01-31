@@ -19,28 +19,6 @@
 
 
 
-# as.dendrogram(as.hclust(as.phylo(hc)))
-#' @export
-# ' @S3method as.dendrogram phylo
-as.dendrogram.phylo <- function(object,...) {
-	library(ape)
-	as.dendrogram(as.hclust(object))
-}
-
-
-# We don't need to export this function (it is S3)
-# ' @S3method as.phylo dendrogram
-# ' @export
-#' @method as.phylo dendrogram
-as.phylo.dendrogram <- function(x,...) {
-	library(ape)
-	ape::as.phylo.hclust(as.hclust(x))
-}
-## http://stackoverflow.com/questions/13085481/namespace-dependencies-not-required
-## I also added ape to "Imports" in DESCRIPTION in order to avoid the error:
-##    Namespace dependency not required: 'ape'
-## Update: I removed ape from the imports and NAMESPACE.
-
 
 #' @title Counts the number of leaves in a tree
 #' @export
@@ -120,7 +98,10 @@ nleaves.hclust <- function(x,...) {length(x$order)}
 
 # ' @S3method nleaves phylo
 #' @export
-nleaves.phylo <- function(x,...) {nleaves(as.dendrogram(x))}
+nleaves.phylo <- function(x,...) {
+   #nleaves(as.dendrogram(x))
+   length(labels(x))
+}
 
 # TODO: there is probably a better way for getting the tree size for a phylo object.
 
@@ -300,8 +281,8 @@ unclass_dend <- function(dend,...)
 # ' @S3method head dendrogram
 #' @export
 head.dendrogram <- function(x, n = 3L, ...) {
-	library(utils)
-   str(x, max.leve = n,...)
+	# library(utils)
+   utils::str(x, max.leve = n,...)
    cat( "etc...","\n")
 }
 # hc <- hclust(dist(USArrests), "ave")
