@@ -42,7 +42,8 @@
 #'       type = c("rectangle", "triangle"), edge.root = FALSE, ...)
 #'    
 #' ggplot.ggdend(data,  segments = TRUE, 
-#'             labels = TRUE, horiz = FALSE, theme = theme_dendro(), ...)
+#'             labels = TRUE, nodes = TRUE,
+#'             horiz = FALSE, theme = theme_dendro(), ...)
 #'             
 #' ggplot.dendrogram(data, ...)
 #' 
@@ -71,6 +72,7 @@
 #' @param data a ggdend class object. 
 #' @param segments a logical (TRUE) if to plot the segments (branches).
 #' @param labels a logical (TRUE) if to plot the labels.
+#' @param nodes a logical (TRUE) if to plot the nodes (points).
 #' @param horiz a logical (TRUE) indicating if the dendrogram should be drawn horizontally or not.
 #' @param theme the ggplot2 theme to use (default is \link{theme_dendro}, can also be NULL
 #' for the default ggplot2 theme)
@@ -181,6 +183,7 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
    if(nleaves(dend) == 0) stop("dend must have at least one node")
    if(edge.root) stop("edge.root is not supported at this point (this parameter is a place-holder for when it will)")
       
+   # ggdata <- dendextend:::dendrogram_data(dend, type = "rectangle")
    ggdata <- dendrogram_data(dend, type = type) # ggdendro:::dendrogram_data(dend)
    
    
@@ -201,15 +204,37 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
    })
    # nnodes(dend) == nrow(nodes_xy) # sanity check
    
+   
+   
+   
+   # dend %>% unclass %>% str
+   
    # add parameters to nodes_xy
    # graphical parameters
-   nodes_attr <- get_nodes_attr(dend, "nodePar", simplify = TRUE)
-   if(!allNA(nodes_attr)) {
-      nodes_attr_names <- rownames(nodes_attr)
-      if("pch" %in% nodes_attr_names) nodes_xy$pch <- nodes_attr["pch",] # should actually ALWAYS be here...
-      if("cex" %in% nodes_attr_names) nodes_xy$cex <- nodes_attr["cex",]
-      if("col" %in% nodes_attr_names) nodes_xy$col <- nodes_attr["col",]
+   nodes_attr <- get_nodes_attr(dend, "nodePar", simplify = FALSE)
+
+            # nodes_attr <- get_nodes_attr(d1, "nodePar", simplify = FALSE)
+   get_nodePar_attr_par <- function(par) {
+               # The rep is because a segment has two lines. So we use each: rep(1:4, each = 2)
+               # tmp <- rep(unlist(sapply(nodes_attr,  `[`, name = par)), each = 1) # like doing edgePar_attr[[1]] ["col"]
+      values <- sapply(nodes_attr,  `[`, name = par) # like doing edgePar_attr[[1]] ["col"]
+      null2NA <- function(x) ifelse(is.null(x), NA, x)
+      values <- sapply(values, null2NA) # in case the attr is missing, it fills the NULL with NA
+      # if(is.null(tmp)) tmp <- rep(NA, length(nodes_attr))
+      unlist(values)
    }
+
+
+   
+   nodes_xy$pch <- get_nodePar_attr_par("pch") 
+   nodes_xy$cex <- get_nodePar_attr_par("cex") 
+   nodes_xy$col <- get_nodePar_attr_par("col") 
+
+##########################################
+   
+   
+   
+   
    # others: (won't be used for plotts, but in the future someone might want to use them in some graphical way...)
    nodes_xy$members <- get_nodes_attr(dend, "members")
    nodes_xy$midpoint <- get_nodes_attr(dend, "midpoint")
@@ -242,9 +267,19 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
          #        ss_col <- sapply(edgePar_attr_names, function(x) {"col" %in% x}) # no longer needed
       
    # par is a character of the par to get from edgePar_attr
-   get_edgePar_attr_par <- function(par) rep(unlist(sapply(edgePar_attr,  `[`, name = par)), each = 2) # like doing edgePar_attr[[1]] ["col"]
+   get_edgePar_attr_par <- function(par) {
+      values <- sapply(edgePar_attr,  `[[`, name = par)
+      null2NA <- function(x) ifelse(is.null(x), NA, x)
+      values <- sapply(values, null2NA) # in case the attr is missing, it fills the NULL with NA
+      rep(unlist(values), each = 2) # like doing edgePar_attr[[1]] ["col"]
+   }
+      
    # The rep is because a segment has two lines. So we use each: rep(1:4, each = 2)
    
+#    length(get_edgePar_attr_par("col"))
+   # length(get_edgePar_attr_par("lwd"))
+#    dim(ggdata$segments)
+
    ggdata$segments$col <- get_edgePar_attr_par("col") # like doing edgePar_attr[[1]] ["col"]
    ggdata$segments$lwd <- get_edgePar_attr_par("lwd")
    ggdata$segments$lty <- get_edgePar_attr_par("lty")
@@ -264,8 +299,14 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
       # [[1]]$pch
       # [1] NA   
 
-   get_leaves_edgePar_attr_par <- function(par) unlist(sapply(leaves_edgePar_attr,  `[`, name = par)) # like doing edgePar_attr[[1]] ["col"]
-   # The rep is because a segment has two lines. So we use each: rep(1:4, each = 2)
+
+   get_leaves_edgePar_attr_par <- function(par) {
+      values <- sapply(leaves_edgePar_attr,  `[[`, name = par)
+      null2NA <- function(x) ifelse(is.null(x), NA, x)
+      values <- sapply(values, null2NA) # in case the attr is missing, it fills the NULL with NA
+      unlist(values) # like doing edgePar_attr[[1]] ["col"]
+   }
+   
    
 
    the_lab.col <- get_leaves_edgePar_attr_par("lab.col") # like doing edgePar_attr[[1]] ["col"]
@@ -397,6 +438,17 @@ prepare.ggdend <- function(data, ...){
    #    filling missing values 
    if(any(is.na(data$labels$cex))) data$labels$cex[is.na(data$labels$cex)] <- 1   
    
+   
+   #    Fix the "nodes" table
+   #    -------------
+   # We fix a row only if we have some value for pch/cex/col in that row.
+   ss_has_value <- !apply(data$nodes[,c("pch", "cex", "col")], 1, allNA)
+   #    filling missing values 
+   data$nodes$pch <- ifelse(ss_has_value & is.na(data$nodes$pch), 1 , data$nodes$pch)
+   data$nodes$cex <- ifelse(ss_has_value & is.na(data$nodes$cex), 3.5 , data$nodes$cex)
+   data$nodes$col <- ifelse(ss_has_value & is.na(data$nodes$col), 1 , data$nodes$col)
+   
+   
    data
 }
 
@@ -407,7 +459,7 @@ prepare.ggdend <- function(data, ...){
 # polar cor is a problem with text: http://stackoverflow.com/questions/8468472/adjusting-position-of-text-labels-in-coord-polar-histogram-in-ggplot2
 
 #' @export
-ggplot.ggdend <- function(data,  segments = TRUE, labels = TRUE, 
+ggplot.ggdend <- function(data,  segments = TRUE, labels = TRUE, nodes = TRUE,
                           horiz = FALSE, theme = theme_dendro(), ...) {
    #    library(dendextend)
    #    library(ggdendro)
@@ -416,11 +468,13 @@ ggplot.ggdend <- function(data,  segments = TRUE, labels = TRUE,
    # library(ggplot2)
    ggplot <- ggplot2::ggplot
    geom_segment <- ggplot2::geom_segment
+   geom_point <- ggplot2::geom_point
    aes <- ggplot2::aes   
    guides <- ggplot2::guides
    scale_colour_identity <- ggplot2::scale_colour_identity
    scale_size_identity <- ggplot2::scale_size_identity
    scale_linetype_identity <- ggplot2::scale_linetype_identity
+   scale_shape_identity <- ggplot2::scale_shape_identity
    geom_text <- ggplot2::geom_text
    coord_flip <- ggplot2::coord_flip
    scale_y_reverse <- ggplot2::scale_y_reverse
@@ -460,6 +514,20 @@ ggplot.ggdend <- function(data,  segments = TRUE, labels = TRUE,
             guides(linetype = FALSE, col = FALSE) + 
       scale_colour_identity() + scale_size_identity()  + scale_linetype_identity()
    }
+   
+   if (nodes) {
+      p <- p +  geom_point(data = data$nodes, 
+                             aes_string(x = "x", y = "y", colour = "col", shape = "pch", size = "cex")) +
+         guides(shape = FALSE, col = FALSE, size = FALSE) + 
+         # scale_colour_identity() + scale_size_identity()  + 
+         scale_shape_identity()
+   }
+   # http://docs.ggplot2.org/0.9.3.1/geom_point.html
+   
+#    p +  geom_point(data = data$nodes, 
+#                    aes_string(x = "x", y = "y", colour = "col", shape = "pch", size = 3.5)) +
+#       guides(shape = FALSE, col = FALSE, size = FALSE) + 
+#       scale_shape_identity()
    
    
    if (labels) {

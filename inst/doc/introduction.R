@@ -3,7 +3,7 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 200,
+   dpi = 60,
   comment = "#>",
   tidy = FALSE)
 
@@ -49,110 +49,6 @@ tanglegram(dendlist(dend1, dend2), margin_inner = 9,
 # cutree(dend2,3)
 
 
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
-# Like: 
-# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
-
-# By default, the dend has no colors to the labels
-labels_colors(dend)
-par(mfrow = c(1,2))
-plot(dend, main = "Original dend")
-
-# let's add some color:
-labels_colors(dend) <- 1:5
-# Now each state has a color
-labels_colors(dend) 
-plot(dend, main = "A color for every state")
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-small_iris <- iris[c(1, 51, 101, 2, 52, 102), ]
-dend <- as.dendrogram(hclust(dist(small_iris[,-5])))
-# Like: 
-# dend <- small_iris[,-5] %>% dist %>% hclust %>% as.dendrogram
-
-# By default, the dend has no colors to the labels
-labels_colors(dend)
-par(mfrow = c(1,2))
-plot(dend, main = "Original dend")
-
-# let's add some color:
-colors_to_use <- as.numeric(small_iris[,5])
-colors_to_use
-# But sort them based on their order in dend:
-colors_to_use <- colors_to_use[order.dendrogram(dend)]
-colors_to_use
-# Now we can use them
-labels_colors(dend) <- colors_to_use
-# Now each state has a color
-labels_colors(dend) 
-plot(dend, main = "A color for every Species")
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
-# Like: 
-# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
-
-dend1 <- color_branches(dend, k = 3)
-dend2 <- color_labels(dend, k = 3)
-
-par(mfrow = c(1,2))
-plot(dend1, main = "Colored branches")
-plot(dend2, main = "Colored labels")
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
-# Like: 
-# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
-
-labels(dend)
-labels(dend) <- 1:5
-labels(dend)
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
-# Like: 
-# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
-
-# By default, the dend has no text size to it (showing only the first leaf)
-get_leaves_nodePar(dend)[[1]]
-par(mfrow = c(1,2), mar = c(10,4,4,2))
-plot(dend, main = "Original dend")
-
-# let's increase the size of the labels:
-dend <- set(dend, "labels_cex", 2)
-# Now each state has a larger label
-get_leaves_nodePar(dend)[[1]]
-plot(dend, main = "A larger font for labels")
-
-## ------------------------------------------------------------------------
-# install.packages("dendextend")
-library(dendextend)
-
-dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
-# Like: 
-# dend <- USArrests[1:5,] %>% dist %>% hclust %>% as.dendrogram
-
-# midpoint for all nodes
-get_nodes_attr(dend, "midpoint")
-# Maybe also the height:
-get_nodes_attr(dend, "height")
 
 ## ----, echo=FALSE--------------------------------------------------------
 
@@ -410,7 +306,7 @@ dend15 %>%
    rotate(5:1) %>% # the fifth label to go first is "4"
    plot(main = "Rotated tree\n based on order")
 
-## ------------------------------------------------------------------------
+## ----, fig.width=12, fig.height=6----------------------------------------
 dend110 <- c(1, 3:5, 7,9,10) %>% dist %>% hclust(method = "average") %>% 
    as.dendrogram %>% color_labels %>% color_branches
 
@@ -462,6 +358,7 @@ dend15 %>% set("branches_k_color") %>% plot(horiz = TRUE)
 dend15 %>% rect.dendrogram(k=3, horiz = TRUE,
                            border = 8, lty = 5, lwd = 2)
 
+
 ## ----, fig.width=4, fig.height=4-----------------------------------------
 is_odd <- ifelse(labels(dend15) %% 2, 2,3)
 is_345 <- ifelse(labels(dend15) > 2, 3,4)
@@ -481,12 +378,14 @@ colored_bars(colors = the_bars, dend = dend15)
 dend <- iris[1:30,-5] %>% dist %>% hclust %>% as.dendrogram %>%
    set("branches_k_color", k=3) %>% set("branches_lwd", c(1.5,1,1.5)) %>%
    set("branches_lty", c(1,1,3,1,1,2)) %>%
-   set("labels_colors") %>% set("labels_cex", c(.9,1.2))
+   set("labels_colors") %>% set("labels_cex", c(.9,1.2)) %>% 
+   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", "NA"))
 # plot the dend in usual "base" plotting engine:
 plot(dend)
 # Now let's do it in ggplot2 :)
 ggd1 <- as.ggdend(dend)
 library(ggplot2)
+# the nodes are not implemented yet.
 ggplot(ggd1) # reproducing the above plot in ggplot2 :)
 ggplot(ggd1, horiz = TRUE, theme = NULL) # horiz plot (and let's remove theme) in ggplot2
 # Adding some extra spice to it...
@@ -496,12 +395,13 @@ ggplot(ggd1, horiz = TRUE, theme = NULL) # horiz plot (and let's remove theme) i
 ggplot(ggd1, labels = FALSE) + scale_y_reverse(expand = c(0.2, 0)) + coord_polar(theta="x")
 
 ## ----, fig.width=7, fig.height=3-----------------------------------------
-par(mfrow = c(1,2))
-library(DendSer)
-DendSer.dendrogram(dend15)
-
-dend15 %>% color_branches %>%                      plot
-dend15 %>% color_branches %>% rotate_DendSer %>%   plot
+if(require(DendSer)) {
+   par(mfrow = c(1,2))
+   DendSer.dendrogram(dend15)
+   
+   dend15 %>% color_branches %>%                      plot
+   dend15 %>% color_branches %>% rotate_DendSer %>%   plot
+}
 
 ## ----, message=FALSE-----------------------------------------------------
 library(gplots)
@@ -514,12 +414,31 @@ heatmap.2(x)
 # now let's spice up the dendrograms a bit:
 Rowv  <- x %>% dist %>% hclust %>% as.dendrogram %>%
    set("branches_k_color", k = 3) %>% set("branches_lwd", 4) %>%
-   rotate_DendSer(ser_weight = dist(x))
+   ladderize
+#    rotate_DendSer(ser_weight = dist(x))
 Colv  <- x %>% t %>% dist %>% hclust %>% as.dendrogram %>%
    set("branches_k_color", k = 2) %>% set("branches_lwd", 4) %>%
-   rotate_DendSer(ser_weight = dist(t(x)))
+   ladderize
+#    rotate_DendSer(ser_weight = dist(t(x)))
 
 heatmap.2(x, Rowv = Rowv, Colv = Colv)
+
+## ------------------------------------------------------------------------
+x  <- as.matrix(datasets::mtcars)
+# d3heatmap(x)
+# now let's spice up the dendrograms a bit:
+Rowv  <- x %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k = 3) %>% set("branches_lwd", 4) %>%
+   ladderize
+#    rotate_DendSer(ser_weight = dist(x))
+Colv  <- x %>% t %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k = 2) %>% set("branches_lwd", 4) %>%
+   ladderize
+#    rotate_DendSer(ser_weight = dist(t(x)))
+
+## ----, message=FALSE, cache = FALSE--------------------------------------
+library(d3heatmap)
+d3heatmap(x, Rowv = Rowv, Colv = Colv)
 
 ## ------------------------------------------------------------------------
 # let's get the clusters
@@ -617,19 +536,29 @@ tanglegram(dends_15_51)
 # and also: 
 # tanglegram(dend15, dend51)
 
+## ----, fig.width=5, fig.height=3-----------------------------------------
+tanglegram(dends_15_51, common_subtrees_color_branches = TRUE)
+
 ## ------------------------------------------------------------------------
 dends_15_51 %>% entanglement # lower is better
-dends_15_51 %>% untangle(method = "DendSer") %>% entanglement # lower is better
+# dends_15_51 %>% untangle(method = "DendSer") %>% entanglement # lower is better
+dends_15_51 %>% untangle(method = "step1side") %>% entanglement # lower is better
+
+## ----, fig.width=5, fig.height=3-----------------------------------------
+dends_15_51 %>% untangle(method = "step1side") %>% 
+   tanglegram(common_subtrees_color_branches = TRUE)
 
 ## ----, fig.width=5, fig.height=3-----------------------------------------
 x <- dends_15_51 
 x %>% plot(main = paste("entanglement =", round(entanglement(x), 2)))
 
 ## ----, fig.width=5, fig.height=3-----------------------------------------
-x <- dends_15_51 %>% untangle(method = "DendSer") 
+# x <- dends_15_51 %>% untangle(method = "DendSer") 
+x <- dends_15_51 %>% untangle(method = "ladderize") 
 x %>% plot(main = paste("entanglement =", round(entanglement(x), 2)))
 
 ## ----, fig.width=5, fig.height=3-----------------------------------------
+set.seed(3958)
 x <- dends_15_51 %>% untangle(method = "random", R = 10) 
 x %>% plot(main = paste("entanglement =", round(entanglement(x), 2)))
 
@@ -679,6 +608,18 @@ dist.dendlist(dend1234)
 
 ## ------------------------------------------------------------------------
 cor.dendlist(dend1234)
+
+## ------------------------------------------------------------------------
+library(corrplot)
+corrplot(cor.dendlist(dend1234), "pie", "lower")
+
+## ----, fig.width=5, fig.height=3-----------------------------------------
+# same subtrees, so there is no need to color the branches
+dend1234 %>% tanglegram(which = c(2,3)) 
+# Here the branches colors are very helpful:
+dend1234 %>% tanglegram(which = c(1,2), 
+                        common_subtrees_color_branches = TRUE)
+
 
 ## ------------------------------------------------------------------------
 cor_bakers_gamma(dend15, dend51)
@@ -800,65 +741,6 @@ Bk_plot(dend1, dend2, main = "CORRECT Bk plot \n(based on dendrograms)")
 
 ## ----, eval=FALSE--------------------------------------------------------
 #  install.packages("dendextendRcpp")
-
-## ----, fig.width=9, fig.height=9, fig.show='hold'------------------------
-data(iris)
-
-species_labels <- iris[,5]
-library(colorspace) # get nice colors
-species_col <- rev(rainbow_hcl(3))[as.numeric(species_labels)]
-
-# Plot a SPLOM:
-pairs(iris[,-5], col = species_col,
-      lower.panel = NULL,
-       cex.labels=2, pch=19, cex = 1.2)
-
-# Add a legend
-par(xpd = TRUE)
-legend(x = 0.05, y = 0.4, cex = 2,
-   legend = as.character(levels(species_labels)),
-   	fill = unique(species_col))
-par(xpd = NA)
-
-
-## ----, fig.height = 10, fig.width=7--------------------------------------
-
-
-data(iris) 
-d_iris <- dist(iris[,-5]) # method="man" # is a bit better
-hc_iris <- hclust(d_iris)
-labels(hc_iris) # no labels, because "iris" has no row names
-dend_iris <- as.dendrogram(hc_iris)
-is.integer(labels(dend_iris)) # this could cause problems...
-
-iris_species <- rev(levels(iris[,5]))
-dend_iris <- color_branches(dend_iris,k=3, groupLabels=iris_species)
-is.character(labels(dend_iris)) # labels are no longer "integer"
-
-# have the labels match the real classification of the flowers:
-labels_colors(dend_iris) <-
-   rainbow_hcl(3)[sort_levels_values(
-      as.numeric(iris[,5])[order.dendrogram(dend_iris)]
-   )]
-
-# We'll add the flower type
-labels(dend_iris) <- paste(as.character(iris[,5])[order.dendrogram(dend_iris)],
-                           "(",labels(dend_iris),")", 
-                           sep = "")
-
-dend_iris <- hang.dendrogram(dend_iris,hang_height=0.1)
-
-# reduce the size of the labels:
-dend_iris <- assign_values_to_leaves_nodePar(dend_iris, 0.5, "lab.cex")
-
-par(mar = c(3,3,3,7))
-plot(dend_iris, 
-     main = "Clustered Iris dataset
-     (the labels give the true flower species)", 
-     horiz =  TRUE,  nodePar = list(cex = .007))
-legend("topleft", legend = iris_species, fill = rainbow_hcl(3))
-
-
 
 ## ----, cache=FALSE-------------------------------------------------------
 sessionInfo()

@@ -94,10 +94,19 @@ na_locf <- function(x, first_na_value = 0, recursive = TRUE, ...) {
 # class(result)
 # result %>% as.dendrogram %>% plot
 
+
+#' @export
+as.hclust.pvclust <- function(x,...) {
+   # library(pvclust)
+   x[["hclust"]]
+}
+
+
+
 #' @export
 as.dendrogram.pvclust <- function(object,...) {
    # library(pvclust)
-   as.dendrogram(object[["hclust"]])
+   as.dendrogram(as.hclust(object))
 }
 
 
@@ -583,7 +592,7 @@ pvrect2 <- function (x, alpha = 0.95, pv = "au", type = "geq", max.only = TRUE,
 #    # http://www.is.titech.ac.jp/~shimo/pub/Shimodaira%20and%20Hasegawa%20MBE1999.pdf
 #    # http://scholar.google.co.il/scholar?hl=en&q=Ryota+Suzuki+&btnG=&as_sdt=1%2C5&as_sdtp=
 #    # http://www.is.titech.ac.jp/~shimo/prog/pvclust/
-#    # http://cran.r-project.org/web/packages/pvclust/index.html
+#    # http://cran.r-project.org/package=pvclust
 #    
 # }
 # 

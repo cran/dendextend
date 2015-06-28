@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending R's Dendrogram Functionality
-Version: 0.18.3
-Date: 2015-01-31
+Version: 1.0.1
+Date: 2015-06-28
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "http://www.r-statistics.com"),
     person("Gavin", "Simpson", role = "ctb"), person("Gregory","Jefferis", role
@@ -31,16 +31,17 @@ Description: Offers a set of functions for extending
 Depends: R (>= 3.0.0)
 Imports: utils, stats, magrittr (>= 1.0.1), whisker
 Suggests: dendextendRcpp (>= 0.5.0), knitr, testthat, colorspace,
-        ggplot2, plyr, ape, profdpm, microbenchmark, gplots, DendSer,
-        dynamicTreeCut, pvclust
-Enhances: ggdendro, labeltodendro,dendroextras, data.table
+        ggplot2, plyr, ape, profdpm, microbenchmark, gplots, d3heatmap,
+        dynamicTreeCut, pvclust, corrplot, DendSer, MASS, cluster, covr
+Enhances: ggdendro, labeltodendro,dendroextras, data.table, rpart
 VignetteBuilder: knitr
+LazyData: true
 License: GPL-2 | GPL-3
 URL: https://github.com/talgalili/dendextend/,
-        http://cran.r-project.org/web/packages/dendextend/,
+        http://cran.r-project.org/package=dendextend,
         http://www.r-statistics.com/tag/dendextend/
 BugReports: https://github.com/talgalili/dendextend/issues
-Packaged: 2015-01-31 18:26:49 UTC; junior
+Packaged: 2015-06-28 11:56:42 UTC; user
 Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Gavin Simpson [ctb],
   Gregory Jefferis [ctb] (imported code from his dendroextras package),
@@ -60,4 +61,4 @@ Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
 Maintainer: Tal Galili <tal.galili@gmail.com>
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-01-31 21:57:37
+Date/Publication: 2015-06-28 16:50:49

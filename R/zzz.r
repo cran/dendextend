@@ -97,8 +97,19 @@
    
    # adding and removing menus from the Rgui when loading and detaching the library
    # setHook(packageEvent("installr", "attach"), {function(pkgname, libpath) {add.installr.GUI()}  } )
-   setHook(packageEvent("dendextend", "detach"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
+   # setHook(packageEvent("dendextend", "detach"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
 
+   # set default options for dendextend
+   setHook(packageEvent("dendextend", "onLoad"), {function(pkgname, libpath) {assign_dendextend_options()}  } )
+   
+   # Does NOT work!
+   # remove_dendextend_options is currently an empty function. In the future, it should
+   # remove default options for dendextend when unloading
+   setHook(packageEvent("dendextend", "onUnload"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
+   setHook(packageEvent("dendextend", "detach"), {function(pkgname, libpath) {remove_dendextend_options()}  } )
+   
+   # dendextend::dendextend_options()
+   
    # set default options for d3 dendrogram.
    d3dendro_defaults(D3DENDRODEFAULTS)
 }
@@ -134,7 +145,9 @@
    
    # move some functions to the "options" so that they would later be overridden.
 #    create_dendextend_options()
-   assign_dendextend_options()
+   
+   # details in dendextend_options.R
+   # assign_dendextend_options()
    
    packageStartupMessage(dendextendWelcomeMessage())  
    
@@ -153,7 +166,7 @@ dendextendWelcomeMessage <- function(){
          "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
          "\n",
          "Type ?dendextend to access the overall documentation and\n",
-         "vignette('dendextend') for the package vignette.\n",
+         "browseVignettes(package = 'dendextend') for the package vignette.\n",
          "You can execute a demo of the package via: demo(dendextend)\n",
          "\n",  
          "More information is available on the dendextend project web-site:\n",
@@ -265,6 +278,17 @@ dendextendWelcomeMessage <- function(){
 
 
 
+####### Cool stuff to add:
+# library(devtools)
+# use_code_of_conduct()
+# use_cran_badge()
+# use_coveralls()
+# #
+
+
+
+# install.packages("C:\\Dropbox\\aaaa good R code\\AA - My packages\\dendextend_1.0.0.tar.gz", repos = NULL, type="source")
+
 # 
 # # Run once:
 # shell('set PATH=%PATH%;"C:\\Program%20Files%20(x86)\\Git\\bin"', intern = TRUE)
@@ -316,12 +340,15 @@ dendextendWelcomeMessage <- function(){
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-examples --no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes ", args = "--no-build-vignettes",  cran = FALSE, cleanup = FALSE)
-# check(args="--as-cran")
+# devtools::check(args="--as-cran")
 # devtools::check("C:/Dropbox/aaaa good R code/AA - My packages/dendextend", args="--as-cran")
 #                 Thanks to: http://stackoverflow.com/questions/10017702/r-cmd-check-options-for-more-rigorous-testing-2-15-0
 
 
 # shell('git log --graph --stat --date=short --pretty=format:"%ad(%an) %s |%h" > ChangeLog', intern = TRUE)
 # file.copy("NEWS", "NEWS.md",overwrite = TRUE)
+# devtools::build_win(version="R-release")
 # devtools::build_win(version="R-devel")
 # release()
+
+

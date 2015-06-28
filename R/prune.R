@@ -23,7 +23,7 @@
 
 #' @title Trimms one leaf from a dendrogram
 #' @export
-#' @param x dendrogram object
+#' @param dend dendrogram object
 #' @param leaf_name a character string as the label of the tip we wish to prune
 #' @param ... passed on
 #' @details 
@@ -38,71 +38,71 @@
 #' plot(prune_leaf(dend , "Alaska"), main = "tree without Alaska")
 #' 
 #' 
-prune_leaf <- function(x, leaf_name,...)
+prune_leaf <- function(dend, leaf_name,...)
 {
-   labels_x <- labels(x)
+   labels_dend <- labels(dend)
    
-   if(length(labels_x) != length(unique(labels_x)))	warning("Found dubplicate labels in the tree (this might indicate a problem in the tree you supplied)")
+   if(length(labels_dend) != length(unique(labels_dend)))	warning("Found dubplicate labels in the tree (this might indicate a problem in the tree you supplied)")
 
-   if(!(leaf_name %in% labels_x)) {	# what to do if there is no such leaf inside the tree
+   if(!(leaf_name %in% labels_dend)) {	# what to do if there is no such leaf inside the tree
       warning(paste("There is no leaf with the label", leaf_name , "in the tree you supplied", "\n" , "Returning original tree", "\n" ))
-      return(x)
+      return(dend)
    }
    
-   if(sum(labels_x %in% leaf_name) > 1) {	# what to do if there is no such leaf inside the tree      
+   if(sum(labels_dend %in% leaf_name) > 1) {	# what to do if there is no such leaf inside the tree      
       warning(paste("There are multiple leaves by the name of '", leaf_name , "' in the tree you supplied.  Their locations is:",
-                    paste(which(labels_x %in% leaf_name), collapse = ","),"\n" , "Returning original tree", "\n" ))
-      return(x)
+                    paste(which(labels_dend %in% leaf_name), collapse = ","),"\n" , "Returning original tree", "\n" ))
+      return(dend)
    }
    
-   is.father.of.leaf.to.remove <- function(x, leaf_name)
+   is.father.of.leaf.to.remove <- function(dend, leaf_name)
    {
-      # this function checks if the leaf we wish to remove is the direct child of the current branch (x) we entered the function
+      # this function checks if the leaf we wish to remove is the direct child of the current branch (dend) we entered the function
       is.father <- F
-      for(i in seq_len(length(x)))
+      for(i in seq_len(length(dend)))
       {
-         if(is.leaf(x[[i]]) == TRUE  &&  labels(x[[i]]) == leaf_name) is.father <- TRUE
+         if(is.leaf(dend[[i]]) == TRUE  &&  labels(dend[[i]]) == leaf_name) is.father <- TRUE
       }
       return(is.father)
    }
    
    
-   remove_leaf_if_child <- function(x, leaf_name)
+   remove_leaf_if_child <- function(dend, leaf_name)
    {
-      # print(labels(x))
-      if(all(labels(x) != leaf_name))
+      # print(labels(dend))
+      if(all(labels(dend) != leaf_name))
       {	# if the leaf we want to remove is not in this branch, simply return the branch without going deeper intoit.
-         return(x)
+         return(dend)
       } else {	# but if the leaf we want to remove is here somewhere, go on searching
-         attr(x, "members") <- attr(x, "members") - 1 
+         attr(dend, "members") <- attr(dend, "members") - 1 
          
-         if(!is.father.of.leaf.to.remove(x, leaf_name))	# if you are not the father, then go on and make this function work on each child
+         if(!is.father.of.leaf.to.remove(dend, leaf_name))	# if you are not the father, then go on and make this function work on each child
          {
-            for(i in seq_len(length(x)))
+            for(i in seq_len(length(dend)))
             {
-               x[[i]] <- remove_leaf_if_child(x[[i]], leaf_name)
+               dend[[i]] <- remove_leaf_if_child(dend[[i]], leaf_name)
             }
          } else { # we'll merge 
-            if(length(x) != 2) stop("This function doesn't work for non binary branches where the leaf to remove is located")	# this should be fixed in the future...				
+            if(length(dend) != 2) stop("This function doesn't work for non binary branches where the leaf to remove is located")	# this should be fixed in the future...				
             # if leaf location is 1, then move branch in leaf 2 to be the new x
             leaf_location <- 1 			
-            if(is.leaf(x[[leaf_location]]) == T  &&  labels(x[[leaf_location]]) == leaf_name) {
+            if(is.leaf(dend[[leaf_location]]) == T  &&  labels(dend[[leaf_location]]) == leaf_name) {
                branch_to_bumpup <- 2
-               x <- x[[branch_to_bumpup]]
+               dend <- dend[[branch_to_bumpup]]
             } else { # else - the leaf location must be located in position "2"
                branch_to_bumpup <- 1
-               x <- x[[branch_to_bumpup]]
+               dend <- dend[[branch_to_bumpup]]
             }				
          }
       }		
-      return(x)
+      return(dend)
    }
    
    
-   new_x <- remove_leaf_if_child(x, leaf_name)
-   new_x <- suppressWarnings(stats_midcache.dendrogram(new_x)) # fixes the attributes
+   new_dend <- remove_leaf_if_child(dend, leaf_name)
+   new_dend <- suppressWarnings(stats_midcache.dendrogram(new_dend)) # fixes the attributes
 #   new_x <- fix_members_attr.dendrogram(new_x) # fix the number of memebers attr for each node
-   return(new_x)
+   return(new_dend)
 }
 
 
@@ -117,16 +117,20 @@ prune_leaf <- function(x, leaf_name,...)
 #' prune.dendrogram
 #' prune.hclust
 #' prune.phylo
+#' prune.rpart
 #' @description  Trimms a tree (dendrogram, hclust) from a set of leaves based on their labels.
 #' @usage
-#' prune(x, ...)
+#' prune(dend, ...)
 #' 
-#' \method{prune}{dendrogram}(x, leaves,...)
+#' \method{prune}{dendrogram}(dend, leaves,...)
 #' 
-#' \method{prune}{hclust}(x, leaves,...)
+#' \method{prune}{hclust}(dend, leaves,...)
 #' 
-#' \method{prune}{phylo}(x, ...)
-#' @param x tree object (dendrogram/hclust/phylo)
+#' \method{prune}{phylo}(dend, ...)
+#' 
+#' \method{prune}{rpart}(dend, ...)
+#' 
+#' @param dend tree object (dendrogram/hclust/phylo)
 #' @param leaves a character vector of the label(S) of the tip(s) (leaves) we wish to prune off the tree.
 #' @param ... passed on
 #' @details 
@@ -141,45 +145,83 @@ prune_leaf <- function(x, leaf_name,...)
 #' par(mfrow = c(1,2))
 #' plot(dend, main = "original tree")
 #' plot(prune(dend , c("Alaska", "California")), main = "tree without Alaska and California")
-prune <- function(x, ...) {UseMethod("prune")}
+prune <- function(dend, ...) {UseMethod("prune")}
 
 #' @export
-prune.default <- function(x,...) {
-   stop("object x must be a dendrogram/hclust/phylo object")
+prune.default <- function(dend,...) {
+   stop("object dend must be a dendrogram/hclust/phylo object")
 }
 
 # ' @S3method prune dendrogram
 #' @export
-prune.dendrogram <- function(x, leaves,...) {
+prune.dendrogram <- function(dend, leaves,...) {
    leaves <- as.character(leaves)
       
    for(i in seq_along(leaves))
    {
       # this function is probably not the fastest - but it works...
-      x <- prune_leaf(x, leaves[i])	# move step by stem to remove all of these leaves...
+      dend <- prune_leaf(dend, leaves[i])	# move step by stem to remove all of these leaves...
    }
-   return(x)
+   return(dend)
 }
 
 
 # ' @S3method prune hclust
 #' @export
-prune.hclust <- function(x, leaves,...) {
-   x_dend <- as.dendrogram(x)
+prune.hclust <- function(dend, leaves,...) {
+   x_dend <- as.dendrogram(dend)
    x_dend_pruned <- prune(x_dend, leaves,...)
-   x_pruned <- as_hclust_fixed(x_dend_pruned, x)  
+   x_pruned <- as_hclust_fixed(x_dend_pruned, dend)  
    
    return(x_pruned)
 }
 
 # ' @S3method prune phylo
 #' @export
-prune.phylo <- function(x,...) {
+prune.phylo <- function(dend,...) {
 	# library(ape)
-	ape::drop.tip(phy=x, ...)
+	ape::drop.tip(phy=dend, ...)
 }
 
 
+#' @export
+prune.rpart <- function(dend,...) {
+   # library(ape)
+   rpart::prune.rpart(tree = dend, ...)
+}
+
+
+
+
+#' Prune trees to their common subtrees
+#'
+#' @param dend a \link{dendlist} of length two
+#' @param ... ignored
+#'
+#' @return
+#' A dendlist after prunning the labels to only include 
+#' those that are part of common subtrees in both dendrograms.
+#' 
+#' @export
+#' @seealso \link{common_subtrees_clusters}
+#'
+#' @examples
+#' 
+#' # NULL
+#' 
+prune_common_subtrees.dendlist <- function(dend, ...) {
+   if(!length(dend)==2) stop("The dend must of be of length 2")
+   if(!is.dendlist(dend)) stop("The dend must of be of class dendlist")
+   
+   # dend <- d_train_test
+   clusters <- common_subtrees_clusters(dend[[1]], dend[[2]])
+   labels_to_prune <- labels(dend[[1]])[clusters == 0]
+   dend1 <- prune(dend[[1]], labels_to_prune)
+   dend2 <- prune(dend[[2]], labels_to_prune)
+   dend_12 <- dendlist(dend1, dend2)
+   names(dend_12) <- names(dend)
+   dend_12
+}
 
 
 
@@ -191,8 +233,8 @@ prune.phylo <- function(x,...) {
 #' @description 
 #' Return two trees after pruning them so that the only leaves left are the intersection of their labels.
 #' @export
-#' @param x1 tree object (dendrogram/hclust/phylo)
-#' @param x2 tree object (dendrogram/hclust/phylo)
+#' @param dend1 tree object (dendrogram/hclust/phylo)
+#' @param dend2 tree object (dendrogram/hclust/phylo)
 #' @param warn logical (default from dendextend_options("warn") is FALSE).
 #' Set if warning are to be issued, it is safer to keep this at TRUE,
 #' but for keeping the noise down, the default is FALSE.
@@ -219,26 +261,26 @@ prune.phylo <- function(x,...) {
 #'       main = "Tree 2 pruned
 #'       with the labels that intersected with those of Tree 1")
 #' 
-intersect_trees <- function(x1, x2, warn = dendextend_options("warn"), ...){
-   labels_x1 <- labels(x1)
-   labels_x2 <- labels(x2)
-   intersected_labels <- intersect(labels_x1, labels_x2)
+intersect_trees <- function(dend1, dend2, warn = dendextend_options("warn"), ...){
+   labels_dend1 <- labels(dend1)
+   labels_dend2 <- labels(dend2)
+   intersected_labels <- intersect(labels_dend1, labels_dend2)
    
    # prune tree 1
-   ss_labels_to_keep  <- labels_x1 %in% intersected_labels
+   ss_labels_to_keep  <- labels_dend1 %in% intersected_labels
    ss_labels_to_prune_1 <- !ss_labels_to_keep
-   pruned_x1 <- prune(x1, labels_x1[ss_labels_to_prune_1])
+   pruned_dend1 <- prune(dend1, labels_dend1[ss_labels_to_prune_1])
       
    # prune tree 2
-   ss_labels_to_keep  <- labels_x2 %in% intersected_labels
+   ss_labels_to_keep  <- labels_dend2 %in% intersected_labels
    ss_labels_to_prune_2 <- !ss_labels_to_keep
-   pruned_x2 <- prune(x2, labels_x2[ss_labels_to_prune_2])
+   pruned_dend2 <- prune(dend2, labels_dend2[ss_labels_to_prune_2])
    
    if(warn && any(c(ss_labels_to_prune_1, ss_labels_to_prune_2)))  {
       warning("The labels in both tree had different values - trees were pruned.")
    }
    
-   return(dendlist(pruned_x1, pruned_x2))   
+   return(dendlist(pruned_dend1, pruned_dend2))   
 }
 
 

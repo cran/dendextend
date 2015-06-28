@@ -64,6 +64,9 @@
 #' 
 #' Notice that for a plot with small margins, it would be better to set this 
 #' parameter manually.
+#' @param upper_rect a (scalar) value to add (default is 0) to how high should the upper part of the rect be.
+#' @param prop_k_height a (scalar) value (should be between 0 to 1), indicating what proportion
+#' of the height our rect will be between the height needed for k and k+1 clustering.
 #' @param ... parameters passed to rect (such as lwd, lty, etc.)
 #' @seealso
 #' \link{rect.hclust}, \link{order.dendrogram}, \link{cutree.dendrogram}
@@ -88,6 +91,8 @@
 #' 
 #' plot(dend)
 #' rect.dendrogram(dend,2, border = 2)
+#' rect.dendrogram(dend,3, border = 4)
+#' Vectorize(rect.dendrogram, "k")(dend,4:5, border = 6)
 #' 
 #' plot(dend)
 #' rect.dendrogram(dend, 3 , border = 1:3, 
@@ -101,9 +106,18 @@
 #' plot(dend, horiz = TRUE)
 #' rect.dendrogram(dend,2, border = 2, horiz = TRUE)
 #' rect.dendrogram(dend,4, border = 4, lty = 2, lwd = 3, horiz = TRUE)
+#' 
+#' # This had previously failed since it worked with a wrong k.
+#' 
+#'    dend15 <- c(1:5) %>% dist %>% hclust(method = "average") %>% as.dendrogram
+#'    # dend15 <- c(1:25) %>% dist %>% hclust(method = "average") %>% as.dendrogram
+#'    dend15 %>% set("branches_k_color") %>% plot
+#'    dend15 %>% rect.dendrogram(k=3, 
+#'                               border = 8, lty = 5, lwd = 2)
 rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, border = 2, 
           cluster = NULL, horiz = FALSE, density = NULL, angle = 45, 
-          text = NULL, text_cex = 1, text_col = 1 , xpd = TRUE, lower_rect, ...) 
+          text = NULL, text_cex = 1, text_col = 1 , xpd = TRUE, 
+          lower_rect, upper_rect = 0, prop_k_height = 0.5, ...) 
 {
    if(!is.dendrogram(tree)) stop("x is not a dendrogram object.")
 
@@ -155,6 +169,14 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
    par(xpd=xpd)
    
    for (n in seq_along(which)) {
+      # this is to deal with the case when k is not defined for all values
+      # and that we can not use the next k+1 value to decide on the height to use.
+      next_k_height <- tree_heights[names(tree_heights) == k+1]
+      if(length(next_k_height) == 0) {
+         next_k_height <- 0
+         prop_k_height <- 1 # use only the "k" now.
+         # if(upper_rect == 0) upper_rect <- min(abs(diff(tree_heights))) / 2
+      }
       
       if(!horiz) { # the default
          xleft = m[which[n]] + 0.66
@@ -164,14 +186,21 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
          #          ytop = mean(tree_heights[(k - 1):k])
          #          ytop = tree_heights[k] + abs(ybottom)
 #          ytop = mean(tree_heights[(k - 1):k]) + abs(ybottom)
-         ytop = tree_heights[names(tree_heights) == k] # + height_to_add # + abs(ybottom)          
+
+         ytop <-  tree_heights[names(tree_heights) == k] * prop_k_height + 
+                  next_k_height * (1-prop_k_height) + 
+                  upper_rect # tree_heights[k] + height_to_add # + abs(xright)
+
       } else {         
          ybottom = m[which[n]] + 0.66
          if(missing(lower_rect)) lower_rect <- par("usr")[2L] + strwidth("X")*(max(nchar(labels(tree))) + 1) 
          xright = lower_rect
          ytop = m[which[n] + 1] + 0.33
 #          xleft = mean(tree_heights[(k - 1):k])
-         xleft = tree_heights[names(tree_heights) == k] # tree_heights[k] + height_to_add # + abs(xright)
+         xleft <- 
+               tree_heights[names(tree_heights) == k] * prop_k_height + 
+               next_k_height * (1-prop_k_height) + 
+               upper_rect # tree_heights[k] + height_to_add # + abs(xright)
       }      
       rect(xleft, 
            ybottom,
@@ -252,10 +281,14 @@ rect.dendrogram <- function (tree, k = NULL, which = NULL, x = NULL, h = NULL, b
 #' dend <- hc %>% as.dendrogram
 #' 
 #' plot(dend)
-#' identify.dendrogram(dend)
+#' identify(dend)
+#' 
+#' plot(dend, horiz = TRUE)
+#' identify(dend, horiz = TRUE)
+#' 
 #' }
 identify.dendrogram <- function (x, FUN = NULL, N = 20, MAXCLUSTER, DEV.FUN = NULL, 
-                                 horiz =FALSE, ...) 
+                                 horiz = FALSE, ...) 
 {
  
    # In tree_heights I am removing the first element
@@ -272,7 +305,13 @@ identify.dendrogram <- function (x, FUN = NULL, N = 20, MAXCLUSTER, DEV.FUN = NU
    DEV.x <- grDevices::dev.cur()
    for (n in 1L:N) {
       grDevices::dev.set(DEV.x)
-      X <- locator(1)
+      X <- locator(1)      
+      if(horiz) {
+         tmp <- X$x
+         X$x <- X$y
+         X$y <- tmp
+      }
+      
       if (is.null(X)) 
          break
       k <- min(which(x_heights < X$y), MAXCLUSTER)

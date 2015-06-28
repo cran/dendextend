@@ -60,7 +60,7 @@ all_unique <- function(x, ...) {
 #' branches_color
 #' @description
 #' This function is for dendrogram and hclust objects.
-#' This function colors both the terminal leaves of a tree's cluster and the edges 
+#' This function colors both the terminal leaves of a dend's cluster and the edges 
 #' leading to those leaves. The edgePar attribute of nodes will be augmented by 
 #' a new list item col.
 #' The groups will be defined by a call to \code{\link[dendextend]{cutree}} 
@@ -83,7 +83,7 @@ all_unique <- function(x, ...) {
 #' of an object without \link{rownames}.
 #' 
 #' 
-#' @param tree A \code{dendrogram} or \code{hclust} tree object
+#' @param dend A \code{dendrogram} or \code{hclust} tree object
 #' @param k number of groups (passed to \code{\link[dendextend]{cutree}})
 #' @param h height at which to cut tree (passed to \code{\link[dendextend]{cutree}})
 #' @param col Function or vector of Colors. By default it tries to use 
@@ -91,11 +91,17 @@ all_unique <- function(x, ...) {
 #' (with parameters c=90 and l=50). If \code{colorspace} is not available,
 #' It will fall back on the \link{rainbow} function.
 #' @param groupLabels If TRUE add numeric group label - see Details for options
+#' @param clusters an integer vector of clusters. This is passed to \link{branches_attr_by_clusters}.
+#' This HAS to be of the same length as the number of leaves.
+#' Items that belong to no cluster should get the value 0.
+#' The vector should be of the same order as that of the labels in the dendrogram.
+#' If you create the clusters from something like \link{cutree} you would first
+#' need to use \link{order.dendrogram} on it, before using it in the function.
 #' @param warn logical (default from dendextend_options("warn") is FALSE).
 #' Set if warning are to be issued, it is safer to keep this at TRUE,
 #' but for keeping the noise down, the default is FALSE.
 #' @param ... ignored.
-#' @return a tree object of class dendrogram.
+#' @return a tree object of class \link{dendrogram}.
 #' @author Tal Galili, extensively based on code by Gregory Jefferis
 #' @source
 #' This function is a derived work from the \code{\link[dendroextras]{color_clusters}}
@@ -109,7 +115,9 @@ all_unique <- function(x, ...) {
 #' the same tree. Something which the original function was not able to handle.
 #' 
 #' @seealso \code{\link[dendextend]{cutree}},\code{\link{dendrogram}},
-#' \code{\link{hclust}}, \code{\link{labels_colors}}
+#' \code{\link{hclust}}, \code{\link{labels_colors}},
+#' \code{\link{branches_attr_by_clusters}}
+#' 
 #' @examples
 #' 
 #' \dontrun{
@@ -137,7 +145,7 @@ all_unique <- function(x, ...) {
 #' dend_override=color_branches(dend_override,7,groupLabels=as.roman)
 #' plot(dend_override)
 #'  
-#' d5=color_branches(tree=dend[[1]],k=5)
+#' d5=color_branches(dend=dend[[1]],k=5)
 #'  
 #' 
 #' library(dendextend) 
@@ -211,54 +219,90 @@ all_unique <- function(x, ...) {
 #'    hclust(method = "single") %>% # on it compute hierarchical clustering using the "average" method, 
 #'    as.dendrogram %>% color_branches(k=3) %>% plot # nice, returns the tree as is...
 #' 
+#' 
+#' # Example of the "clusters" parameter
+#' par(mfrow =c(1,2))
+#' dend <- c(1:5) %>% dist %>% hclust %>% as.dendrogram 
+#' dend %>% color_branches(k=3) %>% plot
+#' dend %>% color_branches(clusters=c(1,1,2,2,3)) %>% plot
+#' 
+#' 
 #' }
 #' 
-color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, warn = dendextend_options("warn"), ...){
+color_branches <- function(dend, k=NULL, h=NULL, col, groupLabels=NULL, 
+                           clusters,
+                           warn = dendextend_options("warn"), ...){
 
-   # Make sure the function works when the labels of the tree are not all unique
-   old_labels <- labels(tree)
-   labels_arent_unique <- !all_unique(old_labels)
-   if(labels_arent_unique) {
-      if(warn) warning("Your tree labels are NOT unique!\n This may cause an un expected issue with the color of the branches.\n Hence, your labels were temporarily turned unique (and then fixed as they were before).")
-      labels(tree) <- seq_along(old_labels)
+   # This function makes sure a col vector is produced from various outputs.
+   get_col <- function(col, k) {
+      if(is.function(col)) {
+         col <- col(k)
+      } else {
+         if(length(col) < k) {
+            #          stop("Must give the same number of colors as number of clusters")
+            warning("Length of color vector was shorter than the number of clusters - color vector was recycled")
+            col <- rep(col, length.out = k)
+         }
+         if(length(col) > k) {
+            #          stop("Must give the same number of colors as number of clusters")
+            warning("Length of color vector was longer than the number of clusters - first k elements are used")
+            col <- col[seq_len(k)]
+         }
+      }
+      return(col)
    }
    
    
+   
+#    col <- colorspace::rainbow_hcl
    if(missing(col)) col <- rainbow_fun
    
-   if(is.null(k) & is.null(h)) {
-      if(warn) warning("k (number of clusters) is missing, using the tree size as a default")      
-      k <- nleaves(tree)
+   
+   if(!missing(clusters)) {
+      if(!missing(k)) warning("Both the parameters 'cluster' and 'k' are not missing - k is ignored.")
+      
+      if(length(clusters) != nleaves(dend)) {
+         warning("'clusters' is not of the same length as the number of labels. The dend is returned as is.")
+         return(dend)
+      }
+      
+      u_clusters <- unique(clusters)
+      k <- length(u_clusters)
+      col <- get_col(col, k)
+      # col[u_clusters==0] <- "black"
+      return(branches_attr_by_clusters(dend, clusters, values = col, attr = "col",
+                                       branches_changed_have_which_labels = "all")   )
    }
    
-   if(!is.dendrogram(tree) && !is.hclust(tree)) stop("tree needs to be either a dendrogram or an hclust object")
-   g <- dendextend::cutree(tree, k=k, h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
-   if(is.hclust(tree)) tree <- as.dendrogram(tree)
+   
+   
+   # Make sure the function works when the labels of the dend are not all unique
+   old_labels <- labels(dend)
+   labels_arent_unique <- !all_unique(old_labels)
+   if(labels_arent_unique) {
+      if(warn) warning("Your dend labels are NOT unique!\n This may cause an un expected issue with the color of the branches.\n Hence, your labels were temporarily turned unique (and then fixed as they were before).")
+      labels(dend) <- seq_along(old_labels)
+   }
+   
+   
+   if(is.null(k) & is.null(h)) {
+      if(warn) warning("k (number of clusters) is missing, using the dend size as a default")      
+      k <- nleaves(dend)
+   }
+   
+   if(!is.dendrogram(dend) && !is.hclust(dend)) stop("dend needs to be either a dendrogram or an hclust object")
+   g <- dendextend::cutree(dend, k=k, h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
+   if(is.hclust(dend)) dend <- as.dendrogram(dend)
    
    k <- max(g)
    
-   # For when we have flat trees
+   # For when we have flat dends
    if(k == 0L) {
-      if(warn) warning("Tree has only one level - returning the dendrogram with no colors.")
-      return(tree)
+      if(warn) warning("dend has only one level - returning the dendrogram with no colors.")
+      return(dend)
    }
    
-   if(is.function(col)) {
-      col <- col(k)
-   } else {
-      if(length(col) < k) {
-         #          stop("Must give the same number of colors as number of clusters")
-         warning("Length of color vector was shorter than the number of clusters - color vector was recycled")
-         col <- rep(col, length.out = k)
-      }
-      if(length(col) > k) {
-         #          stop("Must give the same number of colors as number of clusters")
-         warning("Length of color vector was longer than the number of clusters - first k elements are used")
-         col <- col[seq_len(k)]
-      }
-      
-   }
-   
+   col <- get_col(col, k)
    
    if(!is.null(groupLabels)){
       if(length(groupLabels)==1){
@@ -305,18 +349,18 @@ color_branches <- function(tree, k=NULL, h=NULL, col, groupLabels=NULL, warn = d
       unclass(sd)
    }
    
-   if(!is.character(labels(tree))) labels(tree) <- as.character(labels(tree))
-   tree <- descendTree(tree)
-   class(tree) <- "dendrogram"
+   if(!is.character(labels(dend))) labels(dend) <- as.character(labels(dend))
+   dend <- descendTree(dend)
+   class(dend) <- "dendrogram"
 
-   # If we previously had "uniqified" the labels, they should now be "fixed back" before returning the tree.
-   if(labels_arent_unique) labels(tree) <- old_labels
+   # If we previously had "uniqified" the labels, they should now be "fixed back" before returning the dend.
+   if(labels_arent_unique) labels(dend) <- old_labels
 
-   tree   
+   dend   
 }
 
 # str(unclass(d2))
-# plot(tree)
+# plot(dend)
 
 # nice idea - make this compatible with colour/color
 #' @export
@@ -355,25 +399,25 @@ if(F) {
    # add a "warn" parameter
 }
 
-color_labels_by_labels <- function(tree, labels, col, warn = dendextend_options("warn"), ...) {
-   tree_labels <- labels(tree)
-   tree_col <- labels_colors(tree)
+color_labels_by_labels <- function(dend, labels, col, warn = dendextend_options("warn"), ...) {
+   dend_labels <- labels(dend)
+   dend_col <- labels_colors(dend)
    
-   ss_labels_to_color <- tree_labels %in% labels
+   ss_labels_to_color <- dend_labels %in% labels
    
    # recycle colors if they are shorter than the labels.
    rep_col <- rep_len(col, sum(ss_labels_to_color))
    if(length(rep_col) != length(col)) {
-      if(warn) warning("The length of 'col' is different than that of the labels in the tree. 'col' recycled to fit the length.")
+      if(warn) warning("The length of 'col' is different than that of the labels in the dend. 'col' recycled to fit the length.")
       col <- rep_col
    }   
    
    # fix vector of labels colors
-   tree_col[ss_labels_to_color] <- col
-   # fix labels colors in the tree
-   labels_colors(tree) <- tree_col
+   dend_col[ss_labels_to_color] <- col
+   # fix labels colors in the dend
+   labels_colors(dend) <- dend_col
    
-   return(tree)   
+   return(dend)   
 }
 
 
@@ -393,7 +437,7 @@ color_labels_by_labels <- function(tree, labels, col, warn = dendextend_options(
 
 
 
-#' @title Color tree's labels according to sub-clusters
+#' @title Color dend's labels according to sub-clusters
 #' @export
 #' @aliases
 #' colour_labels
@@ -409,7 +453,7 @@ color_labels_by_labels <- function(tree, labels, col, warn = dendextend_options(
 #' 
 #' 
 #' 
-#' @param tree A \code{dendrogram} or \code{hclust} tree object
+#' @param dend A \code{dendrogram} or \code{hclust} tree object
 #' @param k number of groups (passed to \code{\link[dendextend]{cutree}})
 #' @param h height at which to cut tree (passed to \code{\link[dendextend]{cutree}})
 #' @param col Function or vector of Colors. By default it tries to use 
@@ -451,25 +495,25 @@ color_labels_by_labels <- function(tree, labels, col, warn = dendextend_options(
 #' 
 #' } 
 #' 
-color_labels <- function(tree, k=NULL, h=NULL, labels, col, warn = dendextend_options("warn"),...){
+color_labels <- function(dend, k=NULL, h=NULL, labels, col, warn = dendextend_options("warn"),...){
 
-   if(!missing(labels)) return(color_labels_by_labels(tree=tree, labels=labels, col=col, warn=warn, ...) )     
+   if(!missing(labels)) return(color_labels_by_labels(dend=dend, labels=labels, col=col, warn=warn, ...) )     
    
    
    if(missing(col)) col <- rainbow_fun
    
-   if(!is.dendrogram(tree) && !is.hclust(tree)) stop("tree needs to be either a dendrogram or an hclust object")
+   if(!is.dendrogram(dend) && !is.hclust(dend)) stop("dend needs to be either a dendrogram or an hclust object")
    
    if(missing(k) & missing(h)) {
-#       k = nleaves(tree)
+#       k = nleaves(dend)
       if(warn) warning("Neither k nor h were supplied - coloring all leaves based on 'col'.")
-      if(is.function(col)) col <- col(nleaves(tree)) # if we also didn't get any col, fill the colors with rainbow...
-      labels_colors(tree) <- col      
-      return(tree)
+      if(is.function(col)) col <- col(nleaves(dend)) # if we also didn't get any col, fill the colors with rainbow...
+      labels_colors(dend) <- col      
+      return(dend)
    }
    
-   g <- dendextend::cutree(tree,k=k,h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
-   if(is.hclust(tree)) tree=as.dendrogram(tree)
+   g <- dendextend::cutree(dend,k=k,h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
+   if(is.hclust(dend)) dend <- as.dendrogram(dend)
    
    k <- max(g)
    if(is.function(col)) {
@@ -488,9 +532,9 @@ color_labels <- function(tree, k=NULL, h=NULL, labels, col, warn = dendextend_op
    }
    
    
-   labels_colors(tree) <- col[g]
+   labels_colors(dend) <- col[g]
    
-   return(tree)
+   return(dend)
 }
 
 

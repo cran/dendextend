@@ -1,6 +1,9 @@
 # library(testthat)
 suppressPackageStartupMessages(library(dendextend))
 
+context("dendlist")
+
+
 test_that("dendlist works",{
 
    dend <- iris[,-5] %>% dist %>% hclust %>% as.dendrogram
@@ -24,6 +27,10 @@ test_that("dendlist works",{
    expect_identical(
       dendlist(dend), dendlist(dendlist(dend))
    )
+#    dendextend:::all.equal.dendlist(dendlist(dend), dendlist(dendlist(dend))) 
+# This fails?
+
+
    expect_identical(
       dendlist(dend, dend), dendlist(dendlist(dend, dend))
    )
@@ -32,17 +39,20 @@ test_that("dendlist works",{
    expect_error(
       dendlist(unclass(dendlist(dend, dend)))
    )
-   # but it handles empty lists just fine:
-   expect_warning(
-      dendlist()
-   )
-   expect_warning(
-      dendlist(list())
-   )
-   # It can merge a dendlist of an empty list with a dend just fine:
-   expect_warning(
-      dendlist(dendlist(list()), dend)
-   )
+   
+### I removed the warning when creating an empty dendlist   
+#    # but it handles empty lists just fine:
+#    expect_warning(
+#       dendlist()
+#    )
+#    expect_warning(
+#       dendlist(list())
+#    )
+#    # It can merge a dendlist of an empty list with a dend just fine:
+#    expect_warning(
+#       dendlist(dendlist(list()), dend)
+#    )
+   
    # and the result is of length 1! (as we wanted it to)
    expect_equal(
       suppressWarnings(length(dendlist(dendlist(list()), dend))),
@@ -55,7 +65,33 @@ test_that("dendlist works",{
    expect_true(is.dendlist(dendlist(dend)))
    
    
-   
+
    
 })
 
+
+
+
+
+test_that("all.equal.dendlist works",{
+   dend <- iris[,-5] %>% dist %>% hclust %>% as.dendrogram
+
+   expect_true(
+      all.equal(dendlist(dend, dend))
+   )
+   expect_true(
+      all.equal(dendlist(dend, dend, dend))
+   )
+   
+   expect_true(
+      all.equal(dendlist(dend, dend), dendlist(dend, dend))
+   )
+   
+   p_dend <- prune(dend, "1")
+   expect_true(
+      is.character(
+         all.equal(dendlist(dend, p_dend))
+         )
+   )
+   
+})
