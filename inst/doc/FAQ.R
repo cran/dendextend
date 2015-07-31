@@ -3,7 +3,7 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 75,
+   dpi = 65,
   # comment = "#>",
   tidy = FALSE)
 
@@ -44,7 +44,7 @@ labels_colors(dend)
 par(mfrow = c(1,2))
 plot(dend, main = "Original dend")
 
-# let's add some color:
+# Let's add some color:
 colors_to_use <- as.numeric(small_iris[,5])
 colors_to_use
 # But sort them based on their order in dend:
@@ -55,6 +55,25 @@ labels_colors(dend) <- colors_to_use
 # Now each state has a color
 labels_colors(dend) 
 plot(dend, main = "A color for every Species")
+
+## ------------------------------------------------------------------------
+ # define dendrogram object to play with:
+ hc <- hclust(dist(USArrests[1:5,]), "ave")
+ dend <- as.dendrogram(hc)
+
+ library(dendextend)
+ par(mfrow = c(1,2), mar = c(5,2,1,0))
+ dend <- dend %>%
+          color_branches(k = 3) %>%
+          set("branches_lwd", c(2,1,2)) %>%
+          set("branches_lty", c(1,2,1))
+ 
+ plot(dend)
+
+ dend <- color_labels(dend, k = 3)
+ # The same as:
+ # labels_colors(dend)  <- get_leaves_branches_col(dend)
+ plot(dend)
 
 ## ----, fig.show='hold', fig.width=8, fig.height=3------------------------
 # install.packages("dendextend")
@@ -112,7 +131,7 @@ dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
 
 # midpoint for all nodes
 get_nodes_attr(dend, "midpoint")
-# Maybe also the height:
+# Perhaps also for the height:
 get_nodes_attr(dend, "height")
 
 ## ----, echo = FALSE------------------------------------------------------
@@ -713,7 +732,7 @@ NA), .Dim = c(23L, 96L), .Dimnames = list(c("varA", "varB", "varC",
 #  # or with:
 #  # dend1 <- set(dend1, "branches_k_color", k = 4, value = cols_branches)
 #  
-#  # get the colors of the tips of the dendrogram:
+#  # Get the colors of the tips of the dendrogram:
 #  # col_labels <- cols_branches[cutree(dend1, k = 4)] # this may need tweaking in various cases - the following is a more general solution.
 #  
 #  col_labels <- get_leaves_branches_col(dend1)
@@ -754,4 +773,46 @@ NA), .Dim = c(23L, 96L), .Dimnames = list(c("varA", "varB", "varC",
 ## ----, eval = FALSE------------------------------------------------------
 #  dendextend::assign_dendextend_options()
 #  # This populates the dendextend::dendextend_options() space
+
+## ----, fig.width=10, fig.height=10---------------------------------------
+# install.packages("dendextend")
+# install.packages("circlize")
+library(dendextend)
+library(circlize)
+
+# create a dendrogram
+hc <- hclust(dist(datasets::mtcars))
+dend <- as.dendrogram(hc)
+
+# modify the dendrogram to have some colors in the branches and labels
+dend <- dend %>% 
+   color_branches(k=4) %>% 
+   color_labels
+
+# plot the radial plot
+par(mar = rep(0,4))
+# circlize_dendrogram(dend, dend_track_height = 0.8) 
+circlize_dendrogram(dend, labels_track_height = NA, dend_track_height = .3) 
+
+
+## ------------------------------------------------------------------------
+hc <- hclust(dist(USArrests[1:4,]), "ave")
+dend <- as.dendrogram(hc)
+heights_per_k.dendrogram(dend)
+
+## ------------------------------------------------------------------------
+aa1 <- c(2,4,6,8)
+bb1 <- c(1,3,7,11)
+aa2 <- c(3,6,9,12)
+bb2 <- c(3,5,7,9)
+data.main <- data.frame(aa1,bb1,aa2,bb2)
+d1 <- dist(t(data.main))
+hcl1 <- hclust(d1)
+# plot(hcl1)
+
+dend <- as.dendrogram(hcl1)
+col_aa_red <- ifelse(grepl("aa", labels(dend)), "red", "blue")
+dend2 <- assign_values_to_leaves_edgePar(dend=dend, value = col_aa_red, edgePar = "col")
+plot(dend2)
+
 

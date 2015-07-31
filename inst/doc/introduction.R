@@ -3,7 +3,7 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 60,
+   dpi = 55,
   comment = "#>",
   tidy = FALSE)
 
@@ -379,7 +379,7 @@ dend <- iris[1:30,-5] %>% dist %>% hclust %>% as.dendrogram %>%
    set("branches_k_color", k=3) %>% set("branches_lwd", c(1.5,1,1.5)) %>%
    set("branches_lty", c(1,1,3,1,1,2)) %>%
    set("labels_colors") %>% set("labels_cex", c(.9,1.2)) %>% 
-   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", "NA"))
+   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA))
 # plot the dend in usual "base" plotting engine:
 plot(dend)
 # Now let's do it in ggplot2 :)
@@ -406,8 +406,7 @@ if(require(DendSer)) {
 ## ----, message=FALSE-----------------------------------------------------
 library(gplots)
 
-data(mtcars) 
-x  <- as.matrix(mtcars)
+x  <- as.matrix(datasets::mtcars)
 
 heatmap.2(x)
 
@@ -422,6 +421,23 @@ Colv  <- x %>% t %>% dist %>% hclust %>% as.dendrogram %>%
 #    rotate_DendSer(ser_weight = dist(t(x)))
 
 heatmap.2(x, Rowv = Rowv, Colv = Colv)
+
+## ----, message=FALSE-----------------------------------------------------
+library(NMF)
+
+x  <- as.matrix(datasets::mtcars)
+
+# now let's spice up the dendrograms a bit:
+Rowv  <- x %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k = 3) %>% set("branches_lwd", 4) %>%
+   ladderize
+#    rotate_DendSer(ser_weight = dist(x))
+Colv  <- x %>% t %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k = 2) %>% set("branches_lwd", 4) %>%
+   ladderize
+#    rotate_DendSer(ser_weight = dist(t(x)))
+
+aheatmap(x, Rowv = Rowv, Colv = Colv)
 
 ## ------------------------------------------------------------------------
 x  <- as.matrix(datasets::mtcars)
@@ -510,6 +526,45 @@ dend %>%
    plot(main = "Cluster dendrogram with AU/BP values (%)\n bp values are colored+highlighted by signif")
 result %>% text
 result %>% pvrect(alpha=0.95)
+
+## ------------------------------------------------------------------------
+library(circlize)
+
+dend <- iris[1:40,-5] %>% dist %>% hclust %>% as.dendrogram %>%
+   set("branches_k_color", k=3) %>% set("branches_lwd", c(5,2,1.5)) %>%
+   set("branches_lty", c(1,1,3,1,1,2)) %>%
+   set("labels_colors") %>% set("labels_cex", c(.6,1.5)) %>%
+   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA))
+
+par(mar = rep(0,4))
+circlize_dendrogram(dend)
+# circlize_dendrogram(dend, labels = FALSE)
+# circlize_dendrogram(dend, facing = "inside", labels = FALSE)
+
+## ------------------------------------------------------------------------
+# dend <- iris[1:40,-5] %>% dist %>% hclust %>% as.dendrogram %>%
+#    set("branches_k_color", k=3) %>% set("branches_lwd", c(5,2,1.5)) %>%
+#    set("branches_lty", c(1,1,3,1,1,2)) %>%
+#    set("labels_colors") %>% set("labels_cex", c(.9,1.2)) %>%
+#    set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA))
+
+set.seed(2015-07-10)   
+# In the following we get the dendrogram but can also get extra information on top of it
+circos.initialize("foo", xlim = c(0, 40))
+circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+   circos.rect(1:40-0.8, rep(0, 40), 1:40-0.2, runif(40), col = rand_color(40), border = NA)
+}, bg.border = NA)
+circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+   circos.text(1:40-0.5, rep(0, 40), labels(dend), col = labels_colors(dend),
+               facing = "clockwise", niceFacing = TRUE, adj = c(0, 0.5))
+}, bg.border = NA, track.height = 0.1)
+max_height = attr(dend, "height")
+circos.track(ylim = c(0, max_height), panel.fun = function(x, y) {
+   circos.dendrogram(dend, max_height = max_height)
+}, track.height = 0.5, bg.border = NA)
+circos.clear()
+
+
 
 ## ------------------------------------------------------------------------
 dend15 <- c(1:5) %>% dist %>% hclust(method = "average") %>% as.dendrogram

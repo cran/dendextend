@@ -116,7 +116,8 @@ all_unique <- function(x, ...) {
 #' 
 #' @seealso \code{\link[dendextend]{cutree}},\code{\link{dendrogram}},
 #' \code{\link{hclust}}, \code{\link{labels_colors}},
-#' \code{\link{branches_attr_by_clusters}}
+#' \code{\link{branches_attr_by_clusters}}, \link{get_leaves_branches_col},
+#' \link{color_labels}
 #' 
 #' @examples
 #' 
@@ -472,7 +473,8 @@ color_labels_by_labels <- function(dend, labels, col, warn = dendextend_options(
 #' This function is in the style of \code{\link{color_branches}}, and 
 #' based on \code{\link{labels_colors}}.
 #' @seealso \code{\link[dendextend]{cutree}},\code{\link{dendrogram}},
-#' \code{\link{hclust}}, \code{\link{labels_colors}}, \code{\link{color_branches}}
+#' \code{\link{hclust}}, \code{\link{labels_colors}}, \code{\link{color_branches}},
+#' \link{assign_values_to_leaves_edgePar}
 #' @examples
 #' 
 #' \dontrun{
@@ -542,6 +544,19 @@ color_labels <- function(dend, k=NULL, h=NULL, labels, col, warn = dendextend_op
 colour_labels <- color_labels
 
 
+
+lty_branches <- function(dend, k=NULL, h=NULL, 
+                  lty,
+                 ...) {
+   
+   clusters <- cutree(dend, k = k, h = h)[order.dendrogram(dend)]
+   if(missing( lty))  lty <- clusters
+   dend <- branches_attr_by_clusters(dend, clusters, values =  lty, attr = "lty",
+                             branches_changed_have_which_labels = c("all"))
+   dend   
+}
+# dend <- USArrests %>% dist %>% hclust(method = "ave") %>% as.dendrogram
+# dend %>% lty_branches(k = 3) %>% plot
 
 # 
 # library(microbenchmark)

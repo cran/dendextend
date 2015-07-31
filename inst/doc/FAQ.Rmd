@@ -1,5 +1,5 @@
 ---
-title: "Frequantly asked questions"
+title: "Frequently asked questions"
 date: "`r Sys.Date()`"
 author: "Tal Galili"
 output: 
@@ -8,7 +8,7 @@ output:
 ---
 <!--
 %\VignetteEngine{knitr::rmarkdown}
-%\VignetteIndexEntry{Frequantly asked questions}
+%\VignetteIndexEntry{Frequently asked questions}
 -->
 
 
@@ -17,7 +17,7 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 75,
+   dpi = 65,
   # comment = "#>",
   tidy = FALSE)
 
@@ -60,7 +60,7 @@ labels_colors(dend)
 plot(dend, main = "A color for every state")
 ```
 
-Instead of using `1:5`, we can obviously use colors which are based on another factor (organized) the labels themseslves. But in such a case, we want to map between the order of the labels, and the order of the items in the original dataset. Here is another example based on the iris dataset:
+Instead of using `1:5`, we can obviously use colors that are based on another factor (organized): the labels themselves. But in such a case, we want to map between the order of the labels and the order of the items in the original dataset. Here is another example based on the iris dataset:
 
 ```{r, fig.show='hold', fig.width=8, fig.height=3}
 # install.packages("dendextend")
@@ -76,7 +76,7 @@ labels_colors(dend)
 par(mfrow = c(1,2))
 plot(dend, main = "Original dend")
 
-# let's add some color:
+# Let's add some color:
 colors_to_use <- as.numeric(small_iris[,5])
 colors_to_use
 # But sort them based on their order in dend:
@@ -88,6 +88,40 @@ labels_colors(dend) <- colors_to_use
 labels_colors(dend) 
 plot(dend, main = "A color for every Species")
 ```
+
+
+
+### How to color a dendrogram's labels according to defined groups? (in R)
+
+Asked (http://stackoverflow.com/questions/31117849/how-to-color-a-dendrograms-labels-according-to-defined-groups-in-r)[here].
+
+Solution: use the `color_labels` function.
+
+I suspect the function you are looking for is either `color_labels` or `get_leaves_branches_col`. The first color your labels based on `cutree` (like `color_branches` do) and the second allows you to get the colors of the branch of each leaf, and then use it to color the labels of the tree (if you use unusual methods for coloring the branches (as happens when using `branches_attr_by_labels`). For example:
+
+```{r}
+ # define dendrogram object to play with:
+ hc <- hclust(dist(USArrests[1:5,]), "ave")
+ dend <- as.dendrogram(hc)
+
+ library(dendextend)
+ par(mfrow = c(1,2), mar = c(5,2,1,0))
+ dend <- dend %>%
+          color_branches(k = 3) %>%
+          set("branches_lwd", c(2,1,2)) %>%
+          set("branches_lty", c(1,2,1))
+ 
+ plot(dend)
+
+ dend <- color_labels(dend, k = 3)
+ # The same as:
+ # labels_colors(dend)  <- get_leaves_branches_col(dend)
+ plot(dend)
+```
+
+
+Either way, you should always have a look at the `set` function, for ideas on what can be done to your dendrogram (this saves the hassle of remembering all the different functions names).
+
 
 
 ### How to color a dendrogram's branches/labels based on cluster (i.e.: cutree result)
@@ -158,7 +192,7 @@ get_leaves_nodePar(dend)[[1]]
 plot(dend, main = "A larger font for labels")
 ```
 
-(note that changing the spacing between the labels is currently not implemented)
+(Note that changing the spacing between the labels is currently not implemented)
 
 
 
@@ -168,7 +202,7 @@ plot(dend, main = "A larger font for labels")
 
 Asked (http://stackoverflow.com/questions/26240200/how-to-access-attributes-of-a-dendrogram-in-r)[here], and (http://stackoverflow.com/questions/25664911/r-hclust-height-of-final-merge)[here].
 
-It generally depends on which attribute we want to view, for "midpoint" (or height) use the `get_nodes_attr` function, with the "midpoint" parameter.
+It generally depends on which attribute we want to view. For "midpoint" (or height) use the `get_nodes_attr` function, with the "midpoint" parameter.
 
 ```{r}
 # install.packages("dendextend")
@@ -180,7 +214,7 @@ dend <- as.dendrogram(hclust(dist(USArrests[1:5,])))
 
 # midpoint for all nodes
 get_nodes_attr(dend, "midpoint")
-# Maybe also the height:
+# Perhaps also for the height:
 get_nodes_attr(dend, "height")
 ```
 
@@ -192,9 +226,9 @@ To also change an attribute, you can use the various assign functions from the p
 
 Asked (http://stackoverflow.com/questions/29265536/how-to-color-the-branches-and-tick-labels-in-the-heatmap-2?)[here].
 
-Solution: use the `color_branches` function (or the `set` function, with the "branches_k_color", "k", and "value" parameters ).
+Solution: use the `color_branches` function (or the `set` function, with the "branches_k_color", "k", and "value" parameters).
 
-(Getting the data for this example is from the (http://stackoverflow.com/questions/29265536/how-to-color-the-branches-and-tick-labels-in-the-heatmap-2?)[original SO question])
+(Getting the data for this example is from the (http://stackoverflow.com/questions/29265536/how-to-color-the-branches-and-tick-labels-in-the-heatmap-2)[original SO question])
 
 ```{r, echo = FALSE}
 test0 <- structure(c(0.641122711554543, 1.23425751165366, -0.325822271157288, 
@@ -796,7 +830,7 @@ dend1 <- color_branches(dend1, k = 4, col = cols_branches)
 # or with:
 # dend1 <- set(dend1, "branches_k_color", k = 4, value = cols_branches)
 
-# get the colors of the tips of the dendrogram:
+# Get the colors of the tips of the dendrogram:
 # col_labels <- cols_branches[cutree(dend1, k = 4)] # this may need tweaking in various cases - the following is a more general solution.
 
 col_labels <- get_leaves_branches_col(dend1)
@@ -848,4 +882,87 @@ dendextend::assign_dendextend_options()
 ```
 
 Before using any of its function (for example: `dendextend::color_branches` ). As of dendextend version 1.0.0, this is no longer required.
+
+
+
+
+### How to plot a fan (Polar) Dendrogram in R?
+
+Asked (http://stats.stackexchange.com/questions/4062/how-to-plot-a-fan-polar-dendrogram-in-r)[here].
+
+Solution: use the `circlize_dendrogram` function.
+
+```{r, fig.width=10, fig.height=10}
+# install.packages("dendextend")
+# install.packages("circlize")
+library(dendextend)
+library(circlize)
+
+# create a dendrogram
+hc <- hclust(dist(datasets::mtcars))
+dend <- as.dendrogram(hc)
+
+# modify the dendrogram to have some colors in the branches and labels
+dend <- dend %>% 
+   color_branches(k=4) %>% 
+   color_labels
+
+# plot the radial plot
+par(mar = rep(0,4))
+# circlize_dendrogram(dend, dend_track_height = 0.8) 
+circlize_dendrogram(dend, labels_track_height = NA, dend_track_height = .3) 
+
+```
+
+
+
+
+
+### A way to calculate lowest value of h in cut that produces groupings of a given minimum size?
+
+Asked (http://stackoverflow.com/questions/31124810/r-cut-dendrogram-into-groups-with-minimum-size/)[here].
+
+Solution: use the `heights_per_k.dendrogram` function.
+
+This feature is available in the dendextend package with the `heights_per_k.dendrogram` function (which also has a faster C++ implementation when loading the dendextendRcpp function).
+
+```{r}
+hc <- hclust(dist(USArrests[1:4,]), "ave")
+dend <- as.dendrogram(hc)
+heights_per_k.dendrogram(dend)
+```
+
+As a sidenote, the dendextend package has a `cutree.dendrogram` S3 method for dendrograms (which works very similarly to `cutree` for `hclust` objects).
+
+
+
+### Coloring dendrogram's end branches (or leaves) based on column number of data frame in R
+
+Asked (http://stackoverflow.com/questions/30062187/coloring-dendrogram-s-end-branches-or-leaves-based-on-column-number-of-data-fr)[here].
+
+Solution: use the `assign_values_to_leaves_edgePar` function.
+
+
+
+```{r}
+aa1 <- c(2,4,6,8)
+bb1 <- c(1,3,7,11)
+aa2 <- c(3,6,9,12)
+bb2 <- c(3,5,7,9)
+data.main <- data.frame(aa1,bb1,aa2,bb2)
+d1 <- dist(t(data.main))
+hcl1 <- hclust(d1)
+# plot(hcl1)
+
+dend <- as.dendrogram(hcl1)
+col_aa_red <- ifelse(grepl("aa", labels(dend)), "red", "blue")
+dend2 <- assign_values_to_leaves_edgePar(dend=dend, value = col_aa_red, edgePar = "col")
+plot(dend2)
+
+```
+
+
+
+
+
 

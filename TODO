@@ -1,6 +1,10 @@
 ﻿TODO for future releases:
 =========================
 
+Added citation info to:
+http://cran.r-project.org/web/packages/circlize/citation.html
+when using the circlize_dendrogram function.
+
 
 add Bk class, and plot.Bk method (this makes more sense
 than having a plot_Bk function)
@@ -9,6 +13,10 @@ Have a more consistent naming convention on the
 dend, dendlist, dend1, dend2, x, tree, etc.
 Decide how I want to do it.
 
+Help make:
+aheatmap(NMF pkg)
+pheatmap
+compatible with dendextend
 
 
 

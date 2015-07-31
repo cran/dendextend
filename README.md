@@ -62,13 +62,22 @@ library("dendextendRcpp")
 Vignettes: 
 
 * [Introduction to dendextend](http://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Introduction%20to%20dendextend.html)
-* [Frequantly asked questions](http://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Frequantly%20asked%20questions.html)
-* [Hierarchical cluster analysis on famous data-sets - enhanced with the dendextend package](http://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Hierarchical%20cluster%20analysis%20on%20famous%20data-sets%20-%20enhanced%20with%20the%20dendextend%20package.html)
+* [Frequently asked questions](http://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Frequently%20asked%20questions.html)
+* [Hierarchical cluster analysis on famous data sets - enhanced with the dendextend package](http://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Hierarchical%20cluster%20analysis%20on%20famous%20data%20sets%20-%20enhanced%20with%20the%20dendextend%20package.html)
 * [Introduction vignette (older)](https://github.com/talgalili/dendextend/blob/master/inst/doc/dendextend-tutorial.pdf)  (older)
 
 ## Share your dendrograms!
 
 If you have made interesting work using the dendextend package, I would LOVE to know about it. It can be a blog post, an academic paper, or just some plots you made for your work in the industry. Please contact me (see below) with what you have done, and I would also be happy to promote it in this page.
+
+### Usages of dendextend
+
+Packages:
+* [ComplexHeatmap](http://www.bioconductor.org/packages/release/bioc/vignettes/ComplexHeatmap/inst/doc/ComplexHeatmap.html)
+* [d3heatmap](http://cran.r-project.org/web/packages/d3heatmap/vignettes/Introduction.html)
+
+
+
 
 ## Contact
 

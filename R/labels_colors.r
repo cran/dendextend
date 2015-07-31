@@ -22,9 +22,12 @@
 
 #' @title Retrieve/assign colors to the labels of a dendrogram
 #' @aliases 
+#' labels_col
 #' labels_colors<-
 #' @usage
 #' labels_colors(dend, labels = TRUE,...)
+#' 
+#' labels_col(dend, labels = TRUE,...)
 #' 
 #' labels_colors(dend, ...) <- value
 #' @export
@@ -40,6 +43,9 @@
 #' @return 
 #' A vector with the dendrogram's labels colors (or a colored dendrogram,
 #' in case assignment is used). The colors are labeled.
+#' @seealso \code{\link[dendextend]{cutree}},\code{\link{dendrogram}},
+#' \code{\link{hclust}}, \code{\link{color_labels}}, \code{\link{color_branches}},
+#' \link{assign_values_to_leaves_edgePar}, \link{get_leaves_branches_col}
 #' @examples
 #' # define dendrogram object to play with:
 #' hc <- hclust(dist(USArrests[1:3,]), "ave")
@@ -91,7 +97,8 @@ labels_colors <- function (dend, labels = TRUE, ...) {
 }
 
 
-
+#' @export
+labels_col <- labels_colors
 
 
 
@@ -141,6 +148,56 @@ labels_colors <- function (dend, labels = TRUE, ...) {
 
 
 `labels_colors<-.dendrogram` <- `labels_colors<-`
+
+
+
+#
+
+
+#' @title Retrieve/assign cex to the labels of a dendrogram
+#' @aliases 
+#' labels_cex<-
+#' @usage
+#' labels_cex(dend, ...)
+#' 
+#' labels_cex(dend, ...) <- value
+#' @export
+#' @param dend a dendrogram object 
+#' @param ... not used
+#' @param value a vector of cex to be used as new label's size for the dendrogram
+#' @return 
+#' A vector with the dendrogram's labels sizes (NULL if none are supplied).
+#' @examples
+#' # define dendrogram object to play with:
+#' dend <- as.dendrogram(hclust(dist(USArrests[1:3,]), "ave"))
+#' 
+#' # Defaults:
+#' labels_cex(dend)
+#' plot(dend)
+#' 
+#' # let's add some color:
+#' labels_cex(dend) <- 1:3
+#' labels_cex(dend)
+#' plot(dend)
+#'    
+#' labels_cex(dend) <- 1
+#' labels_cex(dend)
+#' plot(dend)
+#' 
+labels_cex <- function(dend, ...) {
+   # get_leaves_attr(dend, attribute = "nodePar", simplify = FALSE)
+   unlist(dendrapply(dend, function(node) {attr(node, "nodePar")$`lab.cex` } ))
+}
+   
+#' @export
+"labels_cex<-" <- function (dend, ..., value) {
+   if(!is.dendrogram(dend)) stop("'dend' should be a dendrogram.")
+   assign_values_to_leaves_nodePar(dend, value, "lab.cex", ...)
+}
+
+`labels_cex<-.dendrogram` <- `labels_cex<-`
+
+
 
 
 # 

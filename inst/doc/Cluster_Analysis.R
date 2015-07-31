@@ -3,7 +3,8 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 60,
+   dpi = 65,
+   # dev = "svg",
   # comment = "#>",
   tidy = FALSE)
 
@@ -61,17 +62,17 @@ dend <- rotate(dend, 1:150)
 # Color the branches based on the clusters:
 dend <- color_branches(dend, k=3) #, groupLabels=iris_species)
 
-# manually match the labels, as much as possible, to the real classification of the flowers:
+# Manually match the labels, as much as possible, to the real classification of the flowers:
 labels_colors(dend) <-
    rainbow_hcl(3)[sort_levels_values(
       as.numeric(iris[,5])[order.dendrogram(dend)]
    )]
 
-# We'll add the flower type to the labels:
+# We shall add the flower type to the labels:
 labels(dend) <- paste(as.character(iris[,5])[order.dendrogram(dend)],
                            "(",labels(dend),")", 
                            sep = "")
-# we hang the dendrogram a bit:
+# We hang the dendrogram a bit:
 dend <- hang.dendrogram(dend,hang_height=0.1)
 # reduce the size of the labels:
 # dend <- assign_values_to_leaves_nodePar(dend, 0.5, "lab.cex")
@@ -79,7 +80,7 @@ dend <- set(dend, "labels_cex", 0.5)
 # And plot:
 par(mar = c(3,3,3,7))
 plot(dend, 
-     main = "Clustered Iris dataset
+     main = "Clustered Iris data set
      (the labels give the true flower species)", 
      horiz =  TRUE,  nodePar = list(cex = .007))
 legend("topleft", legend = iris_species, fill = rainbow_hcl(3))
@@ -88,6 +89,11 @@ legend("topleft", legend = iris_species, fill = rainbow_hcl(3))
 # labels(hc_iris) # no labels, because "iris" has no row names
 # is.integer(labels(dend)) # this could cause problems...
 # is.character(labels(dend)) # labels are no longer "integer"
+
+## ----, fig.width=7, fig.height=7-----------------------------------------
+# Requires that the circlize package will be installed
+par(mar = rep(0,4))
+circlize_dendrogram(dend)
 
 ## ----, echo=FALSE, eval=FALSE--------------------------------------------
 #  # some_col_func <- function(n, top_color = "red4") {
@@ -104,7 +110,7 @@ some_col_func <- function(n) rev(colorspace::heat_hcl(n, c = c(80, 30), l = c(30
 # scaled_iris2 <- iris2 %>% as.matrix %>% scale
 # library(gplots)
 gplots::heatmap.2(as.matrix(iris2), 
-          main = "Heatmap for the Iris dataset",
+          main = "Heatmap for the Iris data set",
           srtCol = 20,
           dendrogram = "row",
           Rowv = dend,
@@ -119,6 +125,15 @@ gplots::heatmap.2(as.matrix(iris2),
          )
 
 
+
+## ----, cache = FALSE, eval = FALSE---------------------------------------
+#  d3heatmap::d3heatmap(as.matrix(iris2),
+#            dendrogram = "row",
+#            Rowv = dend,
+#            colors = "Greens",
+#            # scale = "row",
+#            width = 600,
+#            show_grid = FALSE)
 
 ## ------------------------------------------------------------------------
 
@@ -142,7 +157,7 @@ iris_dendlist_cor_spearman <- cor.dendlist(iris_dendlist, method_coef = "spearma
 corrplot::corrplot(iris_dendlist_cor_spearman, "pie", "lower")
 
 ## ----, fig.height=5------------------------------------------------------
-# the which parameter allows us to pick the elements in the list to compare
+# The `which` parameter allows us to pick the elements in the list to compare
 iris_dendlist %>% dendlist(which = c(1,8)) %>% ladderize %>% 
    set("branches_k_color", k=3) %>% 
    # untangle(method = "step1side", k_seq = 3:20) %>%
@@ -150,14 +165,14 @@ iris_dendlist %>% dendlist(which = c(1,8)) %>% ladderize %>%
    tanglegram(faster = TRUE) # (common_subtrees_color_branches = TRUE)
 
 ## ----, fig.height=5------------------------------------------------------
-# the which parameter allows us to pick the elements in the list to compare
+# The `which` parameter allows us to pick the elements in the list to compare
 iris_dendlist %>% dendlist(which = c(1,4)) %>% ladderize %>% 
    set("branches_k_color", k=2) %>% 
    # untangle(method = "step1side", k_seq = 3:20) %>%
    tanglegram(faster = TRUE) # (common_subtrees_color_branches = TRUE)
 
 ## ----, fig.height=5------------------------------------------------------
-# the which parameter allows us to pick the elements in the list to compare
+# The `which` parameter allows us to pick the elements in the list to compare
 iris_dendlist %>% dendlist(which = c(1,4)) %>% ladderize %>% 
    # untangle(method = "step1side", k_seq = 3:20) %>%
    set("rank_branches") %>%
@@ -168,7 +183,6 @@ length(unique(common_subtrees_clusters(iris_dendlist[[1]], iris_dendlist[[4]]))[
 # -1 at the end is because we are ignoring the "0" subtree, which indicates leaves that are singletons.
 
 ## ----, fig.height=5------------------------------------------------------
-# the which parameter allows us to pick the elements in the list to compare
 iris_dendlist %>% dendlist(which = c(3,4)) %>% ladderize %>% 
    untangle(method = "step1side", k_seq = 2:6) %>%
    set("branches_k_color", k=2) %>% 
@@ -181,9 +195,11 @@ for(i in 1:8) {
    title(names(iris_dendlist)[i])
 }
 
-## ----, fig.width=8, fig.height=8-----------------------------------------
+## ------------------------------------------------------------------------
 iris_dendlist_cor2 <- cor.dendlist(iris_dendlist, method = "common")
 iris_dendlist_cor2
+
+## ----, fig.width=8, fig.height=8-----------------------------------------
 corrplot::corrplot(iris_dendlist_cor2, "pie", "lower")
 
 ## ------------------------------------------------------------------------
@@ -402,8 +418,8 @@ dend_ave <- votes.repub %>% arcsin_transformation %>%
    rotate(labels(dend_NA)) %>%
    color_branches(k=3) # %>% ladderize
 
-# the orders were predefined after using untangle("step2side")
-# they are omitted here to save running time.
+# The orders were predefined after using untangle("step2side")
+# They are omitted here to save running time.
 dend_com <- rotate(dend_com, ord1)
 dend_ave <- rotate(dend_ave, ord2)
 
