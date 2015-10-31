@@ -52,8 +52,6 @@
 #' @rdname labels-assign
 #' @aliases 
 #' labels<-.default 
-#' labels.matrix 
-#' labels<-.matrix
 #' labels<-.dendrogram 
 #' labels.hclust 
 #' labels<-.hclust
@@ -63,9 +61,6 @@
 #' 
 #' labels(object, ...) <- value
 #' 
-#' \method{labels}{matrix}(object, which = c("colnames", "rownames"), ...)
-#' 
-#' \method{labels}{matrix}(object, which = c("colnames", "rownames"), ...) <- value
 #' 
 #' \method{labels}{dendrogram}(object, ...) <- value
 #' 
@@ -78,7 +73,6 @@
 #' \method{labels}{phylo}(object, ...) <- value
 #' 
 #' @param object a variable name (possibly quoted) who's label are to be updated
-#' @param which "colnames" or "rownames", to which of the two should labels refer to.
 #' @param ... parameters passed (not currently in use)
 #' @param value a value to be assigned to object's label
 #' @param order default is FALSE. Only relevant for extracting labels from an
@@ -95,7 +89,7 @@
 #' (adopted to dendrogram by Tal Galili):
 #' \url{http://stackoverflow.com/questions/4614223/how-to-have-the-following-work-labelsx-some-value-r-question}
 #' Also with some ideas from Gregory Jefferis's dendroextras package.
-#' @seealso \code{\link{labels}}, \code{\link{labels.matrix}}
+#' @seealso \code{\link{labels}}
 #' @examples
 #' x <- 1:3 
 #' labels(x)
@@ -107,21 +101,6 @@
 #' 
 #' 
 #' # get("labels<-")
-#' 
-#' ################
-#' # Example for matrix objects
-#' 
-#' x <- matrix(1:9, 3,3)
-#' labels(x)
-#' x
-#' labels(x) <- letters[1:3]
-#' x
-#' labels(x, which = "rownames") <- LETTERS[24:26]
-#' x
-#' #  a b c
-#' #X 1 4 7
-#' #Y 2 5 8
-#' #Z 3 6 9
 #' 
 #' ################
 #' # Example for using the assignment with dendrogram and hclust objects:
@@ -269,59 +248,59 @@ labels.phylo <- function(object, ...) {
 
 
 
-
-# ' @title "label" assignment operator for matrix class
-# ' @S3method labels matrix
-#' @export
-labels.matrix <- function(object, which = c("colnames","rownames"), ...) {
-   if(missing(which))
-      which <- "colnames"
-   which <- match.arg(which)
-   if(which == "colnames") {
-      out <- colnames(object)
-   } else {
-      out <- rownames(object)
-   }
-   out
-}
-# example("labels.matrix")
-# ?"labels.matrix"
-
-# ' @title "label" assignment operator - matrix
-# ' @S3method labels<- matrix
-#' @export
-#' @keywords internal
-'labels<-.matrix' <- function(object, which = c("colnames","rownames"), ..., value) {
-   if(missing(which))
-      which <- "colnames"
-   which <- match.arg(which)
-   
-   # I'm using ncol and nrow instead of length(colnames(object))
-   # since if the object has no colnames, their length will be 0
-   
-   if(which == "colnames") {
-      
-      if(length(value) < ncol(object)) {
-         warning("The lengths of the new labels is shorter than the length of the object's colnames - labels are recycled.")
-         colnames(object) <- rep(value, length.out = ncol(object)) # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
-      } else {
-         colnames(object) <- value # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
-      }     
-      
-   } else {
-
-      if(length(value) < nrow(object)) {
-         warning("The lengths of the new labels is shorter than the length of the object's rownames - labels are recycled.")
-         rownames(object) <- rep(value, length.out = nrow(object)) # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
-      } else {
-         rownames(object) <- value # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
-      }     
-      
-   }
-   object
-}
-
-
+# 
+# # ' @title "label" assignment operator for matrix class
+# # ' @S3method labels matrix
+# # ' @export
+# labels.matrix <- function(object, which = c("colnames","rownames"), ...) {
+#    if(missing(which))
+#       which <- "colnames"
+#    which <- match.arg(which)
+#    if(which == "colnames") {
+#       out <- colnames(object)
+#    } else {
+#       out <- rownames(object)
+#    }
+#    out
+# }
+# # example("labels.matrix")
+# # ?"labels.matrix"
+# 
+# # ' @title "label" assignment operator - matrix
+# # ' @S3method labels<- matrix
+# # ' @export
+# # ' @keywords internal
+# 'labels<-.matrix' <- function(object, which = c("colnames","rownames"), ..., value) {
+#    if(missing(which))
+#       which <- "colnames"
+#    which <- match.arg(which)
+#    
+#    # I'm using ncol and nrow instead of length(colnames(object))
+#    # since if the object has no colnames, their length will be 0
+#    
+#    if(which == "colnames") {
+#       
+#       if(length(value) < ncol(object)) {
+#          warning("The lengths of the new labels is shorter than the length of the object's colnames - labels are recycled.")
+#          colnames(object) <- rep(value, length.out = ncol(object)) # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
+#       } else {
+#          colnames(object) <- value # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
+#       }     
+#       
+#    } else {
+# 
+#       if(length(value) < nrow(object)) {
+#          warning("The lengths of the new labels is shorter than the length of the object's rownames - labels are recycled.")
+#          rownames(object) <- rep(value, length.out = nrow(object)) # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
+#       } else {
+#          rownames(object) <- value # I assume here that if ever labels will be used in the naive sense, it would be as a synonym to "names"      
+#       }     
+#       
+#    }
+#    object
+# }
+# 
+# 
 
 
 

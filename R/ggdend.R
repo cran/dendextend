@@ -132,6 +132,14 @@
 #' ggd1 <- as.ggdend(dend)
 #' library(ggplot2)
 #' ggplot(ggd1) # reproducing the above plot in ggplot2 :)
+#' 
+#' 
+#' labels(dend) <- paste0(labels(dend), "00000")
+#' ggd1 <- as.ggdend(dend)
+#' # Use ylim to deal with long labels in ggplot2
+#' ggplot(ggd1) + ylim(-.4, max(get_branches_heights(dend)) )
+#' 
+#' 
 #' ggplot(ggd1, horiz = TRUE) # horiz plot in ggplot2
 #' # Adding some extra spice to it...
 #' # creating a radial plot:
@@ -184,7 +192,8 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
    if(!is.dendrogram(dend)) stop("dend is not a dendrogram (and it needs to be...)")
    if(nleaves(dend) == 0) stop("dend must have at least one node")
    if(edge.root) stop("edge.root is not supported at this point (this parameter is a place-holder for when it will)")
-      
+    
+   # source('R/stats_imports.R', echo=FALSE)
    # ggdata <- dendextend:::dendrogram_data(dend, type = "rectangle")
    ggdata <- dendrogram_data(dend, type = type) # ggdendro:::dendrogram_data(dend)
    
@@ -270,7 +279,8 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
       
    # par is a character of the par to get from edgePar_attr
    get_edgePar_attr_par <- function(par) {
-      values <- sapply(edgePar_attr,  `[[`, name = par)
+      values <- sapply(edgePar_attr,  `[`, name = par)
+#       null2NA <- function(x) ifelse(is.na(x) || is.null(x), NA, x)
       null2NA <- function(x) ifelse(is.null(x), NA, x)
       values <- sapply(values, null2NA) # in case the attr is missing, it fills the NULL with NA
       rep(unlist(values), each = 2) # like doing edgePar_attr[[1]] ["col"]
@@ -313,11 +323,13 @@ as.ggdend.dendrogram <- function (dend, type = c("rectangle", "triangle"), edge.
 
    the_lab.col <- get_leaves_edgePar_attr_par("lab.col") # like doing edgePar_attr[[1]] ["col"]
    the_lab.cex <- get_leaves_edgePar_attr_par("lab.cex") # like doing edgePar_attr[[1]] ["col"]
+   the_lab.height <- get_leaves_attr(dend, "height")
    if(is.null(the_lab.col)) the_lab.col <- NA
    if(is.null(the_lab.cex)) the_lab.cex <- NA
 
    ggdata$labels$col <- the_lab.col
    ggdata$labels$cex <- the_lab.cex
+   ggdata$labels$y <- the_lab.height
          # The above saves us from errors such as:
          # Error in eval(expr, envir, enclos) : object 'cex' not found
          # In addition: Warning message:

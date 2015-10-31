@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending R's Dendrogram Functionality
-Version: 1.1.0
-Date: 2015-07-30
+Version: 1.1.2
+Date: 2015-10-30
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "http://www.r-statistics.com"),
     person("Gavin", "Simpson", role = "ctb"), person("Gregory","Jefferis", role
@@ -44,9 +44,10 @@ License: GPL-2 | GPL-3
 URL: http://cran.r-project.org/package=dendextend,
         https://github.com/talgalili/dendextend/,
         http://www.r-statistics.com/tag/dendextend/,
-        http://bioinformatics.oxfordjournals.org/content/early/2015/07/23/bioinformatics.btv428
+        http://bioinformatics.oxfordjournals.org/content/early/2015/08/18/bioinformatics.btv428
 BugReports: https://github.com/talgalili/dendextend/issues
-Packaged: 2015-07-30 16:22:55 UTC; user
+NeedsCompilation: no
+Packaged: 2015-10-31 08:55:48 UTC; junior
 Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Gavin Simpson [ctb],
   Gregory Jefferis [ctb] (imported code from his dendroextras package),
@@ -65,6 +66,5 @@ Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Zuguang Gu [ctb] (circlize author),
   Yoav Benjamini [ths]
 Maintainer: Tal Galili <tal.galili@gmail.com>
-NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-07-31 00:57:10
+Date/Publication: 2015-10-31 16:16:02
