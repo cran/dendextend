@@ -24,6 +24,8 @@
 
 
 #' @title Check if all the elements in a vector are unique
+#' @description
+#' Checks if all the elements in a vector are unique
 #' @export
 #' @param x a vector
 #' @param ... ignored.
@@ -169,9 +171,8 @@ all_unique <- function(x, ...) {
 #' 
 #' 
 #' # cutree(dend_iris,k=3, order_clusters_as_data=FALSE,
-#'    # sort_cluster_numbers = TRUE, try_cutree_hclust=FALSE)
-#' # cutree(dend_iris,k=3, order_clusters_as_data=FALSE,
-#'    # sort_cluster_numbers = TRUE, try_cutree_hclust=TRUE)
+#'    #  try_cutree_hclust=FALSE)
+#' # cutree(dend_iris,k=3, order_clusters_as_data=FALSE)
 #' 
 #' library(colorspace)
 #' 
@@ -217,7 +218,8 @@ all_unique <- function(x, ...) {
 #' 
 #' c(1:5) %>% # take some data
 #'    dist %>% # calculate a distance matrix, 
-#'    hclust(method = "single") %>% # on it compute hierarchical clustering using the "average" method, 
+#'   # on it compute hierarchical clustering using the "average" method, 
+#'    hclust(method = "single") %>% 
 #'    as.dendrogram %>% color_branches(k=3) %>% plot # nice, returns the tree as is...
 #' 
 #' 
@@ -292,7 +294,7 @@ color_branches <- function(dend, k=NULL, h=NULL, col, groupLabels=NULL,
    }
    
    if(!is.dendrogram(dend) && !is.hclust(dend)) stop("dend needs to be either a dendrogram or an hclust object")
-   g <- dendextend::cutree(dend, k=k, h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
+   g <- dendextend::cutree(dend, k=k, h=h, order_clusters_as_data=FALSE)
    if(is.hclust(dend)) dend <- as.dendrogram(dend)
    
    k <- max(g)
@@ -514,7 +516,7 @@ color_labels <- function(dend, k=NULL, h=NULL, labels, col, warn = dendextend_op
       return(dend)
    }
    
-   g <- dendextend::cutree(dend,k=k,h=h, order_clusters_as_data=FALSE, sort_cluster_numbers = TRUE)
+   g <- dendextend::cutree(dend,k=k,h=h, order_clusters_as_data=FALSE)
    if(is.hclust(dend)) dend <- as.dendrogram(dend)
    
    k <- max(g)
@@ -573,7 +575,7 @@ lty_branches <- function(dend, k=NULL, h=NULL,
 
 
 #' @title Return the leaf Colors of a dendrogram
-#' @details The returned Colors will be in dendrogram order.
+#' @description The returned Colors will be in dendrogram order.
 #' @param d the dendrogram
 #' @param col_to_return Character scalar - kind of Color attribute to return
 #' @return named character vector of Colors, NA_character_ where missing

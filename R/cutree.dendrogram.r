@@ -19,18 +19,21 @@
 
 
 #' @title Is the object of class hclust
+#' @description Is the object of class hclust.
 #' @export
 #' @param x an object.
 #' @return logical - is the object of class hclust.
 is.hclust <- function(x) { inherits(x,"hclust") }
 
 #' @title Is the object of class dendrogram
+#' @description Is the object of class dendrogram. Very basic for many functions in the package.
 #' @export
 #' @param x an object.
 #' @return logical - is the object of class dendrogram.
 is.dendrogram <- function(x) { inherits(x,"dendrogram") }
 
 #' @title Is the object of class phylo
+#' @description checks if the object of class phylo.
 #' @export
 #' @param x an object.
 #' @return logical - is the object of class phylo.
@@ -349,6 +352,8 @@ cutree_1h.dendrogram <- function(dend, h,
 
 
 #' @title Which height will result in which k for a dendrogram
+#' @description Which height will result in which k for a dendrogram.
+#' This helps with speeding up the \link{cutree.dendrogram} function.
 #' @export
 #' @aliases
 #' dendextend_heights_per_k.dendrogram
@@ -493,7 +498,7 @@ dendextend_heights_per_k.dendrogram <- function(dend,...)
 cutree_1k.dendrogram <- function(dend, k, 
                                  dend_heights_per_k = NULL, 
                                  use_labels_not_values = TRUE, 
-                                 order_clusters_as_data =TRUE, 
+                                 order_clusters_as_data = TRUE, 
                                  warn = dendextend_options("warn"), ...)
 {
 #    if(!is.integer(k) && warn) warning("k is not an integer - using k<-as.integer(k)")   
@@ -591,7 +596,6 @@ cutree_1k.dendrogram <- function(dend, k,
 #' \method{cutree}{hclust}(tree, k = NULL, h = NULL,
 #'                            use_labels_not_values = TRUE, 
 #'                           order_clusters_as_data =TRUE,
-#'                           sort_cluster_numbers = TRUE,
 #'                           warn = dendextend_options("warn"),
 #'                           NA_to_0L = TRUE,
 #'                           ...)
@@ -602,7 +606,6 @@ cutree_1k.dendrogram <- function(dend, k,
 #'                               dend_heights_per_k = NULL,
 #'                               use_labels_not_values = TRUE, 
 #'                               order_clusters_as_data =TRUE, 
-#'                               sort_cluster_numbers = TRUE,
 #'                               warn = dendextend_options("warn"), 
 #'                               try_cutree_hclust = TRUE,
 #'                               NA_to_0L = TRUE,
@@ -625,10 +628,6 @@ cutree_1k.dendrogram <- function(dend, k,
 #' labels in the dendrogram. In order to be consistent with \link[stats]{cutree}, this is set
 #' to TRUE.
 #' This is passed to \code{cutree_1h.dendrogram}.
-#' @param sort_cluster_numbers logical (TRUE). Should the resulting cluster id numbers
-#' be sorted? (default is TRUE in order to make the function compatible with
-#' \code{ \link[stats]{cutree}  } ) from {stats}, but it allows for sensible
-#' color order when using \link{color_branches}.
 #' @param warn logical (default from dendextend_options("warn") is FALSE).
 #' Set if warning are to be issued, it is safer to keep this at TRUE,
 #' but for keeping the noise down, the default is FALSE.
@@ -649,12 +648,6 @@ cutree_1k.dendrogram <- function(dend, k,
 #' as opposed to \link[stats]{cutree} for hclust, \code{cutree.dendrogram} allows the
 #' cutting of trees at a given height also for non-ultrametric trees 
 #' (ultrametric tree == a tree with monotone clustering heights).
-
-#' This \code{sort_cluster_numbers} parameter is based on the 
-#' \link{sort_levels_values} function. Using that parameter with TRUE
-#' makes the clusters id's from cutree to be ordered from left to right. 
-#' e.g: the left most cluster in the tree will be numbered "1", the one
-#' after it will be "2" etc...).
 #' 
 #' @return
 #' 
@@ -758,10 +751,11 @@ cutree.default <- function(tree, k = NULL, h = NULL,...) {
 cutree.hclust <- function(tree, k = NULL, h = NULL,
                           use_labels_not_values = TRUE, # ignored here...
                           order_clusters_as_data =TRUE,
-                          sort_cluster_numbers = TRUE,
                           warn = dendextend_options("warn"),
                           NA_to_0L = TRUE, # ignored here...
                           ...) { 
+   
+   sort_cluster_numbers <- TRUE
    
    ## Add an important warning before R crashes.
    if(warn) {
@@ -826,12 +820,14 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
                               dend_heights_per_k = NULL,
                               use_labels_not_values = TRUE, 
                               order_clusters_as_data =TRUE, 
-                              sort_cluster_numbers = TRUE,
+                              # sort_cluster_numbers = TRUE,
                               warn = dendextend_options("warn"), 
                               try_cutree_hclust = TRUE,
                               NA_to_0L = TRUE,
                               ...)
 {
+   
+   sort_cluster_numbers <- TRUE
    
    # warnings and stopping rules:
    if(!is.dendrogram(tree)) stop("tree should be of class dendrogram (and for some reason - it is not)")
@@ -869,7 +865,7 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
       if(is.hclust(hclust_tree)) {
          return(cutree(tree=hclust_tree, k=k, h=h, 
                        order_clusters_as_data = order_clusters_as_data,
-                       sort_cluster_numbers = sort_cluster_numbers,
+                       # sort_cluster_numbers = sort_cluster_numbers,
                        ...
                        ))         
       }      
@@ -915,7 +911,7 @@ cutree.dendrogram <- function(tree, k = NULL, h = NULL,
    if(sort_cluster_numbers) clusters <- sort_levels_values(clusters, force_integer = TRUE, warn = FALSE)
          # we know that cluster id is an integer, so it is fine to use force_integer = TRUE
    
-   if(any(is.na(clusters))) warning("It is impossible to produce a one-to-one cut for the k/h you specidied. 0's have been introduced.")
+   if(any(is.na(clusters))) warning("It is impossible to produce a one-to-one cut for the k/h you specidied. 0's have been introduced. Note that this result would be different from R's default cutree output.")
 
    if(NA_to_0L) clusters[is.na(clusters)] <- 0L
 

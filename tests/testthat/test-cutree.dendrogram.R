@@ -250,8 +250,15 @@ test_that("cutree for flat edges",{
    expect_equal(unname(cutree(dend, k=2)), c(1,1,1,2,2))
    expect_equal(unname(cutree(dend, h=-1)), 1:5) #weird definition
    expect_equal(unname(cutree(dend, k=5)), 1:5)
-   expect_warning(cutree(dend,k=4))
-   expect_equal(suppressWarnings(cutree(dend, k=4)), rep(0, 5))
+   expect_warning(cutree(dend, k=4, try_cutree_hclust = FALSE))
+   expect_equal(suppressWarnings(cutree(dend, k=4, try_cutree_hclust = FALSE)), rep(0, 5))
+   
+   # as of R R 3.2.4 (or 3.3.0 -not sure ) - as.hclust was fixed to deal better with ties on the branch heights.
+   # That means that:
+   # cutree(as.hclust(dend), k=4)
+   # would work (it will give hard-to-interpret results - but it would work)
+   
+   # as.hclust(dend)
    
 })
 
@@ -361,8 +368,8 @@ test_that("Making cutted clusters be numbered from left to right",{
    dend <- as.dendrogram(hc)
    
    sorted_cutree_hc_orig <-stats::cutree(hc, k=1:4)
-   sorted_cutree_hc <-dendextend:::cutree.hclust(hc, k=1:4, sort_cluster_numbers=TRUE)
-   sorted_cutree_dend <-dendextend:::cutree.dendrogram(dend, k=1:4, sort_cluster_numbers=TRUE,try_cutree_hclust=FALSE)
+   sorted_cutree_hc <-dendextend:::cutree.hclust(hc, k=1:4)
+   sorted_cutree_dend <-dendextend:::cutree.dendrogram(dend, k=1:4,try_cutree_hclust=FALSE)
 
    expect_identical( 
       sorted_cutree_hc_orig,
@@ -382,8 +389,8 @@ test_that("Making cutted clusters be numbered from left to right",{
    
    # the same as cutree
    expect_identical( 
-      as.integer(cutree(dend, k=1:4, sort_cluster_numbers=TRUE,try_cutree_hclust=FALSE)),
-      as.integer(cutree(hc, k=1:4, sort_cluster_numbers=TRUE))      )
+      as.integer(cutree(dend, k=1:4, try_cutree_hclust=FALSE)),
+      as.integer(cutree(hc, k=1:4))      )
    
    expect_identical( 
       as.vector(sorted_cutree_hc),
