@@ -4,6 +4,7 @@ library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
    dpi = 75,
+   fig.width = 6, fig.height = 6,
   # comment = "#>",
   tidy = FALSE)
 

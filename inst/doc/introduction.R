@@ -3,7 +3,8 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 55,
+   dpi = 75,
+   fig.width = 6, fig.height = 6,
   comment = "#>",
   tidy = FALSE)
 
@@ -11,7 +12,7 @@ knitr::opts_chunk$set(
 # < ! -- rmarkdown v1 -->
 
 
-## ---- echo=FALSE, warning=FALSE, fig.align='center'----------------------
+## ---- echo=FALSE, warning=FALSE, fig.align='center', fig.width=7, fig.height=7----
 suppressMessages(library(dendextend))
 suppressMessages(library(dendextendRcpp))
 library(colorspace)
@@ -403,7 +404,7 @@ if(require(DendSer)) {
    dend15 %>% color_branches %>% rotate_DendSer %>%   plot
 }
 
-## ---- message=FALSE------------------------------------------------------
+## ---- message=FALSE, fig.width=7, fig.height=7---------------------------
 library(gplots)
 
 x  <- as.matrix(datasets::mtcars)
@@ -778,6 +779,12 @@ FM_index(cutree(hc1, k=3), cutree(hc2, k=3))
 FM_index_R(cutree(hc1, k=3), cutree(hc2, k=3))
 # Or wrapping the code from profdpm: (notice the NA's)
 FM_index_profdpm(cutree(hc1, k=3), cutree(hc2, k=3))
+
+## ------------------------------------------------------------------------
+FM_index(cutree(hc1, k=3), cutree(hc2, k=3)) 
+
+## ------------------------------------------------------------------------
+0.4462 + 1.645 * sqrt(6.464092e-05)
 
 ## ------------------------------------------------------------------------
 set.seed(23235)

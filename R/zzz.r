@@ -16,6 +16,35 @@
 #  http://www.r-project.org/Licenses/
 #
 
+
+
+# Add myself to github:
+# http://www.r-bloggers.com/rstudio-and-github/
+
+# git remote add origin https://github.com/talgalili/dendextend.git
+# git config remote.origin.url git@github.com:talgalili/dendextend.git
+# git pull -u origin master
+# git push -u origin master
+
+# https://nathanj.github.io/gitguide/tour.html
+# add "git@github.com:talgalili/dendextend.git"
+
+# if the RStudio buttons are greyed out, then run the following in git shell:
+# git push -u origin master
+# source: http://www.r-bloggers.com/things-i-forget-pushpull-greyed-out-in-rstudio/
+# this updates \\.git\\config with the following lines:
+# [branch "master"]
+#     remote = origin
+#     merge = refs/heads/master
+
+
+
+
+
+
+
+
+
 # 
 # 
 # 
@@ -162,22 +191,39 @@
 dendextendWelcomeMessage <- function(){
    # library(utils)   
    
-   paste("\n",     
-         "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
-         "\n",
-         "Type ?dendextend to access the overall documentation and\n",
-         "browseVignettes(package = 'dendextend') for the package vignette.\n",
-         "You can execute a demo of the package via: demo(dendextend)\n",
-         "\n",  
-         "More information is available on the dendextend project web-site:\n",
-         "https://github.com/talgalili/dendextend/\n",
-         "\n",               
-         "Contact: <tal.galili@gmail.com>\n",
-         "Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues\n",
-         "\n",
-         "\t\t\tTo suppress this message use:\n",
-         "\t\t\tsuppressPackageStartupMessages(library(dendextend))\n",  
-         sep="")
+   # paste("\n",     
+   #       "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
+   #       "\n",
+   #       "Type ?dendextend to access the overall documentation and\n",
+   #       "browseVignettes(package = 'dendextend') for the package vignette.\n",
+   #       "You can execute a demo of the package via: demo(dendextend)\n",
+   #       "\n",  
+   #       "More information is available on the dendextend project web-site:\n",
+   #       "https://github.com/talgalili/dendextend/\n",
+   #       "\n",               
+   #       "Contact: <tal.galili@gmail.com>\n",
+   #       "Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues\n",
+   #       "\n",
+   #       "\t\t\tTo suppress this message use:\n",
+   #       "\t\t\tsuppressPackageStartupMessages(library(dendextend))\n",  
+   #       sep="")
+   # 
+   paste0("\n",
+          "---------------------\n",
+          "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
+          # "\n",
+          "Type browseVignettes(package = 'dendextend') for the package vignette.\n",
+          "The github page is: ",
+          "https://github.com/talgalili/dendextend/\n",
+          "\n",
+          "Suggestions and bug-reports can be submitted at: https://github.com/talgalili/dendextend/issues\n",
+          "Or contact: <tal.galili@gmail.com>\n",
+          "\n",
+          "\tTo suppress this message use:  ", "suppressPackageStartupMessages(library(dendextend))\n",
+          "---------------------\n"
+   )
+   
+   
 }
 
 

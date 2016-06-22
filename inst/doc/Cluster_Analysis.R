@@ -3,7 +3,8 @@ library(dendextend)
 library(knitr)
 knitr::opts_chunk$set(
    cache = TRUE,
-   dpi = 65,
+   dpi = 75,
+   fig.width = 6, fig.height = 6,
    # dev = "svg",
   # comment = "#>",
   tidy = FALSE)
@@ -103,7 +104,7 @@ circlize_dendrogram(dend)
 #  # }
 #  
 
-## ------------------------------------------------------------------------
+## ---- fig.width=9, fig.height=9------------------------------------------
 
 some_col_func <- function(n) rev(colorspace::heat_hcl(n, c = c(80, 30), l = c(30, 90), power = c(1/5, 1.5)))
 
@@ -199,8 +200,8 @@ for(i in 1:8) {
 iris_dendlist_cor2 <- cor.dendlist(iris_dendlist, method = "common")
 iris_dendlist_cor2
 
-## ---- fig.width=8, fig.height=8------------------------------------------
-corrplot::corrplot(iris_dendlist_cor2, "pie", "lower")
+## ---- fig.width=5, fig.height=5------------------------------------------
+# corrplot::corrplot(iris_dendlist_cor2, "pie", "lower")
 
 ## ------------------------------------------------------------------------
 
@@ -299,7 +300,7 @@ axis(2)
 # Add Title
 title("Votes for Republican Candidate\n in Presidential Elections \n (each line is a country - over the years)")
 
-## ------------------------------------------------------------------------
+## ---- fig.width=9, fig.height=9------------------------------------------
 arcsin_transformation <- function(x) asin(x/100)
 
 dend_NA <- votes.repub %>% is.na %>%
@@ -348,7 +349,7 @@ names(votes.repub_dendlist) <- hclust_methods
 ## ---- fig.width=8, fig.height=8------------------------------------------
 corrplot::corrplot(cor.dendlist(votes.repub_dendlist), "pie", "lower")
 
-## ---- echo=FALSE---------------------------------------------------------
+## ---- echo=FALSE, fig.width=9, fig.height=9------------------------------
 arcsin_transformation <- function(x) asin(x/100)
 
 dend_NA <- votes.repub %>% is.na %>%
@@ -437,7 +438,7 @@ colnames(animals) <- c("warm-blooded",
                        "live in groups",
                        "have hair")
 
-## ------------------------------------------------------------------------
+## ---- fig.width=9, fig.height=9------------------------------------------
 
 dend_r <- animals %>% dist(method = "man") %>% hclust(method = "ward.D") %>% as.dendrogram %>% ladderize %>%
     color_branches(k=4)

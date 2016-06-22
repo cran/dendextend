@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending R's Dendrogram Functionality
-Version: 1.1.8
-Date: 2016-02-10
+Version: 1.2.0
+Date: 2016-06-21
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "http://www.r-statistics.com"),
     person("Gavin", "Simpson", role = "ctb"), person("Gregory","Jefferis", role
@@ -32,23 +32,23 @@ Description: Offers a set of functions for extending
     - the color, size, type, etc of its branches, nodes and labels. (2)
     Visually and statistically compare different dendrograms to one another.
 Depends: R (>= 3.0.0)
-Imports: utils, stats, magrittr (>= 1.0.1), whisker
+Imports: utils, stats, magrittr (>= 1.0.1), ggplot2, fpc, whisker
 Suggests: dendextendRcpp (>= 0.5.0), knitr, rmarkdown, testthat,
-        colorspace, ggplot2, plyr, ape, profdpm, microbenchmark,
-        gplots, NMF, d3heatmap, dynamicTreeCut, pvclust, corrplot,
-        DendSer, MASS, cluster, circlize (>= 0.2.5), covr
+        seriation, colorspace, plyr, ape, profdpm, microbenchmark,
+        gplots, NMF, heatmaply, d3heatmap, dynamicTreeCut, pvclust,
+        corrplot, DendSer, MASS, cluster, circlize (>= 0.2.5), covr
 Enhances: ggdendro, labeltodendro,dendroextras, data.table, rpart
 VignetteBuilder: knitr
 LazyData: true
 License: GPL-2 | GPL-3
-URL: http://cran.r-project.org/package=dendextend,
+URL: https://cran.r-project.org/package=dendextend,
         https://github.com/talgalili/dendextend/,
         http://www.r-statistics.com/tag/dendextend/,
-        http://bioinformatics.oxfordjournals.org/content/31/22/3718
+        https://bioinformatics.oxfordjournals.org/content/31/22/3718
 BugReports: https://github.com/talgalili/dendextend/issues
 RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2016-02-10 10:37:47 UTC; junior
+Packaged: 2016-06-22 04:21:48 UTC; junior
 Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Gavin Simpson [ctb],
   Gregory Jefferis [aut, ctb] (imported code from his dendroextras
@@ -69,4 +69,4 @@ Author: Tal Galili [aut, cre, cph] (http://www.r-statistics.com),
   Yoav Benjamini [ths]
 Maintainer: Tal Galili <tal.galili@gmail.com>
 Repository: CRAN
-Date/Publication: 2016-02-10 18:57:09
+Date/Publication: 2016-06-22 10:15:48
