@@ -14,7 +14,15 @@
 #
 #  A copy of the GNU General Public License is available at
 #  http://www.r-project.org/Licenses/
-#
+
+
+
+# http://stackoverflow.com/questions/10325231/when-writing-my-own-r-package-i-cant-seem-to-get-other-packages-to-import-corr
+#' @importFrom viridis viridis
+
+#' @import datasets
+
+
 
 
 
@@ -212,6 +220,8 @@ dendextendWelcomeMessage <- function(){
           "---------------------\n",
           "Welcome to dendextend version ", utils::packageDescription("dendextend")$Version, "\n",
           # "\n",
+          "Type citation('dendextend') for how to cite the package.\n",
+          "\n",
           "Type browseVignettes(package = 'dendextend') for the package vignette.\n",
           "The github page is: ",
           "https://github.com/talgalili/dendextend/\n",
@@ -387,6 +397,7 @@ dendextendWelcomeMessage <- function(){
 ### http://www.rstudio.com/ide/docs/packages/build_options
 # 
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-examples --no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
+# devtools::check(build_args="--no-build-vignettes --no-manual", args = " --no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes --no-manual", args = "--no-build-vignettes --no-manual",  cran = FALSE, cleanup = FALSE)
 # check(build_args="--no-build-vignettes ", args = "--no-build-vignettes",  cran = FALSE, cleanup = FALSE)
 # devtools::check(args="--as-cran")

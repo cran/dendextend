@@ -253,6 +253,10 @@ get_leaves_branches_attr <- function (dend, attr = c("col", "lwd", "lty"), ...) 
 #' This is based on \link{get_leaves_branches_attr} which is based on 
 #' \link{get_leaves_edgePar}.
 #' 
+#' TODO: The function get_leaves_branches_col may behave oddly when extracting
+#' colors with missing col attributes when the lwd attribute is available. 
+#' This may resolt in a vector with the wrong length (with omitted NA values).
+#' This might need to be fixed in the future, and attention should be given to this case.
 #' 
 #' @param dend a dendrogram object 
 #' @param ... not used
@@ -495,6 +499,7 @@ rllply <- function(x, FUN,add_notation = FALSE, ...)
 #' @param dend a dendrogram.
 #' @param sort logical. Should the heights be sorted?
 #' @param decreasing logical. Should the sort be increasing or decreasing? Not available for partial sorting.
+#' @param include_leaves logical (FALSE). Should the output include the leaves value (0's).
 #' @param ... not used.
 #' @return 
 #' a vector of the dendrogram's nodes heights (excluding leaves).
@@ -517,21 +522,21 @@ rllply <- function(x, FUN,add_notation = FALSE, ...)
 #' )
 #' }
 #' 
-get_branches_heights <- function(dend, sort = TRUE, decreasing = FALSE, ...) {
+get_branches_heights <- function(dend, sort = TRUE, decreasing = FALSE, include_leaves = FALSE, ...) {
    fo <- dendextend_options("get_branches_heights")
-   fo(dend, sort = sort, decreasing = decreasing, ...)
+   fo(dend, sort = sort, decreasing = decreasing, include_leaves = include_leaves, ...)
 }
 
 
 
 #' @export
-dendextend_get_branches_heights <- function(dend, sort = TRUE, decreasing = FALSE, ...)
+dendextend_get_branches_heights <- function(dend, sort = TRUE, decreasing = FALSE, include_leaves = FALSE, ...)
 {
 #    height <- unlist(rllply(dend, function(x){attr(x, "height")}))
 #    height <- get_nodes_attr(dend, "height") 
 #    height <- height[height != 0] # include only the non zero values
    
-   height <- get_nodes_attr(dend, "height", include_leaves = FALSE, na.rm = TRUE)   
+   height <- get_nodes_attr(dend, "height", include_leaves = include_leaves, na.rm = TRUE)   
    if(sort) height <- sort(height, decreasing=decreasing) 	# sort the height
    
    return(height)

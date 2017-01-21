@@ -857,3 +857,20 @@ colored_bars(cbind(k234[,3:1], col_car_type), dend, rowLabels = c(paste0("k = ",
 legend("topleft", legend = levels(car_type), fill = cols_4)
 
 
+## ------------------------------------------------------------------------
+
+# Create the dend:
+hc <- hclust(dist(USArrests), "ave")
+d <- as.dendrogram(hc)
+library(dendextend)
+d <- d %>% color_branches(k=3) %>% color_labels
+
+# horiz normal version
+par(mar = c(3,1,1,7))
+plot(d, horiz  = TRUE)
+
+# horiz mirror version
+par(mar = c(3,7,1,1))
+plot_horiz.dendrogram(d, side = TRUE)
+
+

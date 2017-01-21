@@ -290,6 +290,42 @@ dend15 %>% set("by_labels_branches_lwd", value = c(1,4), TF_values = c(8,1)) %>%
 dend15 %>% set("by_labels_branches_lty", value = c(1,4), TF_values = c(3,Inf)) %>% 
    plot(main = "Change line type")
 
+## ---- fig.width=8, fig.height=3------------------------------------------
+
+dat <- iris[1:20,-5]
+hca <- hclust(dist(dat))
+hca2 <- hclust(dist(dat), method = "single")
+dend <- as.dendrogram(hca)
+dend2 <- as.dendrogram(hca2)
+
+par(mfrow = c(1,3))
+dend %>% highlight_branches_col %>% plot(main = "Coloring branches")
+dend %>% highlight_branches_lwd %>% plot(main = "Emphasizing line-width")
+dend %>% highlight_branches %>% plot(main = "Emphasizing color\n and line-width")
+
+
+## ---- fig.width=8, fig.height=4------------------------------------------
+
+library(viridis)
+par(mfrow = c(1,3))
+dend %>% highlight_branches_col %>% plot(main = "Coloring branches \n(default is reversed viridis)")
+dend %>% highlight_branches_col(viridis(100)) %>% plot(main = "It is better to use\nlighter colors in the leaves")
+dend %>% highlight_branches_col(rev(magma(1000))) %>% plot(main = "The magma color pallatte\n is also good")
+
+dl <- dendlist(dend, dend2)
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE, highlight_branches_lwd = FALSE)
+tanglegram(dl)
+tanglegram(dl, fast = TRUE)
+
+dl <- dendlist(highlight_branches(dend), highlight_branches(dend2))
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+# dend %>% set("highlight_branches_col") %>% plot
+
+dl <- dendlist(dend, dend2) %>% set("highlight_branches_col")
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+
 ## ---- fig.width=10, fig.height=3-----------------------------------------
 par(mfrow = c(1,3))
 dend15 %>% 
@@ -372,7 +408,21 @@ the_bars <- cbind(is_odd, is_345, is_12, k_3)
 the_bars[the_bars==2] <- 8
 
 dend15 %>% plot
-colored_bars(colors = the_bars, dend = dend15)
+colored_bars(colors = the_bars, dend = dend15, sort_by_labels_order = FALSE)
+# we use sort_by_labels_order = FALSE since "the_bars" were set based on the
+# labels order. The more common use case is when the bars are based on a second variable
+# from the same data.frame as dend was created from. Thus, the default 
+# sort_by_labels_order = TRUE would make more sense.
+
+## ------------------------------------------------------------------------
+
+dend_mtcars <- mtcars[, c("mpg", "disp")] %>% dist %>% hclust(method = "average") %>% as.dendrogram
+
+par(mar = c(10,2,1,1))
+plot(dend_mtcars)
+the_bars <- ifelse(mtcars$am, "grey", "gold")
+colored_bars(colors = the_bars, dend = dend_mtcars, rowLabels = "am")
+
 
 ## ------------------------------------------------------------------------
 # Create a complex dend:

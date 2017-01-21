@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
 
 **Author**: [Tal Galili](http://www.r-statistics.com/) ( Tal.Galili@gmail.com )
 
-**tl;dr**: the [_dendextend package_](http://cran.r-project.org/package=dendextend) let's you create figures like this:
+**tl;dr**: the [_dendextend package_](https://cran.r-project.org/package=dendextend) let's you create figures like this:
 
 
 
@@ -82,7 +82,7 @@ tanglegram(dendlist(dend1, dend2), margin_inner = 9,
 Introduction
 --------------
 
-The [**_dendextend package_**](http://cran.r-project.org/package=dendextend) offers a set of functions for extending dendrogram objects in R, letting you **visualize** and **compare** trees of hierarchical clusterings, you can:
+The [**_dendextend package_**](https://cran.r-project.org/package=dendextend) offers a set of functions for extending dendrogram objects in R, letting you **visualize** and **compare** trees of hierarchical clusterings, you can:
 
 * **Adjust a tree's graphical parameters** - the color, size, type, etc of its branches, nodes and labels.
 * Visually and statistically **compare different dendrograms** to one another.
@@ -122,7 +122,7 @@ c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
 ```
 
 
-The **design** of the dendextend package (and this manual!) is heavily inspired by [Hadley Wickham's](http://had.co.nz/) work. Especially his text on [writing an R package](http://r-pkgs.had.co.nz/), the [devtools package](http://cran.r-project.org/package=devtools), and the dplyr package (specifically the use of chaining, and the [Introduction text to dplyr](http://cran.r-project.org/web/packages/dplyr/vignettes/introduction.html)).
+The **design** of the dendextend package (and this manual!) is heavily inspired by [Hadley Wickham's](http://had.co.nz/) work. Especially his text on [writing an R package](http://r-pkgs.had.co.nz/), the [devtools package](https://cran.r-project.org/package=devtools), and the dplyr package (specifically the use of chaining, and the [Introduction text to dplyr](https://CRAN.R-project.org/package=dplyr/vignettes/introduction.html)).
 
 
 
@@ -161,8 +161,8 @@ dend <- c(1:5) %>% # take the a vector from 1 to 5
 
 For more details, you may look at:
 
-* [magrittr on CRAN](http://cran.r-project.org/package=magrittr)
-* [Introduction to the magrittr package](http://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html)
+* [magrittr on CRAN](https://cran.r-project.org/package=magrittr)
+* [Introduction to the magrittr package](https://CRAN.R-project.org/package=magrittr/vignettes/magrittr.html)
 * [Simpler R coding with pipes > the present and future of the magrittr package](http://www.r-statistics.com/2014/08/simpler-r-coding-with-pipes-the-present-and-future-of-the-magrittr-package/)
 
 ### A dendrogram is a nested list of lists with attributes
@@ -565,6 +565,58 @@ dend15 %>% set("by_labels_branches_lty", value = c(1,4), TF_values = c(3,Inf)) %
 ```
 
 
+
+#### Highlighting branches' different heights using line width and color
+
+
+The `highlight_branches` function helps to more easily see the topological structure of a tree, by adjusting branches appearence (color and line width) based on their height in the tree. For example:
+
+
+
+```{r, fig.width=8, fig.height=3}
+
+dat <- iris[1:20,-5]
+hca <- hclust(dist(dat))
+hca2 <- hclust(dist(dat), method = "single")
+dend <- as.dendrogram(hca)
+dend2 <- as.dendrogram(hca2)
+
+par(mfrow = c(1,3))
+dend %>% highlight_branches_col %>% plot(main = "Coloring branches")
+dend %>% highlight_branches_lwd %>% plot(main = "Emphasizing line-width")
+dend %>% highlight_branches %>% plot(main = "Emphasizing color\n and line-width")
+
+```
+
+Tanglegrams are even easier to compare when using
+
+
+
+```{r, fig.width=8, fig.height=4}
+
+library(viridis)
+par(mfrow = c(1,3))
+dend %>% highlight_branches_col %>% plot(main = "Coloring branches \n(default is reversed viridis)")
+dend %>% highlight_branches_col(viridis(100)) %>% plot(main = "It is better to use\nlighter colors in the leaves")
+dend %>% highlight_branches_col(rev(magma(1000))) %>% plot(main = "The magma color pallatte\n is also good")
+
+dl <- dendlist(dend, dend2)
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE, highlight_branches_lwd = FALSE)
+tanglegram(dl)
+tanglegram(dl, fast = TRUE)
+
+dl <- dendlist(highlight_branches(dend), highlight_branches(dend2))
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+# dend %>% set("highlight_branches_col") %>% plot
+
+dl <- dendlist(dend, dend2) %>% set("highlight_branches_col")
+tanglegram(dl, sort = TRUE, common_subtrees_color_lines = FALSE, highlight_distinct_edges  = FALSE)
+
+```
+
+
+
 ### Changing a dendrogram's structure
 
 
@@ -713,7 +765,24 @@ the_bars <- cbind(is_odd, is_345, is_12, k_3)
 the_bars[the_bars==2] <- 8
 
 dend15 %>% plot
-colored_bars(colors = the_bars, dend = dend15)
+colored_bars(colors = the_bars, dend = dend15, sort_by_labels_order = FALSE)
+# we use sort_by_labels_order = FALSE since "the_bars" were set based on the
+# labels order. The more common use case is when the bars are based on a second variable
+# from the same data.frame as dend was created from. Thus, the default 
+# sort_by_labels_order = TRUE would make more sense.
+```
+
+Another example, based on mtcars (in which the default of `sort_by_labels_order = TRUE` makes sense):
+
+```{r}
+
+dend_mtcars <- mtcars[, c("mpg", "disp")] %>% dist %>% hclust(method = "average") %>% as.dendrogram
+
+par(mar = c(10,2,1,1))
+plot(dend_mtcars)
+the_bars <- ifelse(mtcars$am, "grey", "gold")
+colored_bars(colors = the_bars, dend = dend_mtcars, rowLabels = "am")
+
 ```
 
 
@@ -753,7 +822,7 @@ ggplot(ggd1, labels = FALSE) + scale_y_reverse(expand = c(0.2, 0)) + coord_polar
 ```
 
 
-**Credit:** These functions are *extended* versions of the functions `ggdendrogram`, `dendro_data` (and the hidden `dendrogram_data`) from Andrie de Vries's [ggdendro](http://cran.r-project.org/package=ggdendro) package. The motivation for this fork is the need to add more graphical parameters to the plotted tree. This required a strong mixture of functions from ggdendro and dendextend (to the point that it seemed better to just fork the code into its current form).
+**Credit:** These functions are *extended* versions of the functions `ggdendrogram`, `dendro_data` (and the hidden `dendrogram_data`) from Andrie de Vries's [ggdendro](https://cran.r-project.org/package=ggdendro) package. The motivation for this fork is the need to add more graphical parameters to the plotted tree. This required a strong mixture of functions from ggdendro and dendextend (to the point that it seemed better to just fork the code into its current form).
 
 
 
@@ -1137,7 +1206,6 @@ We got perfect entanglement (0).
 
 
 
-
 ### Correlation measures
 
 We shall use the following for the upcoming examples:
@@ -1451,7 +1519,7 @@ dendextendRcpp - on the need for speed
 
 Since dendrogram objects are often revised through the use of recursion, R often falls short when it comes to speed. In various function which are intended to run only once (such as `labels.color`), this does not bother us, and we are content at quickly writing the function with R and letting it handle many extreme cases.
 
-However, some functions are intended to be used many times, and in such cases are well served to be handled with C++. Thanks the the Rcpp package, we can comfortably extend several core functions of the dendextend package. These modifications are included in a separate add-on package called ["dendextendRcpp"](http://cran.r-project.org/package=dendextendRcpp) by Tal Galili (with essential contributions by Dirk Eddelbuettel, Romain Francois, and Kevin Ushey). When loading dendextendRcpp, it changes (and speeds up) several R functions from dendextend, these are: `get_branches_heights`, `heights_per_k.dendrogram`, `cut_lower_fun` and `labels.dendrogram`. Speed gains can range between 3 times to 100 times faster, depending on the size of the tree. These functions are regularly used by other functions in dendextend.
+However, some functions are intended to be used many times, and in such cases are well served to be handled with C++. Thanks the the Rcpp package, we can comfortably extend several core functions of the dendextend package. These modifications are included in a separate add-on package called ["dendextendRcpp"](https://cran.r-project.org/package=dendextendRcpp) by Tal Galili (with essential contributions by Dirk Eddelbuettel, Romain Francois, and Kevin Ushey). When loading dendextendRcpp, it changes (and speeds up) several R functions from dendextend, these are: `get_branches_heights`, `heights_per_k.dendrogram`, `cut_lower_fun` and `labels.dendrogram`. Speed gains can range between 3 times to 100 times faster, depending on the size of the tree. These functions are regularly used by other functions in dendextend.
 
 It is highly recommended to install dendextendRcpp for regular use. It is available on CRAN:
 

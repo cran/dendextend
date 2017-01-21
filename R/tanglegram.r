@@ -489,10 +489,13 @@ plot_horiz.dendrogram <- function (x,
 #'    highlight_distinct_edges = TRUE,
 #'    common_subtrees_color_lines = TRUE,
 #'    common_subtrees_color_branches = FALSE,
+#'    highlight_branches_col = FALSE,
+#'    highlight_branches_lwd = TRUE,
 #'    faster = FALSE,
+#'    just_one = TRUE,      
 #'    ...)
 #' 
-#' \method{tanglegram}{dendlist}(dend1, which = c(1L,2L), main_left, main_right, ...)
+#' \method{tanglegram}{dendlist}(dend1, which = c(1L,2L), main_left, main_right, just_one=TRUE, ...)
 #' 
 #' \method{tanglegram}{hclust}(dend1, ...)
 #' 
@@ -509,10 +512,13 @@ plot_horiz.dendrogram <- function (x,
 #' (and a warning is issued).
 #' The colors in the vector are applied on the lines from the bottom up.
 #' @param lwd width of the lines connecting the labels. (default is 3.5)
-#' @param edge.lwd width of the dendrograms lines.
+#' @param edge.lwd width of the dendrograms lines. Default is NULL.
+#' If set, then it switches `highlight_branches_lwd` to FALSE. If you want thicker
+#' lines which reflect the height, please use \link{highlight_branches_lwd} on the 
+#' dendrograms/dendlist.
 #' @param columns_width a vector with three elements, giving the relative
 #' sizes of the the three plots (left dendrogram, connecting lines, 
-#' right dendrogram). This is passed to \link{layout}. 
+#' right dendrogram). This is passed to \link{layout} if parameter just_one is TRUE. 
 #' The default is: c(5,3,5)
 #' @param margin_top  the number of lines of margin to be specified on the top
 #' of the plots.
@@ -571,6 +577,11 @@ plot_horiz.dendrogram <- function (x,
 #' @param cex_sub see cex_main.
 #' @param highlight_distinct_edges logical (default is TRUE). If to highlight distinct edges in each tree (by changing their line types to 2).
 #' (notice that this can be slow on large trees)
+#' 
+#' This parameter will automatically be turned off if the tree already comes with a "lty" edgePar 
+#' (this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+#' removing all of the edgePar parameters of the dendrogram.
+#' 
 #' @param common_subtrees_color_lines logical (default is TRUE). color the connecting line based on the common subtrees of both dends.
 #' This only works if 
 #' (notice that this can be slow on large trees)
@@ -578,8 +589,23 @@ plot_horiz.dendrogram <- function (x,
 #' Color the branches of both dends based on the common subtrees.
 #' (notice that this can be slow on large trees)
 #' This is FALSE by default since it will override the colors of the existing tree.
+#' @param highlight_branches_col logical (default is FALSE). Should \link{highlight_branches_col} be used on the dendrograms.
+#' 
+#' This parameter will automatically be turned off if the tree already comes with a "col" edgePar 
+#' (this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+#' removing all of the edgePar parameters of the dendrogram.
+#' 
+#' @param highlight_branches_lwd logical (default is TRUE). Should \link{highlight_branches_lwd} be used on the dendrograms.
+#' 
+#' This parameter will automatically be turned off if the tree already comes with a "lwd" edgePar 
+#' (this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+#' removing all of the edgePar parameters of the dendrogram.
+#' 
 #' @param faster logical (FALSE). If TRUE, it overrides some other parameters to 
 #' have them turned off so that the plotting will go a tiny bit faster.
+#' @param just_one logical (TRUE). If FALSE, it means at least two tanglegrams
+#' will be plotted on the same page and so \link{layout} is not passed.
+#' See: \url{http://stackoverflow.com/q/39784746/4137985}
 #' @param ... not used.
 #' @details 
 #' Notice that tanglegram does not "resize" well. In case you are resizing your
@@ -668,8 +694,10 @@ tanglegram.phylo <- function(dend1, ...) {tanglegram.dendrogram(dend1 = dend1, .
 
 # ' @S3method tanglegram dendlist
 #' @export
-tanglegram.dendlist <- function(dend1, which = c(1L,2L), main_left, main_right, ...) {
+tanglegram.dendlist <- function(dend1, which = c(1L,2L), main_left, main_right, just_one=TRUE, ...) {
    # many things can go wrong here (which we might wish to fix):
+   # we could have parameter just_one set to FALSE but no layout predefined, in which case we can't plot
+   if(!just_one & identical(par("mfrow"), c(1, 1))) stop("A layout must be defined when just_one is FALSE")
    # we could get a dendlist with a length of 1 - in which case, we can't plot
    if(length(dend1) == 1) stop("Your dendlist has only 1 dendrogram - a tanglegram can not be plotted")
    # we could get a dendlist with a length of >2 - in which case, should we only plot the first two items?
@@ -685,7 +713,7 @@ tanglegram.dendlist <- function(dend1, which = c(1L,2L), main_left, main_right, 
          if(missing(main_right)) main_right <- ""                        
       }
       
-      tanglegram.dendrogram(dend1[[l1]], dend1[[l2]], main_left = main_left, main_right = main_right, ...)
+      tanglegram.dendrogram(dend1[[l1]], dend1[[l2]], main_left = main_left, main_right = main_right, just_one=just_one, ...)
    } else {
       stop("You are trying to plot trees which are outside the range of trees in your dendlist")
    }   
@@ -698,14 +726,14 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
                                   color_lines, 
                                   lwd = 3.5,
                                   edge.lwd = NULL,
-                                  # columns_width = c(5,2,3,2,5),
-                                  columns_width = c(5,3,5),
+                                  # columns_width = c(5, 2, 3, 2, 5),
+                                  columns_width = c(5, 3, 5),
                                   margin_top = 3,
                                   margin_bottom = 2.5,
                                   margin_inner = 3,
                                   margin_outer = 0.5,
-                                  left_dendo_mar = c(margin_bottom,margin_outer,margin_top,margin_inner),
-                                  right_dendo_mar=c(margin_bottom,margin_inner,margin_top,margin_outer),
+                                  left_dendo_mar = c(margin_bottom, margin_outer, margin_top, margin_inner),
+                                  right_dendo_mar=c(margin_bottom, margin_inner, margin_top, margin_outer),
                                   intersecting = TRUE,
                                   dLeaf = NULL, # -.3,
                                    dLeaf_left = dLeaf,
@@ -730,18 +758,26 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
                                   highlight_distinct_edges = TRUE,
                                   common_subtrees_color_lines = TRUE,
                                   common_subtrees_color_branches = FALSE,                                     
+                                  highlight_branches_col = FALSE,
+                                  highlight_branches_lwd = TRUE,
                                   faster = FALSE, 
+                                  just_one = TRUE,
                                   ... )
 {
 
    if(faster) {
-      highlight_distinct_edges = FALSE
-      common_subtrees_color_lines = FALSE
-      common_subtrees_color_branches = FALSE
+      highlight_distinct_edges <- FALSE
+      common_subtrees_color_lines <- FALSE
+      common_subtrees_color_branches <- FALSE
+      highlight_branches_lwd <- FALSE
    }
    
-   # save default, for resetting...
-   def_par <- par(no.readonly = TRUE) 
+  
+   if(just_one) {
+      # save default, for resetting...
+      def_par <- par(no.readonly = TRUE) 
+   }
+   
    
    
    # characters_to_prune = the number of characters to leave after pruning the labels.		
@@ -771,6 +807,7 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
       dend2 <- assign_values_to_leaves_nodePar(dend2, lab.cex, "lab.cex", warn = dendextend_options("warn"))
    }
    if(!is.null(edge.lwd)) {
+      highlight_branches_lwd <- FALSE # so that it does not override this parameter
       dend1 <- assign_values_to_branches_edgePar(dend1, edge.lwd, "lwd")
       dend2 <- assign_values_to_branches_edgePar(dend2, edge.lwd, "lwd")
    }
@@ -793,8 +830,9 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
    }
    
    if(highlight_distinct_edges) {
-      dend1 <- highlight_distinct_edges(dend1, dend2, edgePar = "lty")
-      dend2 <- highlight_distinct_edges(dend2, dend1, edgePar = "lty")
+      ## 
+      if(!has_edgePar(dend1, "lty")) dend1 <- highlight_distinct_edges(dend1, dend2, edgePar = "lty")
+      if(!has_edgePar(dend2, "lty")) dend2 <- highlight_distinct_edges(dend2, dend1, edgePar = "lty")
    }
 
 
@@ -805,13 +843,25 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
       # dend2 <- color_branches(dend2, clusters = clusters2)      
       dend1_leaves_colors <- get_leaves_branches_col(dend1)
       
+      # in cases when lwd is defined, the NAs are not provided and the two vectors
+      # (clusters1 and dend1_leaves_colors) have different lengths.
+      # I repeat this to all cases by removing the NAs. Knowing where they should be,
+      # based on the 0s in clusters1, I am able to fit the colors properly in both cases.
+      dend1_leaves_colors <- as.vector(na.omit(dend1_leaves_colors))
+      tmp <- clusters1
+      tmp[tmp != 0] <- dend1_leaves_colors
+      dend1_leaves_colors <- tmp
+      dend1_leaves_colors[tmp == 0] <- "black"
+      
       # match_1_to_be_2
       ss <- match(labels(dend2), labels(dend1))
       #       labels(dend1)[ss]
       #       labels(dend2)
+      the_leaves_colors <- dend1_leaves_colors[ss]
+      # the_leaves_colors[is.na(the_leaves_colors)] <- 1
       dend2_clusters <- rank_values_with_clusters(clusters1[ss], ignore0 = TRUE)
       dend2 <- branches_attr_by_clusters(dend2, dend2_clusters,
-                                         values = dend1_leaves_colors[ss], attr = "col",
+                                         values = the_leaves_colors, attr = "col",
                                          branches_changed_have_which_labels = "all")
       
       # tanglegram(dend1,dend2)
@@ -853,7 +903,16 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
       }
    }    
    
+   if(highlight_branches_col) {
+      if(!has_edgePar(dend1, "col")) dend1 <- highlight_branches_col(dend1)
+      if(!has_edgePar(dend2, "col")) dend2 <- highlight_branches_col(dend2)
+   }
+   if(highlight_branches_lwd) {
+      if(!has_edgePar(dend1, "lwd")) dend1 <- highlight_branches_lwd(dend1)
+      if(!has_edgePar(dend2, "lwd")) dend2 <- highlight_branches_lwd(dend2)
+   }
    
+      
    l <- nleaves(dend1)
    
    # makes sure that dLeaf gives a symmetric result.
@@ -872,7 +931,7 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
    ord_arrow <- cbind((1:l)[order(order.dendrogram(dend1))],(1:l)[order(order.dendrogram(dend2))]) 
    
    # Set the layout of the plot elements
-   layout(matrix(1:3,nrow=1),widths=columns_width)
+   if (just_one) layout(matrix(1:3, nrow=1), widths=columns_width)
       
    #################
    # The first dendrogram:	
@@ -924,8 +983,11 @@ tanglegram.dendrogram <- function(dend1,dend2 , sort = FALSE,
                          yaxs = "r", xaxs = "i",...)
 
    # layout(matrix(1)) # not required
-   par(def_par)  #- reset to default
 
+   if(just_one) {
+      par(def_par)  #- reset to default
+   }
+   
    
    
    return(invisible(dendlist(dend1 = dend1, dend2 = dend2)))

@@ -50,10 +50,14 @@
 #'             "by_labels_branches_col",
 #'             "by_labels_branches_lwd",
 #'             "by_labels_branches_lty",
+#'             "highlight_branches_col",
+#'             "highlight_branches_lwd",
 #'             "clear_branches",
 #'             "clear_leaves"
 #'    ),
-#'    value, ...)
+#'    value, 
+#'    order_value = FALSE,
+#'    ...)
 #'    
 #' \method{set}{dendlist}(dend, ..., which)
 #'
@@ -69,6 +73,10 @@
 #' for the different options)
 #' @param value an object with the value to set in the dendrogram tree.
 #' (the type of the value depends on the "what")
+#' @param order_value logical. Default is FALSE. If TRUE, it means the order of 
+#' the value is in the order of the data which produced the \link{hclust} 
+#' or \link{dendrogram} - and will reorder the value to conform with the order
+#' of the labels in the dendrogram.
 #' @param ... passed to the specific function for more options.
 #' @param which an integer vector indicating, in the case "dend" is
 #' a dendlist, on which of the trees should the modification be performed.
@@ -104,6 +112,8 @@
 #' \item{by_labels_branches_col - set the color of branches with specific labels (\link{branches_attr_by_labels}) }
 #' \item{by_labels_branches_lwd - set the line width of branches with specific labels (\link{branches_attr_by_labels}) }
 #' \item{by_labels_branches_lty - set the line type of branches with specific labels (\link{branches_attr_by_labels}) }
+#' \item{highlight_branches_col - highlight branches color based on branches' heights (\link{highlight_branches_col}) }
+#' \item{highlight_branches_lwd - highlight branches line-width based on branches' heights (\link{highlight_branches_lwd}) }
 #' \item{clear_branches - clear branches' attributes (\link{remove_branches_edgePar})}
 #' \item{clear_leaves - clear leaves' attributes (\link{remove_branches_edgePar})}
 #' }
@@ -185,6 +195,12 @@
 #'    set("hang") %>%
 #'    plot 
 #' 
+#' par(mfrow = c(1,3))
+#' dend %>% set("highlight_branches_col") %>% plot 
+#' dend %>% set("highlight_branches_lwd") %>% plot 
+#' dend %>% set("highlight_branches_col") %>% set("highlight_branches_lwd") %>% plot 
+#' par(mfrow = c(1,1))
+#' 
 #' #----------------------------
 #' # Examples for: by_labels_branches_col, by_labels_branches_lwd, by_labels_branches_lty
 #' 
@@ -203,6 +219,14 @@
 #'    set("by_labels_branches_lwd", c(1:4, 7), type = "all", TF_values = c(4,1)) %>% 
 #'    set("by_labels_branches_lty", c(1:4, 7), TF_values = c(4,1)) %>% 
 #'    plot
+#' 
+#' #---- using order_value
+#' # This is probably not what you want, since cutree 
+#' # returns clusters in the order of the original data:
+#' dend %>% set("labels_colors", cutree(dend, k = 3)) %>% plot
+#' # The way to fix it, is to use order_value = TRUE
+#' # so that value is assumed to be in the order of the data:
+#' dend %>% set("labels_colors", cutree(dend, k = 3), order_value = TRUE) %>% plot
 #' 
 #' 
 #' 
@@ -277,14 +301,20 @@ set.dendrogram <-
                      "by_labels_branches_col",
                      "by_labels_branches_lwd",
                      "by_labels_branches_lty",
+                     "highlight_branches_col",
+                     "highlight_branches_lwd",
                      "clear_branches",
                      "clear_leaves"
             ),
-            value, ...){
+            value, 
+            order_value = FALSE,
+            ...){
       if(missing(what)) {
          if(dendextend_options("warn")) warning("'what' is missing, returning the dendrogram as is")      
          return(dend)
       }
+      
+      if(order_value) value <- value[order.dendrogram(dend)]
 
       what <- match.arg(what)
       dend <- switch(what, 
@@ -311,6 +341,8 @@ set.dendrogram <-
                        by_labels_branches_col = branches_attr_by_labels(dend, labels = value, attr = "col", ...),
                        by_labels_branches_lwd = branches_attr_by_labels(dend, labels = value, attr = "lwd", ...),
                        by_labels_branches_lty = branches_attr_by_labels(dend, labels = value, attr = "lty", ...),
+                     highlight_branches_col = highlight_branches_col(dend, values = value, ...),
+                     highlight_branches_lwd = highlight_branches_lwd(dend, values = value, ...),
                        clear_branches = remove_branches_edgePar(dend, ...),
                        clear_leaves = remove_leaves_nodePar(dend, ...)
       )

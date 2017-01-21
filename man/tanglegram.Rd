@@ -57,10 +57,13 @@ tanglegram(dend1, ...)
    highlight_distinct_edges = TRUE,
    common_subtrees_color_lines = TRUE,
    common_subtrees_color_branches = FALSE,
+   highlight_branches_col = FALSE,
+   highlight_branches_lwd = TRUE,
    faster = FALSE,
+   just_one = TRUE,      
    ...)
 
-\method{tanglegram}{dendlist}(dend1, which = c(1L,2L), main_left, main_right, ...)
+\method{tanglegram}{dendlist}(dend1, which = c(1L,2L), main_left, main_right, just_one=TRUE, ...)
 
 \method{tanglegram}{hclust}(dend1, ...)
 
@@ -86,11 +89,14 @@ The colors in the vector are applied on the lines from the bottom up.}
 
 \item{lwd}{width of the lines connecting the labels. (default is 3.5)}
 
-\item{edge.lwd}{width of the dendrograms lines.}
+\item{edge.lwd}{width of the dendrograms lines. Default is NULL.
+If set, then it switches `highlight_branches_lwd` to FALSE. If you want thicker
+lines which reflect the height, please use \link{highlight_branches_lwd} on the 
+dendrograms/dendlist.}
 
 \item{columns_width}{a vector with three elements, giving the relative
 sizes of the the three plots (left dendrogram, connecting lines, 
-right dendrogram). This is passed to \link{layout}. 
+right dendrogram). This is passed to \link{layout} if parameter just_one is TRUE. 
 The default is: c(5,3,5)}
 
 \item{margin_top}{the number of lines of margin to be specified on the top
@@ -175,7 +181,11 @@ should be magnified relative to the default.}
 \item{cex_sub}{see cex_main.}
 
 \item{highlight_distinct_edges}{logical (default is TRUE). If to highlight distinct edges in each tree (by changing their line types to 2).
-(notice that this can be slow on large trees)}
+(notice that this can be slow on large trees)
+
+This parameter will automatically be turned off if the tree already comes with a "lty" edgePar 
+(this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+removing all of the edgePar parameters of the dendrogram.}
 
 \item{common_subtrees_color_lines}{logical (default is TRUE). color the connecting line based on the common subtrees of both dends.
 This only works if 
@@ -186,8 +196,24 @@ Color the branches of both dends based on the common subtrees.
 (notice that this can be slow on large trees)
 This is FALSE by default since it will override the colors of the existing tree.}
 
+\item{highlight_branches_col}{logical (default is FALSE). Should \link{highlight_branches_col} be used on the dendrograms.
+
+This parameter will automatically be turned off if the tree already comes with a "col" edgePar 
+(this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+removing all of the edgePar parameters of the dendrogram.}
+
+\item{highlight_branches_lwd}{logical (default is TRUE). Should \link{highlight_branches_lwd} be used on the dendrograms.
+
+This parameter will automatically be turned off if the tree already comes with a "lwd" edgePar 
+(this is checked using \link{has_edgePar}). A "lty" can be removed by using set("clear_branches"), by
+removing all of the edgePar parameters of the dendrogram.}
+
 \item{faster}{logical (FALSE). If TRUE, it overrides some other parameters to 
 have them turned off so that the plotting will go a tiny bit faster.}
+
+\item{just_one}{logical (TRUE). If FALSE, it means at least two tanglegrams
+will be plotted on the same page and so \link{layout} is not passed.
+See: \url{http://stackoverflow.com/q/39784746/4137985}}
 }
 \value{
 An invisible \link{dendlist}, with two trees after being
