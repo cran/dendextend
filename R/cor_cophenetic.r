@@ -43,10 +43,9 @@ sort_dist_mat <- function(dist_mat, by_rows = TRUE, by_cols = TRUE, ...) {
 
 
 
+
 #' @title Cophenetic correlation between two trees
-#' @aliases 
-#' cor_cophenetic.default
-#' cor_cophenetic.dendlist
+#' @name cor_cophenetic
 #' @export
 #' @description
 #' Cophenetic correlation coefficient for two trees.
@@ -54,18 +53,9 @@ sort_dist_mat <- function(dist_mat, by_rows = TRUE, by_cols = TRUE, ...) {
 #' Assumes the labels in the two trees fully match. If they do not
 #' please first use \link{intersect_trees} to have them matched.
 #' 
-#' @usage
-#' 
-#' cor_cophenetic(dend1, ...) 
-#' 
-#' \method{cor_cophenetic}{default}(dend1, dend2, method_coef = c("pearson", "kendall", "spearman"), ...) 
-#' 
-#' \method{cor_cophenetic}{dendlist}(dend1, which = c(1L,2L), 
-#'       method_coef = c("pearson", "kendall", "spearman"), 
-#'       ...) 
 #' 
 #' @param dend1 a tree (dendrogram/hclust/phylo, or dendlist)
-#' @param dend2 a tree (dendrogram/hclust/phylo)
+#' @param dend2 Either a tree (dendrogram/hclust/phylo), or a \link{dist} object (for example, from the original data matrix).
 #' @param which an integer vector of length 2, indicating
 #' which of the trees in a dendlist object should have 
 #' their cor_cophenetic calculated.
@@ -168,9 +158,18 @@ cor_cophenetic <- function(dend1, ...){
 
 
 #' @export
+#' @rdname cor_cophenetic
 cor_cophenetic.default <- function(dend1, dend2, method_coef = c("pearson", "kendall", "spearman"), ...) {
+   
    dist_dend1 <- cophenetic(dend1)
-   dist_dend2 <- cophenetic(dend2)
+   
+   # if(!is.dist(dend2)) stop("dend2 must be either a dendrogram or a dist object")
+   if(is.dist(dend2)) {
+      dist_dend2 <- dend2
+   } else { # either dendrogram or hclust or other
+      dist_dend2 <- cophenetic(dend2)
+   }
+   # else - dend2 must be a distance matrix
 
    # hclust objects actually don't need the sorting...
    if(!is.hclust(dend1)) {
@@ -184,6 +183,7 @@ cor_cophenetic.default <- function(dend1, dend2, method_coef = c("pearson", "ken
 
 
 #' @export
+#' @rdname cor_cophenetic
 cor_cophenetic.dendlist <- function(dend1, which = c(1L, 2L), method_coef = c("pearson", "kendall", "spearman"), ...) {
    method_coef <- match.arg(method_coef)
    cor_cophenetic(dend1[[which[1]]], dend1[[which[2]]], method=method_coef ,...)
