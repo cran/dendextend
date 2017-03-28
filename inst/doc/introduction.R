@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 
 ## ---- echo=FALSE, warning=FALSE, fig.align='center', fig.width=7, fig.height=7----
 suppressMessages(library(dendextend))
-suppressMessages(library(dendextendRcpp))
+# suppressMessages(library(dendextendRcpp))
 library(colorspace)
 
 dend1 <- c(1:5) %>% # take some data

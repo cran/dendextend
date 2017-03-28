@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending 'Dendrogram' Functionality in R
-Version: 1.5.0
-Date: 2017-03-24
+Version: 1.5.2
+Date: 2017-03-27
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "https://www.r-statistics.com"),
     person("Gavin", "Simpson", role = "ctb"), person("Gregory","Jefferis", role
@@ -36,10 +36,10 @@ Description: Offers a set of functions for extending
 Depends: R (>= 3.0.0)
 Imports: utils, stats, datasets, magrittr (>= 1.0.1), ggplot2, fpc,
         whisker, viridis
-Suggests: dendextendRcpp (>= 0.5.0), knitr, rmarkdown, testthat,
-        seriation, colorspace, plyr, ape, profdpm, microbenchmark,
-        gplots, NMF, heatmaply, d3heatmap, dynamicTreeCut, pvclust,
-        corrplot, DendSer, MASS, cluster, circlize (>= 0.2.5), covr
+Suggests: knitr, rmarkdown, testthat, seriation, colorspace, plyr, ape,
+        profdpm, microbenchmark, gplots, NMF, heatmaply, d3heatmap,
+        dynamicTreeCut, pvclust, corrplot, DendSer, MASS, cluster,
+        circlize (>= 0.2.5), covr
 Enhances: ggdendro, labeltodendro,dendroextras, Hmisc, data.table,
         rpart
 VignetteBuilder: knitr
@@ -50,9 +50,9 @@ URL: https://cran.r-project.org/package=dendextend,
         https://www.r-statistics.com/tag/dendextend/,
         https://bioinformatics.oxfordjournals.org/content/31/22/3718
 BugReports: https://github.com/talgalili/dendextend/issues
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-03-24 15:36:48 UTC; junior
+Packaged: 2017-03-27 20:04:10 UTC; junior
 Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Gavin Simpson [ctb],
   Gregory Jefferis [aut, ctb] (imported code from his dendroextras
@@ -74,4 +74,4 @@ Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Yoav Benjamini [ths]
 Maintainer: Tal Galili <tal.galili@gmail.com>
 Repository: CRAN
-Date/Publication: 2017-03-24 20:08:29 UTC
+Date/Publication: 2017-03-28 08:45:38 UTC
