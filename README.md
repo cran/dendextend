@@ -13,6 +13,7 @@
 * [Installation](#installation)
 * [Usage](#usage)
 * [Share your dendrograms!](#share-your-dendrograms)
+* [How to cite the dendextend package](#how-to-cite-the-dendextend-package)
 * [Contact](#contact)
 
 
@@ -33,7 +34,7 @@ To install the stable version on CRAN:
 
 ```r
 install.packages('dendextend')
-install.packages('dendextendRcpp')
+# install.packages('dendextendRcpp')
 ```
 
 To install the GitHub version:
@@ -41,11 +42,11 @@ To install the GitHub version:
 ```R
 install.packages.2 <- function (pkg) if (!require(pkg)) install.packages(pkg);
 install.packages.2('devtools')
-install.packages.2('Rcpp')
+# install.packages.2('Rcpp')
 # make sure you have Rtools installed first! if not, then run:
 #install.packages('installr'); install.Rtools()
 devtools::install_github('talgalili/dendextend')
-devtools::install_github('talgalili/dendextendRcpp')
+# devtools::install_github('talgalili/dendextendRcpp')
 
 # Having colorspace is also useful, since it is used
 # In various examples in the vignettes
@@ -56,7 +57,7 @@ And then you may load the package using:
 
 ```R
 library("dendextend")
-library("dendextendRcpp")
+# library("dendextendRcpp") # dendextendRcpp is no longer supported (or available on CRAN). Still, dendextend is faster these days, in recent versions of R, thanks to some updates to labels.dendrogram and other modifications to R.
 ```
 
 ## Usage
@@ -79,6 +80,28 @@ Packages:
 * [ComplexHeatmap](https://www.bioconductor.org/packages/3.3/bioc/html/ComplexHeatmap.html)
 * [d3heatmap](https://CRAN.R-project.org/package=d3heatmap/vignettes/Introduction.html)
 
+
+## How to cite the dendextend package
+
+The methods within the code package can be cited as:
+
+     Tal Galili (2015). dendextend: an R package for visualizing, adjusting, and comparing trees of
+     hierarchical clustering. Bioinformatics. DOI: 10.1093/bioinformatics/btv428
+
+A BibTeX entry for LaTeX users is
+
+     @Article{,
+       author = {Tal Galili},
+       title = {dendextend: an R package for visualizing, adjusting, and comparing trees of hierarchical clustering},
+       journal = {Bioinformatics},
+       year = {2015},
+       doi = {10.1093/bioinformatics/btv428},
+       url = {https://academic.oup.com/bioinformatics/article/31/22/3718/240978/dendextend-an-R-package-for-visualizing-adjusting},
+       eprint = {https://academic.oup.com/bioinformatics/article-pdf/31/22/3718/17122682/btv428.pdf},
+     }
+
+This free open-source software implements academic research by the authors and co-workers. If you use
+it, please support the project by citing the appropriate journal articles.
 
 
 

@@ -7,6 +7,7 @@
 \alias{prepare.ggdend}
 \alias{ggplot.ggdend}
 \alias{ggplot.dendrogram}
+\alias{print.ggdend}
 \title{Creates dendrogram plot using ggplot.}
 \source{
 These are extended versions of the functions \link[ggdendro]{ggdendrogram}, \link[ggdendro]{dendro_data} (and the hidden dendrogram_data) 
@@ -29,6 +30,8 @@ prepare.ggdend(data, ...)
   offset_labels = 0, ...)
 
 \method{ggplot}{dendrogram}(data, ...)
+
+\method{print}{ggdend}(x, ...)
 }
 \arguments{
 \item{...}{mostly ignored.}
@@ -40,7 +43,7 @@ rectangular lines, while "triangle" will draw triangular lines.}
 
 \item{edge.root}{currently ignored. One day it might do the following: logical; if true, draw an edge to the root node.}
 
-\item{data}{a ggdend class object.}
+\item{data, x}{a ggdend class object (passed to ggplot.dendrogram or print.ggdend).}
 
 \item{segments}{a logical (TRUE) if to plot the segments (branches).}
 

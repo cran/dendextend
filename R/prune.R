@@ -112,27 +112,20 @@ prune_leaf <- function(dend, leaf_name,...)
 
 
 #' @title Prunes a tree (using leaves' labels)
+#' @rdname prune
 #' @export
-#' @aliases 
-#' prune.default
-#' prune.dendrogram
-#' prune.hclust
-#' prune.phylo
-#' prune.rpart
+#' 
 #' @description  Trimms a tree (dendrogram, hclust) from a set of leaves based on their labels.
-#' @usage
-#' prune(dend, ...)
-#' 
-#' \method{prune}{dendrogram}(dend, leaves,...)
-#' 
-#' \method{prune}{hclust}(dend, leaves,...)
-#' 
-#' \method{prune}{phylo}(dend, ...)
-#' 
-#' \method{prune}{rpart}(dend, ...)
 #' 
 #' @param dend tree object (dendrogram/hclust/phylo)
 #' @param leaves a character vector of the label(S) of the tip(s) (leaves) we wish to prune off the tree.
+#' @param reindex_dend logical (default is TRUE). If TRUE, the leaves of the new dendrograms
+#' include the rank of the old order.dendrogram. 
+#' This insures that their values are just like the number of leaves.
+#' When FALSE, the values in the leaves is that of the original dendrogram. Thie is useful
+#' if prunning a dendrogram but then wanting to use \link{order.dendrogram} with the original values.
+#' When using prune.hclust, then reindex_dend is used by default since otherwise the \link{as.hclust} function
+#' would return an error.
 #' @param ... passed on
 #' @details 
 #' I was not sure if to call this function drop.tip (from ape), snip/prune (from rpart) or just remove.leaves.  I ended up deciding on prune.
@@ -146,16 +139,25 @@ prune_leaf <- function(dend, leaf_name,...)
 #' par(mfrow = c(1,2))
 #' plot(dend, main = "original tree")
 #' plot(prune(dend , c("Alaska", "California")), main = "tree without Alaska and California")
+#' 
+#' 
+#' # this works because prune uses reindex_dend = TRUE by default
+#' as.hclust(prune(dend , c("Alaska", "California")))
+#' prune(hc , c("Alaska", "California"))
+#' 
+#' 
 prune <- function(dend, ...) {UseMethod("prune")}
 
 #' @export
+#' @rdname prune
 prune.default <- function(dend,...) {
    stop("object dend must be a dendrogram/hclust/phylo object")
 }
 
 # ' @S3method prune dendrogram
 #' @export
-prune.dendrogram <- function(dend, leaves,...) {
+#' @rdname prune
+prune.dendrogram <- function(dend, leaves, reindex_dend = TRUE, ...) {
    leaves <- as.character(leaves)
       
    for(i in seq_along(leaves))
@@ -163,15 +165,19 @@ prune.dendrogram <- function(dend, leaves,...) {
       # this function is probably not the fastest - but it works...
       dend <- prune_leaf(dend, leaves[i])	# move step by stem to remove all of these leaves...
    }
+   
+   if(reindex_dend) dend <- reindex_dend(dend)
+   
    return(dend)
 }
 
 
 # ' @S3method prune hclust
 #' @export
+#' @rdname prune
 prune.hclust <- function(dend, leaves,...) {
    x_dend <- as.dendrogram(dend)
-   x_dend_pruned <- prune(x_dend, leaves,...)
+   x_dend_pruned <- x_dend %>% prune(leaves,...) %>% reindex_dend
    x_pruned <- as_hclust_fixed(x_dend_pruned, dend)  
    
    return(x_pruned)
@@ -179,6 +185,7 @@ prune.hclust <- function(dend, leaves,...) {
 
 # ' @S3method prune phylo
 #' @export
+#' @rdname prune
 prune.phylo <- function(dend,...) {
 	# library(ape)
 	ape::drop.tip(phy=dend, ...)
@@ -186,6 +193,7 @@ prune.phylo <- function(dend,...) {
 
 
 #' @export
+#' @rdname prune
 prune.rpart <- function(dend,...) {
    # library(ape)
    rpart::prune.rpart(tree = dend, ...)
@@ -291,6 +299,49 @@ intersect_trees <- function(dend1, dend2, warn = dendextend_options("warn"), ...
 
 
 
+#' @title Reindexing a pruned dendrogram
+#' @export
+#' 
+#' @description \code{prune_leaf} does not update leaf indices as it prune
+#' leaves. As a result, some leaves of the pruned dendrogram may have leaf
+#' indeices larger than the number of leaves in the pruned dendrogram, which may
+#' cause errors in downstream functions such as \code{as.hclust}.
+#' 
+#' This function re-indexes the leaves such that the leaf indices are no larger
+#' than the total number of leaves.
+#' 
+#' @param dend dendrogram object
+#'   
+#' @return A \code{dendrogram} object with the leaf reindexed
+#' 
+#' 
+#' @examples
+#' hc <- hclust(dist(USArrests[1:5,]), "ave")
+#' dend <- as.dendrogram(hc)
+#' 
+#' dend_pruned <- prune(dend , c("Alaska", "California"), reindex_dend = FALSE )
+#' 
+#' ## A leave have an index larger than the number of leaves:
+#' unlist (dend_pruned)
+#' # [1] 4 3 1
+#' #' 
+#' dend_pruned_reindexed <- reindex_dend (dend_pruned)
+#' 
+#' ## All leaf indices are no larger than the number of leaves:
+#' unlist (dend_pruned_reindexed)
+#' # [1] 3 2 1
+#' 
+#' ## The dendrograms are equal:
+#' all.equal (dend_pruned, dend_pruned_reindexed)
+#' # TRUE
+#' 
+#' 
+reindex_dend <- function (dend){
+   order.dendrogram(dend) <- dend %>% order.dendrogram %>% rank %>% as.integer
+      # as.integer(rank(order.dendrogram(dend)))
+   return(dend)
+}
+
 
 
 
@@ -298,4 +349,3 @@ intersect_trees <- function(dend1, dend2, warn = dendextend_options("warn"), ...
 # example(rotate)
 # example(prune)
 # example(intersect_trees)
-
