@@ -20,7 +20,6 @@
 
 
 # as.dendrogram(as.hclust(as.phylo(hc)))
-# ' @S3method as.dendrogram phylo
 #' @export
 as.dendrogram.phylo <- function(object,...) {
 	# library(ape)
@@ -46,8 +45,8 @@ as.phylo <- function (x, ...)
 
 
 
+
 #' @title Convert a dendrogram into phylo
-#' @export
 #' @description
 #' Based on \link{as.hclust.dendrogram} with \link[ape]{as.phylo.hclust}
 #' 
@@ -85,9 +84,19 @@ as.phylo <- function (x, ...)
 #' 
 #' 
 #' }
+#' 
+#' 
+#' # see: https://github.com/klutometis/roxygen/issues/796
+#' # 
+#' 
+#' @rawNamespace 
+#' if(getRversion() >= "3.6.0") {
+#'   S3method(ape::as.phylo, dendrogram)
+#' } else {export(as.phylo.dendrogram)}
+#' 
 as.phylo.dendrogram <- function(x,...) {
 	# library(ape)
-	ape::as.phylo.hclust(as.hclust(x))
+   ape::as.phylo.hclust(as.hclust(x))
 }
 ## http://stackoverflow.com/questions/13085481/namespace-dependencies-not-required
 ## I also added ape to "Imports" in DESCRIPTION in order to avoid the error:
