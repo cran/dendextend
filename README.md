@@ -6,15 +6,17 @@
 
 # dendextend
 
+**[dendextend website](http://talgalili.github.io/dendextend/) (built using [pkgdown](https://pkgdown.r-lib.org/))**
+
+
 **Table of contents:**
 
 * [Introduction](#introduction)
-* [Motivation](#motivation)
 * [Installation](#installation)
 * [Usage](#usage)
-* [Share your dendrograms!](#share-your-dendrograms)
+* [Getting help](#getting-help)
 * [How to cite the dendextend package](#how-to-cite-the-dendextend-package)
-* [Contact](#contact)
+* [Submitting bug reports and patches](#submitting-bug-reports-and-patches)
 
 
 ## Introduction
@@ -23,58 +25,32 @@ Class "dendrogram" provides general functions for handling tree-like structures 
 
 However, many basic features are still missing from the dendrogram class.  This package aims at filling in some gaps.
 
-
-## Motivation
-
-Extending R core dendrogram functions.
+**The dendextend package extending R core dendrogram functions.**
 
 ## Installation
 
-To install the stable version on CRAN:
+To install and load dendextend, simply use:
 
 ```r
-install.packages('dendextend')
-```
-
-To install the GitHub version:
-
-```R
-install.packages.2 <- function (pkg) if (!require(pkg)) install.packages(pkg);
-install.packages.2('devtools')
-# install.packages.2('Rcpp')
-# make sure you have Rtools installed first! if not, then run:
-#install.packages('installr'); install.Rtools()
-devtools::install_github('talgalili/dendextend')
-
-# Having colorspace is also useful, since it is used
-# In various examples in the vignettes
-install.packages.2('colorspace')
-```
-
-And then you may load the package using:
-
-```R
-library("dendextend")
+install.packages('dendextend') # stable CRAN version
+library("dendextend") # load the package
 ```
 
 ## Usage
 
 Vignettes: 
 
-* [Introduction to dendextend](https://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Introduction%20to%20dendextend.html)
-* [Frequently asked questions](https://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Frequently%20asked%20questions.html)
-* [Hierarchical cluster analysis on famous data sets - enhanced with the dendextend package](https://htmlpreview.github.io/?https://github.com/talgalili/dendextend/blob/master/inst/ignored/Hierarchical%20cluster%20analysis%20on%20famous%20data%20sets%20-%20enhanced%20with%20the%20dendextend%20package.html)
+* [Introduction to dendextend](http://talgalili.github.io/dendextend/articles/dendextend.html)
+* [Frequently asked questions](http://talgalili.github.io/dendextend/articles/FAQ.html)
+* [Hierarchical cluster analysis on famous data sets - enhanced with the dendextend package](http://talgalili.github.io/dendextend/articles/Cluster_Analysis.html)
 
-## Share your dendrograms!
+Also ceck out the [dendextend tag in stackoverflow](https://stackoverflow.com/questions/tagged/dendextend) for more examples.
 
-If you have made interesting work using the dendextend package, I would LOVE to know about it. It can be a blog post, an academic paper, or just some plots you made for your work in the industry. Please contact me (see below) with what you have done, and I would also be happy to promote it in this page.
+A notable sister package for dendextend is [heatmaply](https://talgalili.github.io/heatmaply/articles/heatmaply.html) for creating interactive cluster heatmaps using R (combining dendextend and plotly).
 
-### Usages of dendextend
+## Getting help
 
-Packages:
-* [heatmaply](https://github.com/talgalili/heatmaply)
-* [ComplexHeatmap](https://www.bioconductor.org/packages/3.3/bioc/html/ComplexHeatmap.html)
-* [d3heatmap](https://CRAN.R-project.org/package=d3heatmap/vignettes/Introduction.html)
+Please post your question to stackoverflow using the tags: [dendextend](https://stackoverflow.com/questions/tagged/dendextend) and [r](https://stackoverflow.com/questions/tagged/dendextend).
 
 
 ## How to cite the dendextend package
@@ -101,22 +77,33 @@ it, please support the project by citing the appropriate journal articles.
 
 
 
-## Contact
+## Submitting bug reports and patches
 
 You are welcome to:
 
-* submit suggestions and bug-reports at: <https://github.com/talgalili/dendextend/issues>
+* submit bug-reports and features' suggestions at: <https://github.com/talgalili/dendextend/issues>
 * send a pull request on: <https://github.com/talgalili/dendextend/>
 * compose a friendly e-mail to: <tal.galili@gmail.com>
 
+Before reporting bugs, please make sure you're using the latest version from github:
+
+```R
+install.packages.2 <- function (pkg) if (!require(pkg)) install.packages(pkg);
+install.packages.2('remotes')
+remotes::install_github('talgalili/dendextend')
+
+# Having colorspace is also useful, since it is used
+# In various examples in the vignettes
+install.packages.2('colorspace')
+```
 
 ## Latest news
 
-You can see the most recent changes to the package in the [NEWS.md file](https://github.com/talgalili/dendextend/blob/master/NEWS.md)
+You can see the most recent changes to the package in the [NEWS.md file](http://talgalili.github.io/dendextend/news/index.html)
 
 
 
 ## Code of conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is released with a [Contributor Code of Conduct](https://github.com/talgalili/dendextend/blob/master/CONDUCT.md). By participating in this project you agree to abide by its terms.
 
