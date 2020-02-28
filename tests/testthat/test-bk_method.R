@@ -1,4 +1,5 @@
 # library(testthat)
+# library(dendextend)
 RNGversion("3.5.0")
 
 context("Bk method (FM Index) between two trees")
@@ -21,67 +22,6 @@ test_that("sort_2_clusters_vectors works", {
 
   sorted_As <- sort_2_clusters_vectors(A1_clusters, A2_clusters, assume_sorted_vectors = FALSE) # Sorted
   expect_true(identical(sorted_As[[1]], sorted_As[[2]]))
-})
-
-
-
-
-
-
-test_that("FM_index_profdpm works", {
-
-  #    set.seed(23235)
-  ss <- TRUE # sample(1:150, 10 )
-  hc1 <- hclust(dist(datasets::iris[ss, -5]), "com")
-  hc2 <- hclust(dist(datasets::iris[ss, -5]), "single")
-  # dend1 <- as.dendrogram(hc1)
-  # dend2 <- as.dendrogram(hc2)
-  #    cutree(dend1)
-
-  # FM index of a cluster with himself is 1:
-  expect_equivalent(FM_index_profdpm(cutree(hc1, k = 3), cutree(hc1, k = 3)), 1)
-  # removing the attr - it is EXACTLY 1: (but NOT 1L)
-  expect_identical(as.vector(FM_index_profdpm(cutree(hc1, k = 3), cutree(hc1, k = 3))), 1)
-
-  # sorting of the clusters based on their names:
-  set.seed(1341)
-  expect_false(identical(
-    as.vector(
-      FM_index_profdpm(cutree(hc1, k = 3),
-        sample(cutree(hc1, k = 3)),
-        assume_sorted_vectors = TRUE
-      )
-    ), 1
-  ))
-  # It actually becomes: 0.38037
-  # but if we leave sorting as TRUE, we will get 1:
-
-  expect_true(identical(
-    as.vector(FM_index_profdpm(cutree(hc1, k = 3),
-      sample(cutree(hc1, k = 3)),
-      assume_sorted_vectors = FALSE
-    )), 1
-  ))
-  # it is actually the default:
-  expect_true(identical(
-    as.vector(FM_index_profdpm(
-      cutree(hc1, k = 3),
-      sample(cutree(hc1, k = 3))
-    )), 1
-  ))
-
-
-  # we can get a range of FM inexes using the following:
-  fo <- function(k) FM_index_profdpm(cutree(hc1, k), cutree(hc2, k))
-  #    dput(round(unname(sapply(1:4, fo)),2))
-
-  expect_identical(
-    round(unname(sapply(1:4, fo)), 2),
-    c(1, 0.71, 0.81, 0.75)
-  )
-  #    ks <- 1:150
-  #    plot(sapply(ks, fo)~ ks, type = "b", main = "Bk plot for the datasets::iris dataset")
-  #
 })
 
 
@@ -204,13 +144,7 @@ test_that("FM_index works", {
   )
   #    ks <- 1:150
   #    plot(sapply(ks, fo)~ ks, type = "b", main = "Bk plot for the datasets::iris dataset")
-  #
-
-
-  expect_identical(
-    as.vector(FM_index(cutree(hc1, k = 3), cutree(hc1, k = 3), include_EV = TRUE)),
-    as.vector(FM_index(cutree(hc1, k = 3), cutree(hc1, k = 3), include_EV = FALSE))
-  )
+  
 })
 
 
@@ -267,8 +201,8 @@ test_that("Bk works", {
   )
 
   expect_identical(
-    Bk(hc1, hc2, k = 3, include_EV = FALSE),
-    Bk(dend1, dend2, k = 3, include_EV = FALSE)
+    Bk(hc1, hc2, k = 3),
+    Bk(dend1, dend2, k = 3)
   )
 
   expect_identical(
