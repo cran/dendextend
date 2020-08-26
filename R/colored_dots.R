@@ -17,7 +17,7 @@
 #
 
 
-# source: http://stackoverflow.com/questions/5468280/scale-a-series-between-two-points-in-r
+# source: https://stackoverflow.com/questions/5468280/scale-a-series-between-two-points-in-r
 # from the {scales} package
 # library("scales"); rescale
 
@@ -63,7 +63,7 @@ rescale <- function(x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 
 # This function is require in order to know the height of the rotated labels in the dendrogram!
 # Thanks to Prof. Brian Ripley
-# # http://r.789695.n4.nabble.com/strwidth-and-strheight-for-rotated-text-td839105.html
+# # https://r.789695.n4.nabble.com/strwidth-and-strheight-for-rotated-text-td839105.html
 rotated_str_dim <- function(s) {
   cha <- s
   xusr <- par("usr")

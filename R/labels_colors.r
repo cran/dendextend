@@ -63,7 +63,7 @@
 #' plot(dend)
 #'
 #' # removing color (and the nodePar completely - if it has no other attributed but lab.col)
-#' labels_colors(dend) <- NULL
+#' suppressWarnings(labels_colors(dend) <- NULL)
 #' labels_colors(dend)
 #' plot(dend)
 labels_colors <- function(dend, labels = TRUE, ...) {
@@ -222,7 +222,7 @@ color_unique_labels <- function(dend, ...) {
   #    if(!require(dendextend)) install.packages("dendextend")
   #    if(!require(colorspace)) install.packages("colorspace")
   #    library("dendextend")
-  # original request: http://stackoverflow.com/questions/33567508/how-to-color-the-same-labels-on-dendorgram-in-one-colour-in-r/
+  # original request: https://stackoverflow.com/questions/33567508/how-to-color-the-same-labels-on-dendorgram-in-one-colour-in-r/
 
   n_unique_labels <- length(unique(labels(dend)))
   colors <- colorspace::rainbow_hcl(n_unique_labels)

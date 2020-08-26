@@ -1,10 +1,10 @@
 context("Test extract au")
-# RNGversion("3.5.0")
 
 test_that("extract au", {
+  suppressWarnings(RNGversion("3.5.0"))
   library(pvclust)
   set.seed(123)
-  dend <- USArrests[1:5, ] %>% pvclust()
+  suppressWarnings(dend <- USArrests[1:5, ] %>% pvclust())
   # plot(dend)
   # pvclust_edges(dend)
   expect_identical(as.character(pvclust_edges(dend)[, 1]), c("Assault", "UrbanPop", "Murder"))

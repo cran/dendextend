@@ -45,7 +45,7 @@
 #' # get the subset of the data
 #' subset_iris <- as.matrix(iris[order.dendrogram(sub_dend), -5])
 #' # update the dendrogram's internal order so to not cause an error in heatmap.2
-#' order.dendrogram(sub_dend) <- rank(order.dendrogram(sub_dend))
+#' order.dendrogram(sub_dend) <- as.integer(rank(order.dendrogram(sub_dend)))
 #' heatmap.2(subset_iris, Rowv = sub_dend, trace = "none", col = viridis::viridis(100))
 get_subdendrograms <- function(dend, k, ...) {
   clusters <- cutree(dend, k, ...)
@@ -56,20 +56,17 @@ get_subdendrograms <- function(dend, k, ...) {
   dend_list
 }
 
-#' @title Search for the subdendrogram structure composed of indicated labels
+#' @title Search for the sub-dendrogram structure composed of selected labels
 #' @export
 #' @description
 #' Given a dendrogram object, the function performs a recursive DFS algorithm to determine
-#' the subdendrogram which is composed of all indicated labels. The labels
-#' which should compose the subdendrogram are marked as TRUE in the logical
-#' vector of length \code{nleaves(dend)}
+#' the sub-dendrogram which is composed of (exactly) all 'selected_labels'.
 #' @param dend a dendrogram object
-#' @param selected_labels logical vector with TRUE values at positions of
-#' members which should be included in the resulting subdendrogram
+#' @param selected_labels A character vector with the labels we expect to have 
+#' in the sub-dendrogram. This doesn't have to be in the same order as in the dendrogram.
 #' @return
-#' A subdendrogram composed of only members indicated in the given logical
-#' vector
-#' clusters.
+#' Either a sub-dendrogram composed of only members of selected_labels.
+#' If such a sub-dendrogram doesn't exist, the function returns NULL.
 #' @examples
 #'
 #' \dontrun{
@@ -80,22 +77,42 @@ get_subdendrograms <- function(dend, k, ...) {
 #'   as.dendrogram() %>%
 #'   set("labels_to_character") %>%
 #'   color_branches(k = 5)
-#' first.subdend.only <- cutree(dend, 4) == 1
+#' first.subdend.only <- names(cutree(dend, 4)[cutree(dend, 4) == 1])
 #' sub.dend <- find_dendrogram(dend, first.subdend.only)
 #' # Plotting the result
 #' par(mfrow = c(1, 2))
 #' plot(dend, main = "Original dendrogram")
 #' plot(sub.dend, main = "First subdendrogram")
+#' 
+#'   dend <- 1:10 %>%
+#' dist() %>%
+#'   hclust() %>%
+#'   as.dendrogram() %>%
+#'   set("labels_to_character") %>%
+#'   color_branches(k = 5)
+#' 
+#' selected_labels <- as.character(1:4)
+#' sub_dend <- find_dendrogram(dend, selected_labels)
+#' plot(dend, main = "Original dendrogram")
+#' plot(sub_dend, main = "First subdendrogram")
+#' 
+#' 
 #' }
 #'
 find_dendrogram <- function(dend, selected_labels) {
-  if (all(unlist(dend) %in% selected_labels)) {
+  # if the dendrogram is exactly the labels in selected_labels - then we found our dend 
+  if (all(labels(dend) %in% selected_labels) && 
+      (length(labels(dend)) == length(selected_labels))) {
     return(dend)
   }
 
-  if (any(unlist(dend[[1]]) %in% selected_labels)) {
-    return(find_dendrogram(dend[[1]], selected_labels))
-  } else {
-    return(find_dendrogram(dend[[2]], selected_labels))
+  # if not, either we can find such a sub dendrogram, or it doesn't exist (return NULL)
+  for(i in 1:length(dend)) {
+    if(all(selected_labels %in% labels(dend[[i]]))) {
+      return(Recall(dend[[i]], selected_labels))
+    }
   }
+  # if we couldn't find any sub-dend that includes all the labels we're looking for
+  # then we return NULL
+  return(NULL)
 }

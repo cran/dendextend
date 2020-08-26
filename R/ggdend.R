@@ -118,7 +118,13 @@
 #' library(ggplot2)
 #' ggplot(ggd1) # reproducing the above plot in ggplot2 :)
 #'
+#' # Triangle version:
+#' plot(dend, type = "triangle")
+#' ggd2 <- as.ggdend(dend, type = "triangle")
+#' ggplot(ggd2) 
 #'
+#'
+#' # More modifications:
 #' labels(dend) <- paste0(labels(dend), "00000")
 #' ggd1 <- as.ggdend(dend)
 #' # Use ylim to deal with long labels in ggplot2
@@ -178,7 +184,7 @@ as.ggdend.dendrogram <- function(dend, type = c("rectangle", "triangle"), edge.r
   if (!is.dendrogram(dend)) stop("dend is not a dendrogram (and it needs to be...)")
   if (nleaves(dend) == 0) stop("dend must have at least one node")
   if (edge.root) stop("edge.root is not supported at this point (this parameter is a place-holder for when it will)")
-
+  type <- match.arg(type, c("rectangle", "triangle"))
   # source('R/stats_imports.R', echo=FALSE)
   # ggdata <- dendextend:::dendrogram_data(dend, type = "rectangle")
   ggdata <- dendrogram_data(dend, type = type) # ggdendro:::dendrogram_data(dend)
@@ -193,10 +199,13 @@ as.ggdend.dendrogram <- function(dend, type = c("rectangle", "triangle"), edge.r
     #       2    3.250000 2.0420578  3.25000 0.9219544
     #       3    3.250000 0.9219544  1.50000 0.9219544
     # x=ggdata$segments$x
-    id <- seq_along(x)
-    id_even <- (id %% 2) == 0
+    id <- if(type == "rectangle") {
+      (seq_along(x) %% 2) == 0
+    } else {
+      TRUE
+    }
     data.frame(
-      x = c(x[1], xend[id_even]), y = c(y[1], yend[id_even]),
+      x = c(x[1], xend[id]), y = c(y[1], yend[id]),
       pch = NA, cex = NA, col = NA,
       members = NA, midpoint = NA, height = NA, leaf = NA,
       stringsAsFactors = TRUE
@@ -272,7 +281,7 @@ as.ggdend.dendrogram <- function(dend, type = c("rectangle", "triangle"), edge.r
     #       null2NA <- function(x) ifelse(is.na(x) || is.null(x), NA, x)
     null2NA <- function(x) ifelse(is.null(x), NA, x)
     values <- sapply(values, null2NA) # in case the attr is missing, it fills the NULL with NA
-    rep(unlist(values), each = 2) # like doing edgePar_attr[[1]] ["col"]
+    rep(unlist(values), each = if(type == "rectangle") 2 else 1) # like doing edgePar_attr[[1]] ["col"]
   }
 
   # The rep is because a segment has two lines. So we use each: rep(1:4, each = 2)
@@ -466,7 +475,7 @@ prepare.ggdend <- function(data, ...) {
 
 # ggplot2:::ggplot.data.frame
 # based on ggdendrogram! from the ggdendro package
-# polar cor is a problem with text: http://stackoverflow.com/questions/8468472/adjusting-position-of-text-labels-in-coord-polar-histogram-in-ggplot2
+# polar cor is a problem with text: https://stackoverflow.com/questions/8468472/adjusting-position-of-text-labels-in-coord-polar-histogram-in-ggplot2
 
 #' @export
 #' @rdname ggdend
@@ -502,7 +511,7 @@ ggplot.ggdend <- function(data, segments = TRUE, labels = TRUE, nodes = TRUE,
 
 
   # turning off legends.
-  # http://stackoverflow.com/questions/14604435/turning-off-some-legends-in-a-ggplot
+  # https://stackoverflow.com/questions/14604435/turning-off-some-legends-in-a-ggplot
 
   angle <- ifelse(horiz, 0, 90)
   hjust <- ifelse(horiz, 0, 1)

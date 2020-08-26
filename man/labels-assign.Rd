@@ -12,7 +12,7 @@
 \source{
 The functions here are based on code by Gavin and kohske from
 (adopted to dendrogram by Tal Galili):
-\url{http://stackoverflow.com/questions/4614223/how-to-have-the-following-work-labelsx-some-value-r-question}
+\url{https://stackoverflow.com/questions/4614223/how-to-have-the-following-work-labelsx-some-value-r-question}
 Also with some ideas from Gregory Jefferis's dendroextras package.
 }
 \usage{
@@ -76,7 +76,7 @@ labels(hc) # "a" "b" "c"
 labels(dend) # "Arizona" "Alabama" "Alaska"
 labels(dend) <- letters[1:3]
 labels(dend) # "a" "b" "c"
-labels(dend) <- LETTERS[1:2] # will produce a warning
+suppressWarnings(labels(dend) <- LETTERS[1:2]) # will produce a warning
 labels(dend) # "A" "B" "A"
 labels(dend) <- LETTERS[4:6] # will replace the labels correctly
 # (the fact the tree had duplicate labels will not cause a problem)
