@@ -24,6 +24,7 @@ colored_dots(
   text_shift = 1,
   sort_by_labels_order = TRUE,
   horiz = FALSE,
+  dot_size = 1,
   ...
 )
 }
@@ -70,6 +71,8 @@ If FALSE the colored dots are plotted as-is, based on the order
 of the colors vector.}
 
 \item{horiz}{logical (FALSE by default). Set to TRUE when using plot(dend, horiz = TRUE)}
+
+\item{dot_size}{numeric (1 by default). Passed to cex argument in points}
 
 \item{...}{ignored at this point.}
 }

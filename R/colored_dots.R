@@ -125,6 +125,7 @@ max_labels_height <- function(s) {
 #' If FALSE the colored dots are plotted as-is, based on the order
 #' of the colors vector.
 #' @param horiz logical (FALSE by default). Set to TRUE when using plot(dend, horiz = TRUE)
+#' @param dot_size numeric (1 by default). Passed to cex argument in points
 #' @param ... ignored at this point.
 #' @author Steve Horvath \email{SHorvath@@mednet.ucla.edu},
 #' Tal Galili \email{Tal.Galili@@gmail.com},
@@ -276,6 +277,7 @@ colored_dots <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
                          sort_by_labels_order = TRUE,
                          horiz = FALSE,
                          # below_labels = TRUE,
+                         dot_size = 1,
                          ...) {
   # should either be a vector or a matrix (it could also work with data.frames)
   # if(!(is.vector(colors) | is.matrix(colors))) stop("colors must be either a vector or a matrix")
@@ -396,7 +398,7 @@ colored_dots <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
       # rect(-yb, xl, -yt, xr, col = as.character(C[, j]),
       #     border = as.character(C[, j]))
 
-      points((-yb + (-yt)) / 2, (xl + xr) / 2, pch = 19, col = as.character(C[, j]))
+      points((-yb + (-yt)) / 2, (xl + xr) / 2, pch = 19, col = as.character(C[, j]), cex = dot_size)
 
 
       # plot the rowLabels text:
@@ -417,7 +419,7 @@ colored_dots <- function(colors, dend, rowLabels = NULL, cex.rowLabels = 0.9,
       # Instead of rectangles, put in points at 1/2 x and y coordinates
       # rect(xl, yb, xr, yt, col = as.character(C[, j]),
       #    border = as.character(C[, j]))
-      points((xl + xr) / 2, (yb + yt) / 2, pch = 19, col = as.character(C[, j]))
+      points((xl + xr) / 2, (yb + yt) / 2, pch = 19, col = as.character(C[, j]), cex = dot_size)
 
 
       if (is.null(rowLabels)) {
