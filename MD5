@@ -1,8 +1,8 @@
 c5f2e6a25753e8bd63056280672c6739 *ChangeLog
-711cad2bd44a03d5f6f08fef0bc6e19c *DESCRIPTION
+2db2417e8f545170aeed991b05874b24 *DESCRIPTION
 1c0eeb09c4f1920f9f27299bad8f4bee *NAMESPACE
-2275abbacbc6ace8442ffcfc018d4c74 *NEWS
-c4fbf339ff7f66e858c411d956e5cd42 *NEWS.md
+0f34a35157df827b0c5f323cd77a636a *NEWS
+0f34a35157df827b0c5f323cd77a636a *NEWS.md
 c791451a9787a6838da2b5f7596e5fa8 *R/DendSer.R
 f1f7908a3ee1e5b2adb1e2b92b7f1b21 *R/Hmisc.R
 b2ccb97a1232bb54310e42bda05b1b3e *R/all.equal.R
@@ -12,7 +12,7 @@ c826802dcddbbae033347c622d754f35 *R/as.dendrogram.randomForest.R
 3d0fc9d25e4e748b07023ec59e9840e8 *R/bk_method.R
 6dc73ff4c179185a0fe0afe114989bc8 *R/branches_attr_by.R
 f1f13c15e639e55c5ae0ee8614b9d0a0 *R/circlize.R
-ae04543831f5619e23e7f7c2b4f2f43c *R/color_branches.R
+3ac7412fbffdc484bac937c1cb83305d *R/color_branches.R
 d0c7e693fa620636b8e58b050a5097fc *R/colored_bars.R
 c0f946449071292875dfecdd7617f970 *R/colored_dots.R
 5861706e9898855fc3d7a5fecede18ba *R/common_subtrees.R
@@ -21,7 +21,7 @@ b60a53282034f8bb79ed82fbd0662c29 *R/cor_bakers_gamma.R
 81ce86a78fd97264537c573677b1216f *R/cor_cophenetic.R
 e7fd32721f91f3dbe1178774a278b140 *R/cut_lower_fun.R
 4adeb24ed3016fd7ef02a8d7015a8526 *R/cutree.dendrogram.R
-11ae3510631fd2b293d47cf69b7c3f07 *R/data.R
+d0c8b02ae95209b40b979c85be9d2cf4 *R/data.R
 d10300d534fc27f9cb7a537a0795bc06 *R/dendextend-package.R
 0e17ec7b527eca5207b221edc12b1405 *R/dendextend.R
 695456b161176446eafdd2a73506e68d *R/dendextend_options.R
@@ -34,7 +34,7 @@ d10300d534fc27f9cb7a537a0795bc06 *R/dendextend-package.R
 c331bc31de5c8e82c57225806cfc514d *R/find_k.R
 7b306969b4ff9f70d6b84424658e5a25 *R/get_nodes_xy.R
 fc51d7fbdaf625a13ca70d2b7c8eff78 *R/get_subdendrograms.R
-b32b681d4b6bfa7287eff0e589f04ce2 *R/ggdend.R
+e5450f9e45665992e417ba7723aa1ea4 *R/ggdend.R
 1fa52b8c3f94d57ee50fa1c980bc3b39 *R/ggdendro.R
 5881bb711ce2071fa93c5752f1542082 *R/has_edgePar.R
 3f2eb639f496f32e6579cad605ff4a5c *R/highlight_branches.R
@@ -56,7 +56,7 @@ eea895f75ee7f351fd1b7ee43f8892c2 *R/stats_imports.R
 ffd54163b6911301ec8ea558fe93feaa *R/tanglegram.R
 7a3c5bd7029ff3d53c633aabe8d4abb7 *R/unbranch.R
 7dfd99e90a89d281419dce5a0da65f09 *R/untangle.R
-80ac286dfb35970f32bbaf050c0bd4c7 *R/zzz.R
+14d5338a6bc60e8b64b55a27e551b2fc *R/zzz.R
 7713de9621bed382b17708c65a494875 *README.md
 1bbff3c44cda7a3809f395dfb8c57d8c *TODO
 1ecddec713909167b8914651edfd945e *build/vignette.rds
@@ -67,16 +67,16 @@ e08164b30997710321dc845d13c1b351 *demo/dendextend.R
 c6304e4dfcfe59388bad0480e6f97b67 *inst/WORDLIST
 35d00d75b57a529be2ee8a23219a9f4b *inst/doc/Cluster_Analysis.R
 004c7ed2083478f4d0cd07c23bd30e22 *inst/doc/Cluster_Analysis.Rmd
-7af7e3ac847da2b9e52b2fbf43fb2b66 *inst/doc/Cluster_Analysis.html
+e5308664abcc71154e98a9724bbad2d7 *inst/doc/Cluster_Analysis.html
 6e7c977c1ed8d4f0f7e88ca23e877e5f *inst/doc/FAQ.R
 27de7d9ccca23a002ae1aad4ead95ada *inst/doc/FAQ.Rmd
-42854c560112bd8443af021bcd8d2326 *inst/doc/FAQ.html
+98d31fb5fa53f09829e7bb227742a672 *inst/doc/FAQ.html
 bc0f3d5f8c1a95f4a26f7b17bc5b396e *inst/doc/Quick_Introduction.R
 86ce72ecdbd3923cf0c122bd85e421e7 *inst/doc/Quick_Introduction.Rmd
-25f96b9ae8421f4b85c577a301bcd828 *inst/doc/Quick_Introduction.html
+15b89379482e0a1863910edd2961ff20 *inst/doc/Quick_Introduction.html
 788860e3bc623736a35c6a26627f3acd *inst/doc/dendextend.R
 0ff46542346687bf021608965ac2294b *inst/doc/dendextend.Rmd
-9128a626545f6ba70ec1677932154e29 *inst/doc/dendextend.html
+c8cac25625700ce5738744a9cc212abd *inst/doc/dendextend.html
 eee12fc45780fb59665092e3844d1227 *man/Bk.Rd
 94fe508bc48e9e28b855b2cfc132c0a1 *man/Bk_permutations.Rd
 fda1c905efe092834d31ac073f2a0c49 *man/Bk_plot.Rd
@@ -86,7 +86,7 @@ e759bf395aec112a2d4390bf8110f81c *man/FM_index_R.Rd
 cef0765aeaeb2a342f66814852722074 *man/FM_index_permutation.Rd
 7d1dc11543b61d6bc8c4c38b9cf26e8d *man/all.equal.dendrogram.Rd
 7c202eee0d73b0ceb170bfa7e9d3c838 *man/all_couple_rotations_at_k.Rd
-79632a1414ae3d80de192e26d0e486d8 *man/all_unique.Rd
+4cbf9de87f7ac3a9354621019a405261 *man/all_unique.Rd
 2e1fc180cb0fe772e9e09d02d7335f3b *man/as.dendlist.Rd
 5d2c929b3ecac1bdfd60044c3b0c6c0f *man/as.phylo.dendrogram.Rd
 2a836a03ad0399794b449067ebd6fb2d *man/as_hclust_fixed.Rd
@@ -157,7 +157,7 @@ e4f902e842b2e0993c0bc9c869f57eab *man/highlight_distinct_edges.Rd
 a1761511517b160863337bd49b07fa13 *man/is.natural.number.Rd
 63261e6b6e303da1c33605a75a53e30c *man/is_null_list.Rd
 c7eef959c6e244e55cae284c7a11667f *man/is_some_class.Rd
-9540ce1961000809a74579735faf02ef *man/khan.Rd
+3910bfd472c16d560489c0567b363125 *man/khan.Rd
 a1f90a69cd646b51a44cf924db1df4b8 *man/labels-assign.Rd
 4a5d9560696306596d9fa6dc904bdb3e *man/labels_cex.Rd
 741f33c354146827f4e85aa8697eb9b6 *man/labels_colors.Rd
