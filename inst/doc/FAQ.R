@@ -744,7 +744,6 @@ NA), .Dim = c(23L, 96L), .Dimnames = list(c("varA", "varB", "varC",
 #  dend1
 #  # plot(dend1)
 #  # a <- heights_per_k.dendrogram(dend1)
-#  # library(dendextendRcpp)
 #  # a2 <- heights_per_k.dendrogram(dend1)
 #  # nleaves(dend1)
 #  

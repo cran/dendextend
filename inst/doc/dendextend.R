@@ -207,11 +207,16 @@ dend13 %>% set("nodes_pch", 19) %>% set("nodes_cex", 2) %>%
 dend13 %>% set("nodes_pch", 19) %>% set("nodes_cex", 2) %>% set("nodes_col", 3) %>% 
    plot(main = "(3) Show (larger+colored)\n nodes") #3
 
-dend13 %>% set("leaves_pch", 19) %>% plot(main = "(4) Show the\n leaves (as a dot)") #4
-dend13 %>% set("leaves_pch", 19) %>% set("leaves_cex", 2) %>% 
-   plot(main = "(5) Show (larger)\n leaves") #5
-dend13 %>% set("leaves_pch", 19) %>% set("leaves_cex", 2) %>% set("leaves_col", 3) %>% 
-   plot(main = "(6) Show (larger+colored)\n leaves") #6
+dend13 %>% set("leaves_pch", 21) %>% plot(main = "(4) Show the leaves\n (as empty circles)") #4
+dend13 %>% set("leaves_pch", 21) %>% set("leaves_cex", 2) %>% 
+   plot(main = "(5) Show (larger)\n leaf circles") #5
+dend13 %>% 
+   set("leaves_pch", 21) %>% 
+   set("leaves_bg", "gold") %>%    
+   set("leaves_cex", 2) %>% 
+   set("leaves_col", "darkred") %>% 
+   plot(main = "(6) Show (larger+colored+filled)\n leaves") #6
+
 
 ## ---- fig.width=8, fig.height=4-----------------------------------------------
 par(mfrow = c(1,2))

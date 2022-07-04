@@ -60,9 +60,11 @@
 #' \item{leaves_pch - set the leaves' point type (\link{assign_values_to_leaves_nodePar}). A leave is the terminal node of the tree.}
 #' \item{leaves_cex - set the leaves' point size (\link{assign_values_to_leaves_nodePar}). For using this you MUST also set leaves_pch, a good value to use is 19.}
 #' \item{leaves_col - set the leaves' point color (\link{assign_values_to_leaves_nodePar}). For using this you MUST also set leaves_pch, a good value to use is 19.}
+#' \item{leaves_bg - set the leaves' point fill color (\link{assign_values_to_leaves_nodePar}). For using this you MUST also set leaves_pch with values from 21-25.}
 #' \item{nodes_pch - set the nodes' point type (\link{assign_values_to_nodes_nodePar})}
 #' \item{nodes_cex - set the nodes' point size (\link{assign_values_to_nodes_nodePar})}
 #' \item{nodes_col - set the nodes' point color (\link{assign_values_to_nodes_nodePar})}
+#' \item{nodes_bg - set the nodes' point fill color (\link{assign_values_to_nodes_nodePar}). For using this you MUST also set leaves_pch with values from 21-25.}
 #' \item{hang_leaves - hang the leaves (\link{hang.dendrogram})}
 #' \item{branches_k_color - color the branches (\link{color_branches}), a \code{k} parameter needs to be supplied.}
 #' \item{branches_k_lty - updates the lwd of the branches (similar to branches_k_color), a \code{k} parameter needs to be supplied.}
@@ -145,6 +147,28 @@
 #'   set("hang") %>%
 #'   plot()
 #'
+#' # using bg for leaves and nodes
+#' 
+#' set.seed(23235)
+#' ss <- sample(1:150, 25)
+#' 
+#' # Getting the dend object
+#' dend25 <- iris[ss, -5] %>%
+#'   dist() %>%
+#'   hclust() %>%
+#'   as.dendrogram()
+#' 
+#' dend25 %>%
+#'   set("labels", 1:25) %>%
+#'   set("nodes_pch", 21) %>% # set all nodes to be pch 21
+#'   set("nodes_col", "darkred") %>%
+#'   set("nodes_bg", "gold") %>%
+#'   set("leaves_pch", 1:25) %>% # Change the leaves pch to move from 1 to 25
+#'   set("leaves_col", "darkred") %>%
+#'   set("leaves_bg", "gold") %>%
+#'   plot(main = "pch 21 to 25 supports the\nnodes_bg and leaves_bg parameters")
+#'   
+#'   
 #' dend %>%
 #'   set("branches_k_col") %>%
 #'   plot()
@@ -321,9 +345,11 @@ set.dendrogram <-
                "leaves_pch",
                "leaves_cex",
                "leaves_col",
+               "leaves_bg",
                "nodes_pch",
                "nodes_cex",
                "nodes_col",
+               "nodes_bg",
                "hang_leaves",
                "rank_branches",
                "branches_k_color",
@@ -364,9 +390,11 @@ set.dendrogram <-
       leaves_pch = assign_values_to_leaves_nodePar(dend, value, "pch", ...),
       leaves_cex = assign_values_to_leaves_nodePar(dend, value, "cex", ...),
       leaves_col = assign_values_to_leaves_nodePar(dend, value, "col", ...),
+      leaves_bg = assign_values_to_leaves_nodePar(dend, value, "bg", ...),
       nodes_pch = assign_values_to_nodes_nodePar(dend, value, "pch", ...),
       nodes_cex = assign_values_to_nodes_nodePar(dend, value, "cex", ...),
       nodes_col = assign_values_to_nodes_nodePar(dend, value, "col", ...),
+      nodes_bg = assign_values_to_nodes_nodePar(dend, value, "bg", ...),
       hang_leaves = hang.dendrogram(dend, hang = ifelse(missing(value), .1, value), ...),
       rank_branches = rank_branches(dend, ...),
       branches_k_color = color_branches(dend, col = value, ...),

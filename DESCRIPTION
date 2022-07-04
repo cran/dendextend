@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending 'dendrogram' Functionality in R
-Version: 1.15.2
-Date: 2021-10-27
+Version: 1.16.0
+Date: 2022-07-04
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "https://www.r-statistics.com"),
     person("Yoav", "Benjamini", email = "ybenja@tau.ac.il",role = "ths"),
@@ -46,7 +46,8 @@ Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     person("Samuel", "Perreault", role = "ctb", email = "samuel.perreault.3@ulaval.ca", comment = "https://github.com/samperochkin"),
     person("Christian", "Hennig", role = "ctb", email = "c.hennig@ucl.ac.uk", comment = "http://www.homepages.ucl.ac.uk/~ucakche/"),
     person("David", "Bradley", role = "ctb", comment = "https://github.com/DBradley27"),
-    person("Houyun", "Huang", role = "ctb", email = 'houyunhuang@163.com', comment = "https://github.com/houyunhuang")
+    person("Houyun", "Huang", role = "ctb", email = 'houyunhuang@163.com', comment = "https://github.com/houyunhuang"),
+    person("Patrick", "Schupp", role = "ctb", email = 'pschupp@sonic.net', comment = "https://github.com/pschupp")
     )
 Description: Offers a set of functions for extending
     'dendrogram' objects in R, letting you visualize and compare trees of
@@ -59,7 +60,8 @@ Suggests: knitr, rmarkdown, testthat, seriation, colorspace, ape,
         microbenchmark, gplots, heatmaply, dynamicTreeCut, pvclust,
         corrplot, DendSer, MASS, cluster, fpc, circlize (>= 0.2.5),
         covr
-Enhances: ggdendro, dendroextras, Hmisc, data.table, rpart
+Enhances: ggdendro, dendroextras, Hmisc, data.table, rpart, WGCNA,
+        moduleColor, distory, phangorn, zoo
 VignetteBuilder: knitr
 LazyData: true
 License: GPL-2 | GPL-3
@@ -72,7 +74,7 @@ BugReports: https://github.com/talgalili/dendextend/issues
 RoxygenNote: 7.1.1
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2021-10-27 19:37:55 UTC; talgalili
+Packaged: 2022-07-04 04:35:20 UTC; talgalili
 Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Yoav Benjamini [ths],
   Gavin Simpson [ctb],
@@ -102,7 +104,8 @@ Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Samuel Perreault [ctb] (https://github.com/samperochkin),
   Christian Hennig [ctb] (http://www.homepages.ucl.ac.uk/~ucakche/),
   David Bradley [ctb] (https://github.com/DBradley27),
-  Houyun Huang [ctb] (https://github.com/houyunhuang)
+  Houyun Huang [ctb] (https://github.com/houyunhuang),
+  Patrick Schupp [ctb] (https://github.com/pschupp)
 Maintainer: Tal Galili <tal.galili@gmail.com>
 Repository: CRAN
-Date/Publication: 2021-10-28 13:30:18 UTC
+Date/Publication: 2022-07-04 18:10:02 UTC
