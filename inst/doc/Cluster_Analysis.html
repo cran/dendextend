@@ -12,7 +12,7 @@
 
 <meta name="author" content="Tal Galili" />
 
-<meta name="date" content="2022-07-04" />
+<meta name="date" content="2023-03-24" />
 
 <title>Hierarchical cluster analysis on famous data sets - enhanced with the dendextend package</title>
 
@@ -31,22 +31,22 @@ document.addEventListener('DOMContentLoaded', function(e) {
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
 <style type="text/css">
-  code {
-    white-space: pre;
-  }
-  .sourceCode {
-    overflow: visible;
-  }
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
@@ -64,55 +64,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -334,45 +333,45 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">Hierarchical cluster analysis on famous
 data sets - enhanced with the <em>dendextend</em> package</h1>
 <h4 class="author">Tal Galili</h4>
-<h4 class="date">2022-07-04</h4>
+<h4 class="date">2023-03-24</h4>
 
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#iris---edgar-andersons-iris-data">iris - Edgar Anderson’s
-Iris Data</a>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#iris---edgar-andersons-iris-data" id="toc-iris---edgar-andersons-iris-data">iris - Edgar Anderson’s Iris
+Data</a>
 <ul>
-<li><a href="#background">Background</a></li>
-<li><a href="#the-3-clusters-from-the-complete-method-vs-the-real-species-category">The
+<li><a href="#background" id="toc-background">Background</a></li>
+<li><a href="#the-3-clusters-from-the-complete-method-vs-the-real-species-category" id="toc-the-3-clusters-from-the-complete-method-vs-the-real-species-category">The
 3 clusters from the “complete” method vs the real species
 category</a></li>
-<li><a href="#similaritydifference-between-various-clustering-algorithms">Similarity/difference
+<li><a href="#similaritydifference-between-various-clustering-algorithms" id="toc-similaritydifference-between-various-clustering-algorithms">Similarity/difference
 between various clustering algorithms</a></li>
-<li><a href="#clustering-prediction-of-the-3-species-classes">Clustering
+<li><a href="#clustering-prediction-of-the-3-species-classes" id="toc-clustering-prediction-of-the-3-species-classes">Clustering
 prediction of the 3 species classes</a></li>
-<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
 </ul></li>
-<li><a href="#khan---microarray-gene-expression-data-set-from-khan-et-al.-2001.-subset-of-306-genes.">khan
+<li><a href="#khan---microarray-gene-expression-data-set-from-khan-et-al.-2001.-subset-of-306-genes." id="toc-khan---microarray-gene-expression-data-set-from-khan-et-al.-2001.-subset-of-306-genes.">khan
 - Microarray gene expression data set from Khan et al., 2001. Subset of
 306 genes.</a>
 <ul>
-<li><a href="#background-1">Background</a></li>
-<li><a href="#comparing-the-train-vs-test-dendrograms">Comparing the
-train vs test dendrograms</a></li>
-<li><a href="#conclusion-1">Conclusion</a></li>
+<li><a href="#background-1" id="toc-background-1">Background</a></li>
+<li><a href="#comparing-the-train-vs-test-dendrograms" id="toc-comparing-the-train-vs-test-dendrograms">Comparing the train vs
+test dendrograms</a></li>
+<li><a href="#conclusion-1" id="toc-conclusion-1">Conclusion</a></li>
 </ul></li>
-<li><a href="#votes.repub---votes-for-republican-candidate-in-presidential-elections">votes.repub
+<li><a href="#votes.repub---votes-for-republican-candidate-in-presidential-elections" id="toc-votes.repub---votes-for-republican-candidate-in-presidential-elections">votes.repub
 - Votes for Republican Candidate in Presidential Elections</a>
 <ul>
-<li><a href="#background-2">Background</a></li>
-<li><a href="#heatmap">Heatmap</a></li>
+<li><a href="#background-2" id="toc-background-2">Background</a></li>
+<li><a href="#heatmap" id="toc-heatmap">Heatmap</a></li>
 </ul></li>
-<li><a href="#animals---attributes-of-animals">animals - Attributes of
+<li><a href="#animals---attributes-of-animals" id="toc-animals---attributes-of-animals">animals - Attributes of
 Animals</a>
 <ul>
-<li><a href="#background-3">Background</a></li>
-<li><a href="#heatmap-1">Heatmap</a></li>
+<li><a href="#background-3" id="toc-background-3">Background</a></li>
+<li><a href="#heatmap-1" id="toc-heatmap-1">Heatmap</a></li>
 </ul></li>
 </ul>
 </div>
