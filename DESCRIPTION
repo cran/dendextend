@@ -1,8 +1,8 @@
 Package: dendextend
 Type: Package
 Title: Extending 'dendrogram' Functionality in R
-Version: 1.17.1
-Date: 2023-03-24
+Version: 1.18.0
+Date: 2024-10-05
 Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     "tal.galili@gmail.com", comment = "https://www.r-statistics.com"),
     person("Yoav", "Benjamini", email = "ybenja@tau.ac.il",role = "ths"),
@@ -47,7 +47,8 @@ Authors@R: c(person("Tal", "Galili", role = c("aut", "cre", "cph"), email =
     person("Christian", "Hennig", role = "ctb", email = "c.hennig@ucl.ac.uk", comment = "http://www.homepages.ucl.ac.uk/~ucakche/"),
     person("David", "Bradley", role = "ctb", comment = "https://github.com/DBradley27"),
     person("Houyun", "Huang", role = "ctb", email = 'houyunhuang@163.com', comment = "https://github.com/houyunhuang"),
-    person("Patrick", "Schupp", role = "ctb", email = 'pschupp@sonic.net', comment = "https://github.com/pschupp")
+    person("Patrick", "Schupp", role = "ctb", email = 'pschupp@sonic.net', comment = "https://github.com/pschupp"),
+    person("Alec", "Buetow", role = "ctb", email = 'alecbuetow@gmail.com', comment = "https://github.com/alecbuetow")
     )
 Description: Offers a set of functions for extending
     'dendrogram' objects in R, letting you visualize and compare trees of
@@ -65,16 +66,16 @@ Enhances: ggdendro, dendroextras, Hmisc, data.table, rpart, WGCNA,
 VignetteBuilder: knitr
 LazyData: true
 License: GPL-2 | GPL-3
-URL: http://talgalili.github.io/dendextend/,
+URL: https://talgalili.github.io/dendextend/,
         https://github.com/talgalili/dendextend/,
         https://cran.r-project.org/package=dendextend,
         https://www.r-statistics.com/tag/dendextend/,
-        https://academic.oup.com/bioinformatics/article/31/22/3718/240978/dendextend-an-R-package-for-visualizing-adjusting
+        https://academic.oup.com/bioinformatics/article/31/22/3718/240978
 BugReports: https://github.com/talgalili/dendextend/issues
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2023-03-24 12:24:05 UTC; talgalili
+Packaged: 2024-10-05 14:50:18 UTC; talgalili
 Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Yoav Benjamini [ths],
   Gavin Simpson [ctb],
@@ -105,7 +106,8 @@ Author: Tal Galili [aut, cre, cph] (https://www.r-statistics.com),
   Christian Hennig [ctb] (http://www.homepages.ucl.ac.uk/~ucakche/),
   David Bradley [ctb] (https://github.com/DBradley27),
   Houyun Huang [ctb] (https://github.com/houyunhuang),
-  Patrick Schupp [ctb] (https://github.com/pschupp)
+  Patrick Schupp [ctb] (https://github.com/pschupp),
+  Alec Buetow [ctb] (https://github.com/alecbuetow)
 Maintainer: Tal Galili <tal.galili@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-03-25 12:50:10 UTC
+Date/Publication: 2024-10-05 23:20:02 UTC

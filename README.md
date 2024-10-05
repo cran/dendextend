@@ -1,6 +1,5 @@
 <!-- badges: start -->
-[![Build Status](https://travis-ci.org/talgalili/dendextend.png?branch=master)](https://travis-ci.org/talgalili/dendextend)
-[![codecov.io](https://codecov.io/github/talgalili/dendextend/coverage.svg?branch=master)](https://codecov.io/github/talgalili/dendextend?branch=master)
+[![codecov.io](https://codecov.io/github/talgalili/dendextend/coverage.svg?branch=master)](https://app.codecov.io/github/talgalili/dendextend?branch=master)
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/dendextend)](https://cran.r-project.org/package=dendextend)
 ![](https://cranlogs.r-pkg.org/badges/dendextend?color=yellow)
 ![](https://cranlogs.r-pkg.org/badges/grand-total/dendextend?color=yellowgreen)
@@ -71,7 +70,7 @@ A BibTeX entry for LaTeX users is
        journal = {Bioinformatics},
        year = {2015},
        doi = {10.1093/bioinformatics/btv428},
-       url = {https://academic.oup.com/bioinformatics/article/31/22/3718/240978/dendextend-an-R-package-for-visualizing-adjusting},
+       url = {https://academic.oup.com/bioinformatics/article/31/22/3718/240978},
        eprint = {https://academic.oup.com/bioinformatics/article-pdf/31/22/3718/17122682/btv428.pdf},
      }
 
