@@ -1,3 +1,15 @@
+dendextend 1.19.0 (2024-11-15)
+==============================
+## BUG FIXES
+- Fix some roxygen2 all.equal.dendrogram and all.equal.dendlist issues
+- Fix dendlist in some edge cases (see ed39cec8dde07cf80728bdc896ab3a0f35684e32)
+
+## OTHER NOTES
+- Adding MANY tests (props to @alecbuetow for all of his GREAT work),
+   moving the test coverage from <40% to >99%(!):
+   See: https://app.codecov.io/github/talgalili/dendextend?branch=master
+
+
 dendextend 1.18.1 (2024-10-12)
 ==============================
 ## BUG FIXES

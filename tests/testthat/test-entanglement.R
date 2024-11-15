@@ -48,7 +48,14 @@ test_that("Match order of one dend based on another (using their order valuess)"
   )
   expect_identical(order.dendrogram(dend_changed), order.dendrogram(dend))
 
-
+  # if check_that_labels_match and check_that_leaves_order_match parameters used
+  dend_changed <- dend
+  dend_changed <- match_order_dendrogram_by_old_order(
+     dend_changed, dend,
+     order.dendrogram(dend_changed),
+     check_that_labels_match = T, check_that_leaves_order_match = T
+  )
+  expect_identical(order.dendrogram(dend_changed), order.dendrogram(dend))
 
   # Watch this!
   # take a dend and change it:
@@ -81,6 +88,18 @@ test_that("Match order of one dend based on another (using their order valuess)"
 
   #    expect_identical(order.dendrogram(dend_changed), order.dendrogram(dend))
   #    identical(match_order_by_labels(dend_changed, dend), dend_changed)
+  
+  # if labels do not match
+  dend1 <- as.dendrogram(hclust(dist(iris[1:10, -5])))
+  dend2 <- as.dendrogram(hclust(dist(iris[2:11, -5])))
+  dend3 <- as.dendrogram(hclust(dist(iris[1:9, -5])))
+  expect_error(
+    match_order_dendrogram_by_old_order(dend1, dend2, check_that_labels_match = T)
+  )
+  # if label order does not match
+  expect_error(expect_warning(
+     match_order_dendrogram_by_old_order(dend1, dend3, check_that_leaves_order_match = T)
+  ))
 })
 
 
@@ -106,6 +125,29 @@ test_that("Entanglement works", {
   #    library(microbenchmark)
   #     microbenchmark(entanglement(dend1 , dend2, 2, "labels"),
   #                    entanglement(dend1 , dend2, 2, "order"), times = 10L )   # order is about twice as fast...
+  
+  # if entanglement calculated for non dend objects
+  expect_error(
+     entanglement.default(dend1, dend2)
+  )
+  expect_identical(
+     round(entanglement.hclust(hc1, hc2, 1.5, "labels"), 2),
+     0.91
+  )
+  ph1 <- ape::as.phylo(hc1)
+  ph2 <- ape::as.phylo(hc2)
+  expect_identical(
+     round(entanglement.phylo(ph1, ph2, 1.5, "labels"), 2),
+     0.91
+  )
+  dend12 <- dendlist(dend1, dend2)
+  expect_error(
+     entanglement.dendlist(dend12, 1.5, "labels")
+  )
+  expect_error(
+     entanglement.dendlist(dend12[1], 1.5, "labels")
+  )
+  
 })
 
 
